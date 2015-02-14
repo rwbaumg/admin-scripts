@@ -6,15 +6,17 @@
 
 # the mountpoint used by schroot
 # this is used to determine which procs are jailed so it must be correct!
-MOUNTPOINT="/var/lib/schroot/mount"
+MOUNTPOINTS=("/var/lib/schroot/mount" "/var/chroot")
 
 for chroot in `schroot -l|awk -F : '{print $2}'`; do
   PROCS=""
   for p in `ps -o pid -A`; do
     LINK=$(readlink /proc/$p/root)
-    if [[ $LINK == "$MOUNTPOINT/$chroot"* ]]; then
-      PROCS="$PROCS $p"
-    fi
+    for mp in "${MOUNTPOINTS[@]}"; do
+      if [[ $LINK == "$mp/$chroot"* ]]; then
+        PROCS="$PROCS $p"
+      fi
+    done
   done
   echo "Jailed in \"$chroot\": $PROCS"
 done
