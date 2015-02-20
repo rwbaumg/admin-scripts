@@ -9,7 +9,7 @@ fi
 
 MOBILE=""
 NOW=$(date +"%m-%d-%Y %r")
-IMAGE=""
+ATTACHMENT=""
 
 # The SMTP server to use for sending e-mails (must have STARTTLS turned on)
 SMTP_SERVER="mail.0x19e.net:587"
@@ -66,15 +66,18 @@ case $key in
     echo "MAIL_FROM set to: $MAIL_FROM"
     shift
   ;;
-  -i|--image)
+  -a|--attachment)
     if [[ ! -z "$2" ]]; then
       if [ ! -f "$2" ]; then
-        echo "Specified image not found!"
+        echo "Specified file not found!"
         exit 1
       fi
-      if [ ${2: -4} == ".jpg" ]; then
-        echo "Setting image file to $2"
-        IMAGE="$2"
+      if [ ${2: -4} == ".jpg" ] || [ ${2: -4} == ".avi" ]; then
+        echo "Setting attachment file to $2"
+        ATTACHMENT="$2"
+      else
+        echo "Specified attachment not supported by MMS: $2"
+        exit 1
       fi
     fi
     shift
@@ -108,7 +111,7 @@ if [[ -z "$MOBILE" ]]; then
 fi
 
 # Send the alert using the mailx command.
-if [[ -z "$IMAGE" ]]; then
+if [[ -z "$ATTACHMENT" ]]; then
   echo -e "$MESSAGE"|mailx -v \
   -r "$MAIL_FROM" \
   -s "$SUBJECT" \
@@ -116,7 +119,7 @@ if [[ -z "$IMAGE" ]]; then
   -S smtp-use-starttls \
   "$MOBILE@$TXT_GATEWAY"
 else
-  echo -e "$MESSAGE"|mailx -v -a "$IMAGE" \
+  echo -e "$MESSAGE"|mailx -v -a "$ATTACHMENT" \
   -r "$MAIL_FROM" \
   -s "$SUBJECT" \
   -S smtp="$SMTP_SERVER" \
