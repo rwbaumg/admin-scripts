@@ -7,6 +7,12 @@ if [[ -z "$1" ]]; then
   exit 1
 fi
 
+# Path to FFMpeg binary
+FFMPEG_BIN="/usr/bin/ffmpeg"
+
+# The maximum attachment size (in KB)
+ATTACHMENT_MAX_SIZE=1024
+
 MOBILE=""
 NOW=$(date +"%m-%d-%Y %r")
 ATTACHMENT=""
@@ -75,6 +81,37 @@ case $key in
       if [ ${2: -4} == ".jpg" ] || [ ${2: -4} == ".avi" ]; then
         echo "Setting attachment file to $2"
         ATTACHMENT="$2"
+
+        # check attachment size and if needed try to compress it down
+        # before trying to send (the MMS gateway will just scrub the
+        # attachment otherwise)
+        filesize=$(du -k "$2" | cut -f 1)
+        if [ $filesize -ge $ATTACHMENT_MAX_SIZE ]; then
+          echo "Specified attachment is too large"
+          if [ ${2: -4} == ".avi" ]; then
+            if [ ! -f "$FFMPEG_BIN" ]; then
+              echo "Fatal error: could not locate ffmpeg binary at '$FFMPEG_BIN'"
+              exit 1
+            fi
+            duration=$($FFMPEG_BIN -i "$2" 2>&1 | grep Duration | cut -d ' ' -f 4 | cut -d '.' -f 1)
+            len_s=$(date +'%s' -d "$duration")
+            bitrate=$(((($ATTACHMENT_MAX_SIZE / 1024) * 1024 * 1024) / len_s * 8))
+            compressed_name="$2.small.avi"
+            if [ ! -f "$compressed_name" ]; then
+              echo "Compressing video stream to '$compressed_name' using '$FFMPEG_BIN' ..."
+              $FFMPEG_BIN -i "$2" \
+                          -s 640x480 \
+                          -b:v $bitrate \
+                          -vcodec mpeg4 \
+                          "$compressed_name"
+            fi
+            # use compressed attachment
+            ATTACHMENT="$compressed_name"
+          else
+            echo "Cannot compress filetype '${2: -4}' and it is too large to send, nothing left to do."
+            exit 1
+          fi
+        fi
       else
         echo "Specified attachment not supported by MMS: $2"
         exit 1
