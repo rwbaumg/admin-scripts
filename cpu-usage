@@ -13,5 +13,5 @@ if [[ -z "$MPSTAT_BIN" ]]; then
              awk '{print 100 - $1"%"}'
 else
   # echo "Using '$MPSTAT_BIN' for calculating CPU usage..."
-  $MPSTAT_BIN | awk '$12 ~ /[0-9.]+/ { print 100 - $13"%" }'
+  $MPSTAT_BIN | awk '$12 ~ /[0-9.]+/ { print 100 - $12"%" }'
 fi
