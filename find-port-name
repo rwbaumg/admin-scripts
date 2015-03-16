@@ -1,0 +1,4 @@
+#!/bin/bash
+#./update-port-list
+grep -i ssh service-names-port-numbers.csv \
+     |  awk  -F"," '$5 ~ /^[\[John_Fake\]]/{printf("%-10s %-40s %s/%s\n", $1, $4, $2, $3)}'
