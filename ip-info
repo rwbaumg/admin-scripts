@@ -1,0 +1,5 @@
+#!/bin/bash
+# super simple, uses ipinfo.io to get ip details
+
+CURL_BIN=$(which curl)
+$CURL_BIN ipinfo.io/$1/json
