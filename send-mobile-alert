@@ -16,6 +16,7 @@ ATTACHMENT_MAX_SIZE=1024
 MOBILE=""
 NOW=$(date +"%m-%d-%Y %r")
 ATTACHMENT=""
+FORCE_MMS=""
 
 # The SMTP server to use for sending e-mails (must have STARTTLS turned on)
 SMTP_SERVER="mail.0x19e.net:587"
@@ -96,12 +97,15 @@ case $key in
             duration=$($FFMPEG_BIN -i "$2" 2>&1 | grep Duration | cut -d ' ' -f 4 | cut -d '.' -f 1)
             len_s=$(date +'%s' -d "$duration")
             bitrate=$(((($ATTACHMENT_MAX_SIZE / 1024) * 1024 * 1024) / len_s * 8))
+            # bitrate=$(((($ATTACHMENT_MAX_SIZE * 1024) / len_s) * 8))
+            echo "Calculated a required birate of $bitrate for video length of $len_s second(s)."
             compressed_name="$2.small.avi"
             if [ ! -f "$compressed_name" ]; then
               echo "Compressing video stream to '$compressed_name' using '$FFMPEG_BIN' ..."
               $FFMPEG_BIN -i "$2" \
-                          -s 640x480 \
+                          -s 320x240 \
                           -b:v $bitrate \
+                          -r "15" \
                           -vcodec mpeg4 \
                           "$compressed_name"
             fi
@@ -134,6 +138,11 @@ case $key in
     SMTP_SERVER="$2"
     shift
   ;;
+  --force-mms)
+    echo "FORCE_MMS set to true"
+    FORCE_MMS="yes"
+    # shift
+  ;;
   *)
     # unknown option
     echo "Unknown option: $2"
@@ -148,18 +157,29 @@ if [[ -z "$MOBILE" ]]; then
 fi
 
 # Send the alert using the mailx command.
-if [[ -z "$ATTACHMENT" ]]; then
+if [ -n "$FORCE_MMS" ] || [ -n "$ATTACHMENT" ]; then
+  echo "Sending message using MMS gateway..."
+  if [[ -z "$ATTACHMENT" ]]; then
+    echo -e "$MESSAGE"|mailx -v \
+    -r "$MAIL_FROM" \
+    -s "$SUBJECT" \
+    -S smtp="$SMTP_SERVER" \
+    -S smtp-use-starttls \
+    "$MOBILE@$MMS_GATEWAY"
+  else
+    echo -e "$MESSAGE"|mailx -v -a "$ATTACHMENT" \
+    -r "$MAIL_FROM" \
+    -s "$SUBJECT" \
+    -S smtp="$SMTP_SERVER" \
+    -S smtp-use-starttls \
+    "$MOBILE@$MMS_GATEWAY"
+  fi
+else
+  echo "Sending message using TXT gateway..."
   echo -e "$MESSAGE"|mailx -v \
   -r "$MAIL_FROM" \
   -s "$SUBJECT" \
   -S smtp="$SMTP_SERVER" \
   -S smtp-use-starttls \
   "$MOBILE@$TXT_GATEWAY"
-else
-  echo -e "$MESSAGE"|mailx -v -a "$ATTACHMENT" \
-  -r "$MAIL_FROM" \
-  -s "$SUBJECT" \
-  -S smtp="$SMTP_SERVER" \
-  -S smtp-use-starttls \
-  "$MOBILE@$MMS_GATEWAY"
 fi
