@@ -6,7 +6,7 @@
 
 # Download the current data
 
-wget http://standards.ieee.org/regauth/oui/oui.txt
+wget -N http://standards.ieee.org/regauth/oui/oui.txt
 
 # Divide the data into Manufacturer and Address files
 cat oui.txt | grep '(base 16)' | cut -f3 > mac.manufacturer
@@ -26,4 +26,5 @@ paste mac.address mac.manufacturer > ethercodes.dat
 rm tmp.address
 rm mac.address
 rm mac.manufacturer
-rm oui.txt
+
+# rm oui.txt
