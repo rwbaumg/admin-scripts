@@ -10,6 +10,6 @@ for user in $(cut -f1 -d: /etc/passwd); do
   OUT=$( crontab -u $user -l 2>/dev/null )
   if [[ $OUT ]]; then
     echo "crontab for $user"
-    echo "$OUT" | grep -v '^#'
+    echo "$OUT" | grep -v '^#' | grep -v '^$'
   fi
 done
