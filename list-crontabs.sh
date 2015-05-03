@@ -1,5 +1,7 @@
 #!/bin/bash
 # prints all crontabs
+# note that crontabs are stored in /var/spool/cron/crontabs
+# this just enumerates everything using the crontab command
 
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
