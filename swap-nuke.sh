@@ -13,7 +13,7 @@ fi
 # find the swap device
 SWAP_DEVICE=$(swapon -s | grep /dev | awk '{print $1}')
 if [[ -z "$SWAP_DEVICE" ]]; then
-  echo "Failed to determine swap device. Does one exist?"
+  echo "Failed to determine swap device. Does it exist? Is it activated?"
   exit 1
 else
   echo "Found swap device: $SWAP_DEVICE"
