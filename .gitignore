@@ -1,5 +1,5 @@
 # ignored files and folders
 
-# *.tmp
-# *.csv
-# *.dat
+*.tmp
+*.csv
+*.dat
