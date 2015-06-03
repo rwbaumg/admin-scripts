@@ -3,6 +3,11 @@
 # post-apply script that properly manages ssh authentication keys
 # Install in /var/radmind/postapply
 
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
 SSHKEYGEN=/usr/bin/ssh-keygen
 RSA_BITS=2048
 COMMENT=""

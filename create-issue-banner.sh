@@ -1,7 +1,7 @@
 #!/bin/bash
 # Creates a fancy issue banner
-# 
-# The color of the characters printed on the console screen and their background color 
+#
+# The color of the characters printed on the console screen and their background color
 # can be controlled by ANSI escape sequences in this format...
 #
 # Escape [ style ; foreground ; background m
@@ -19,7 +19,7 @@
 #               FG_CYAN=36     BG_CYAN=46
 #               FG_GRAY=37     BG_GRAY=47
 #               FG_DEFAULT=39  BG_DEFAULT=49
-# 
+#
 # NOTE: Not specifying a style, foreground, or background code in the
 # escape sequence is the same as entering the normal or default value.
 #
@@ -50,8 +50,13 @@
 # U   Insert the string "1 user" or "<n> users" where <n> is the
 #     number of current users logged in.
 # v   Insert the version of the OS, e.g., the build-date etc.
-# 
+#
 #####################################################################################
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
 
 echo -e '\e[H\e[2J' > /etc/issue
 echo -e '\e[1;33;40m' >> /etc/issue
@@ -64,7 +69,6 @@ echo ' | |_      \\___//_/\\_\\_| /_/ \\___|      _| |' >> /etc/issue
 echo -e ' |___|  \e[1;32m\\r\e[1;33;40m  |___|' >> /etc/issue
 echo -e '\e[0m' >> /etc/issue
 
-#echo -e '\e[1;31mXen \e[1;32m\s \e[1;32m\\r' >> /etc/issue
 echo -e '\e[1;39m\d \\t \e[1;39m::\e[1;39m \l' >> /etc/issue
 echo '' >> /etc/issue
 
@@ -76,11 +80,4 @@ echo -e '\e[0m' >> /etc/issue
 
 # echo '' >> /etc/issue
 
-######################################################################################
-# echo -e '\e[1;34m  ___    ___      __  ___        ___ ' > /etc/issue
-# echo ' |  _|  / _ \    /_ |/ _ \      |_  |' >> /etc/issue
-# echo ' | |   | | | |_  _| | (_) |___    | |' >> /etc/issue
-# echo ' | |   | | | \ \/ / |\__, / _ \   | |' >> /etc/issue
-# echo ' | |   | |_| |>  <| |  / /  __/   | |' >> /etc/issue
-# echo ' | |_   \___//_/\_\_| /_/ \___|  _| |' >> /etc/issue
-# echo ' |___|                          |___|' >> /etc/issue
+exit 0
