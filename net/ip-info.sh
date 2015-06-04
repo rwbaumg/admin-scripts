@@ -1,6 +1,11 @@
 #!/bin/bash
 # super simple, uses ipinfo.io to get ip details
 
+if [[ -z "$1" ]]; then
+  echo "Usage: $0 <ip>"
+  exit 1
+fi
+
 CURL_BIN=$(which curl)
 REMOTE_IP=$1
 

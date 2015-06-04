@@ -1,22 +1,13 @@
 #!/bin/sh
+# Resets iptables to default values.
 #
-# rc.flush-iptables - Resets iptables to default values.
-#
-# Copyright (C) 2001 Oskar Andreasson <bluefluxATkoffeinDOTnet>
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; version 2 of the License.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program or from the site that you downloaded it
-# from; if not, write to the Free Software Foundation, Inc., 59 Temple
-# Place, Suite 330, Boston, MA 02111-1307 USA
+
+# check if superuser
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
 #
 # Configurations
 #
@@ -54,3 +45,4 @@ $IPTABLES -X
 $IPTABLES -t nat -X
 $IPTABLES -t mangle -X
 
+exit 0
