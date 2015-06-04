@@ -15,6 +15,9 @@ fi
 # Set the offending IP
 REMOTE_IP=$1
 
+# how many hours the offending IP should be blocked for
+BLOCK_TIME_HOURS=2
+
 # Path to iptables binary executed by user apache through sudo
 IPTABLES="/sbin/iptables"
 
@@ -55,8 +58,9 @@ function valid_ip()
 
 if valid_ip $REMOTE_IP; then
   $IPTABLES -I INPUT -s $REMOTE_IP -j $IPTABLES_ACTION
-  echo "$IPTABLES -D INPUT -s $REMOTE_IP -j $IPTABLES_ACTION" | at now + 2 hours
+  echo "$IPTABLES -D INPUT -s $REMOTE_IP -j $IPTABLES_ACTION" | at now + $BLOCK_TIME_HOURS hours
   rm -f "$LOCKFILE"
+  echo "iptables rule added to $IPTABLES_ACTION $REMOTE_IP for the next $BLOCK_TIME_HOURS hour(s)"
 else
   echo "Invalid IP: $REMOTE_IP"
   exit 1
