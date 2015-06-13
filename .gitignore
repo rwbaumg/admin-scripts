@@ -5,3 +5,9 @@
 *.dat
 *.log
 *.key*
+*.txt
+
+tmp.address
+mac.address
+mac.manufacturer
+
