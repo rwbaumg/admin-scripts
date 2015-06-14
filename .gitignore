@@ -6,6 +6,7 @@
 *.log
 *.key*
 *.txt
+*.zip
 
 tmp.address
 mac.address
