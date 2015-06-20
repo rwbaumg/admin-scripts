@@ -2,6 +2,10 @@
 
 GAMES_DIR=/usr/games
 
+# check if curl command exists
+hash fortune 2>/dev/null || { echo >&2 "You need to install fortune. Aborting."; exit 1; }
+hash cowsay 2>/dev/null || { echo >&2 "You need to install cowsay. Aborting."; exit 1; }
+
 if [ !$COWPATH ]
 then
   COWPATH='/usr/share/cowsay/cows/'
