@@ -1,15 +1,25 @@
 #!/bin/bash
-if [ "$1" = "" ]
-then
-  echo "Usage: $0 <xen guest name>"
-  exit
-fi
-name=$1
-pid=$(ps -ef | grep "qemu" | grep "name $name" | awk '{ print $2}')
 
-if [[ -z "$pid" ]]; then
-  echo "ERROR: Failed to find qemu pid for '$name'"
+# check if superuser
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+if [ "$1" = "" ]; then
+  echo "Usage: $0 <domain name>"
   exit 1
 fi
 
-lsof -nPi | grep "$pid"
+NAME=$1
+PID=$(ps -ef | grep "qemu" | grep "name $name" | awk '{ print $2}')
+
+if [[ -z "$PID" ]]; then
+  echo "ERROR: Failed to find qemu pid for '$NAME'"
+  exit 1
+fi
+
+# get the port number
+PORT=$(lsof -nPi | grep "$PID" | awk '{print $9}' | awk -F":" '{print $2}')
+
+echo $PORT

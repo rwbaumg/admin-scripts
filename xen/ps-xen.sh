@@ -1,3 +1,4 @@
 #!/bin/bash
-procs=$(ps -ef|grep xl|grep -v grep)
+# list xen and qemu processes
+procs=$(ps -ef | grep 'xl\|qemu' | grep -v grep)
 echo "$procs"
