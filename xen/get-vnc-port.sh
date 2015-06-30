@@ -12,7 +12,7 @@ if [ "$1" = "" ]; then
 fi
 
 NAME=$1
-PID=$(ps -ef | grep "qemu" | grep "name $name" | awk '{ print $2}')
+PID=$(ps -ef | grep "qemu" | grep "name $NAME" | awk '{ print $2}')
 
 if [[ -z "$PID" ]]; then
   echo "ERROR: Failed to find qemu pid for '$NAME'"
