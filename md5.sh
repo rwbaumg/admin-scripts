@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -z "$1" ]]; then
-  echo "Usage: $0 <string>"
+  echo "Usage: $0 <string>" >&2
   exit 1
 fi
 

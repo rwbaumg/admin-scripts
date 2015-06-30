@@ -2,7 +2,7 @@
 # Print a file excluding comments
 
 if [[ -z "$1" ]]; then
-  echo "Usage: $0 <file>"
+  echo "Usage: $0 <file>" >&2
   exit 1
 fi
 

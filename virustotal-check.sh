@@ -23,7 +23,7 @@ echo "Virus Total MD5 DB Check"
 API_KEY="374e4810c5a6584c9a2fcf456b39223e09c198233996e0181a35a713abab4e2f"
 
 if [[ -z "$1" ]]; then
-  echo "Usage: $0 [file or hash...]"
+  echo "Usage: $0 [file or hash...]" >&2
   exit 1
 fi
 

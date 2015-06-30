@@ -6,14 +6,14 @@ hash sswap 2>/dev/null || { echo >&2 "You need to install secure-delete. Abortin
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 1>&2
+   echo "This script must be run as root" >&2
    exit 1
 fi
 
 # find the swap device
 SWAP_DEVICE=$(swapon -s | grep /dev | awk '{print $1}')
 if [[ -z "$SWAP_DEVICE" ]]; then
-  echo "Failed to determine swap device. Does it exist? Is it activated?"
+  echo "Failed to determine swap device. Does it exist? Is it activated?" >&2
   exit 1
 else
   echo "Found swap device: $SWAP_DEVICE"
