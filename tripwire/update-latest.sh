@@ -8,14 +8,14 @@ hash gawk 2>/dev/null || { echo >&2 "You need to install gawk. Aborting."; exit 
 hash sed 2>/dev/null || { echo >&2 "You need to install sed. Aborting."; exit 1; }
 
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 1>&2
+   echo "This script must be run as root" >&2
    exit 1
 fi
 
 # Get the filename of the newest report
 REPORT=$(ls -lt "$REPORT_DIR" | sed -n 2p | gawk '{print $9}')
 if [[ -z "$REPORT" ]]; then
-  echo "Fatal: Couldn't find latest report, exiting..."
+  echo "Fatal: Couldn't find latest report, exiting..." >&2
   exit 1
 else
   echo "Updating report: $REPORT_DIR/$REPORT"

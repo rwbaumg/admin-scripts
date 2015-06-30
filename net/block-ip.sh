@@ -2,13 +2,13 @@
 # Blocks an IP address for 2 hours
 
 if [[ -z "$1" ]]; then
-  echo "Usage: $0 <ip>"
+  echo "Usage: $0 <ip>" >&2
   exit 1
 fi
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 1>&2
+   echo "This script must be run as root" >&2
    exit 1
 fi
 
@@ -62,7 +62,7 @@ if valid_ip $REMOTE_IP; then
   rm -f "$LOCKFILE"
   echo "iptables rule added to $IPTABLES_ACTION $REMOTE_IP for the next $BLOCK_TIME_HOURS hour(s)"
 else
-  echo "Invalid IP: $REMOTE_IP"
+  echo "Invalid IP: $REMOTE_IP" >&2
   exit 1
 fi
 
