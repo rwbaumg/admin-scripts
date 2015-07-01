@@ -2,6 +2,7 @@
 # create a new xen domain
 # this script also checks for post-up scripts
 # following the format '<domain_name>.sh'
+# rwb@0x19e.net
 
 # check if xl command exists
 hash xl 2>/dev/null || { echo >&2 "You need to install xen-tools. Aborting."; exit 1; }
@@ -25,6 +26,8 @@ if [ ! -f "$DOMAIN_CONF" ]; then
   echo "Failed to find domain configuration $DOMAIN_CONF" >&2
   exit 1
 fi
+
+# todo: check if domain is already running
 
 # create the new domain
 xl create $DOMAIN_CONF

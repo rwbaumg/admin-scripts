@@ -1,4 +1,6 @@
 #!/bin/bash
+# gets the vnc port for a named qemu domain
+# rwb@0x19e.net
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
@@ -11,7 +13,7 @@ if [ "$1" = "" ]; then
   exit 1
 fi
 
-NAME=$1
+NAME="$1"
 PID=$(ps -ef | grep "qemu" | grep "name $NAME" | awk '{ print $2}')
 
 if [[ -z "$PID" ]]; then
