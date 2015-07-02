@@ -24,4 +24,13 @@ fi
 # get the port number
 PORT=$(lsof -nPi | grep "$PID" | awk '{print $9}' | awk -F":" '{print $2}')
 
+# check to make sure value is a valid port
+re='^[0-9]+$'
+if ! [[ $PORT =~ $re ]] ; then
+  echo >&2 "ERROR: '$PORT' is not a valid port number"
+  exit 1
+fi
+
 echo $PORT
+
+exit 0
