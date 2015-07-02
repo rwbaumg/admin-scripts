@@ -2,7 +2,7 @@
 # super simple, uses ipinfo.io to get ip details
 
 if [[ -z "$1" ]]; then
-  echo "Usage: $0 <ip>"
+  echo "Usage: $0 <ip>" >&2
   exit 1
 fi
 
