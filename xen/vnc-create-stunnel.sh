@@ -31,7 +31,7 @@ while [ -h "$SOURCE" ]; do
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-echo >&2 "Script directory resolved to $DIR"
+# echo >&2 "Script directory resolved to $DIR"
 
 # validate domain
 DOMAIN_NAME="$1"
@@ -42,7 +42,7 @@ if [[ -z "$QEMU_PID" ]]; then
 fi
 
 # get the vnc port
-VNC_PORT=$("$DIR/get-vnc-port.sh" "$DOMAIN_NAME")
+VNC_PORT=$(lsof -nPi | grep "$QEMU_PID" | awk '{print $9}' | awk -F":" '{print $2}')
 if [ "$VNC_PORT" = "" ]; then
   echo >&2 "ERROR: Failed to find VNC port for '$DOMAIN_NAME'"
   exit 1
