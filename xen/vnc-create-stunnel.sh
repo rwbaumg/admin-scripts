@@ -4,9 +4,11 @@
 
 PEM_FILE="/etc/ssl/private/athena-private.pem"
 RAND_FILE="/dev/urandom"
-LOG_FILE="/srv/tunnel/log/stunnel.log"
+LOG_FILE="/var/log/stunnel4/stunnel.log"
 DEBUG_LEVEL=5
 CIPHER_SUITE="ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA"
+USER="stunnel4"
+GROUP="stunnel4"
 
 # check if stunnel is installed
 hash stunnel 2>/dev/null || { echo >&2 "You need to install stunnel. Aborting."; exit 1; }
@@ -31,7 +33,7 @@ while [ -h "$SOURCE" ]; do
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-# echo >&2 "Script directory resolved to $DIR"
+# echo >&2 "script directory resolved to $DIR"
 
 # validate domain
 DOMAIN_NAME="$1"
@@ -52,7 +54,7 @@ if ! [[ $VNC_PORT =~ $re ]] ; then
   echo >&2 "ERROR: Failed to find VNC port for '$DOMAIN_NAME': '$VNC_PORT' is not a valid int"
   exit 1
 fi
-echo "VNC port for $DOMAIN_NAME: $VNC_PORT"
+echo "vnc port for $DOMAIN_NAME: $VNC_PORT"
 
 # configure port and pid file
 LISTEN_PORT=2$VNC_PORT
@@ -66,17 +68,17 @@ if [ -e $PID_FILE ]; then
     echo "stunnel already running on pid $pid"
     exit 1
   else
-    echo >&2 "PID file exists but process not running, deleting stale PID file..."
+    echo >&2 "pid file exists but process not running, deleting stale pid file..."
     rm -f $PID_FILE
   fi
 fi
 
 # forward
-echo "Forwarding $LISTEN_PORT -> 127.0.0.1:$VNC_PORT ..."
+echo "forwarding $LISTEN_PORT -> 127.0.0.1:$VNC_PORT ..."
 
-stunnel -T -D $DEBUG_LEVEL \
-        -s nobody \
-        -g nogroup \
+stunnel -D $DEBUG_LEVEL \
+        -s "$USER" \
+        -g "$GROUP" \
         -C "$CIPHER_SUITE" \
         -R "$RAND_FILE" \
         -o "$LOG_FILE" \
