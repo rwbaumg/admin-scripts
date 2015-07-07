@@ -8,6 +8,6 @@ fi
 
 TMP_FILE=/tmp/wall_msg
 
-echo "$1" > $TMP_FILE
+echo "$@" > $TMP_FILE
 wall < $TMP_FILE
 rm -f $TMP_FILE
