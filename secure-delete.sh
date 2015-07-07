@@ -1,0 +1,22 @@
+#!/bin/bash
+# securely deletes a file
+
+if [[ -z "$1" ]]; then
+  echo "Usage: $0 <file>" >&2
+  exit 1
+fi
+
+if [[ ! -e "$1" ]]; then
+  echo >&2 "ERROR: File does not exist: $1"
+  exit 1
+fi
+
+RND_SOURCE="/dev/urandom"
+SHRED_TIMES=10
+
+shred -v \
+      --random-source "$RND_SOURCE" \
+      --iterations "$SHRED_TIMES" \
+      --zero \
+      --remove \
+      "$1"
