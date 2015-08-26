@@ -18,7 +18,7 @@ echo "Virus Total MD5 DB Check"
 
 # the virustotal API key to use
 # below is the API key for 0x19e Networks - feel free to use it but please
-# don't give it out to others. if their meant to have it they can get it
+# don't give it out to others. if they are meant to have it they can get it
 # themselves.
 API_KEY="374e4810c5a6584c9a2fcf456b39223e09c198233996e0181a35a713abab4e2f"
 
