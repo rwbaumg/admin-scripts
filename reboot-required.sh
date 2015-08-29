@@ -3,4 +3,6 @@
 
 if [ -f /var/run/reboot-required ]; then
     cat /var/run/reboot-required
+    exit 0
 fi
+exit 1
