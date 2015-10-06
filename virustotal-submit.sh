@@ -9,6 +9,9 @@
 # check if curl command exists
 hash curl 2>/dev/null || { echo >&2 "You need to install curl. Aborting."; exit 1; }
 
+# check if python is installed (used for formatting)
+hash python 2>/dev/null || { echo >&2 "You need to install python. Aborting."; exit 1; }
+
 if [[ -z "$1" ]]; then
   echo "Usage: $0 <filename>" >&2
   exit 1
@@ -44,8 +47,12 @@ while true; do
   # echo $response
   echo `echo $response|grep -o '"scans"'`
   if [ $(echo -n "$response"|grep -o '"response_code": 1'| wc -l) -eq 1 ]; then
-    # echo "$response" #| python -mjson.tool | pygmentize -l javascript -f console | less -r
-    echo "$response" | python -mjson.tool #| pygmentize -l javascript -f console | less -r
+    if hash pygmentize 2>/dev/null; then
+      echo "$response" | python -mjson.tool | pygmentize -l javascript -f console | less -r
+    else
+      echo "$response" | python -mjson.tool | less -r
+    fi
+
     break;
   fi
   echo -e -n "$(tput setaf 7).$(tput sgr0)\r"
