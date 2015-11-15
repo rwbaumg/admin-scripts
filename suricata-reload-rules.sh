@@ -15,7 +15,7 @@ if [[ -z "$SURICATA_PID" ]]; then
   exit 1
 fi
 
-for x in `pidof - "suricata"`; do
+for x in `pidof "suricata"`; do
   # send live reload signal (USR2)
   echo "Sending live reload signal to suricata pid $x ..."
   kill -USR2 $x
