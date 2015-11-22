@@ -214,7 +214,8 @@ if [ "$CONVERT_SVN_TAGS" = "true" ] && [ -n "$GIT_SVN_TAGS" ]; then
         fi
       else
         # note: git-tag doesn't support --verbose or --dry-run
-        git tag -a -m "Converting SVN tag $tag_name" $tag_name refs/remotes/origin/tags/$tag_name
+        GIT_TAG_MSG=$(git show --oneline --format="%s" $svn_tag)
+        git tag -a -m "$GIT_TAG_MSG" $tag_name refs/remotes/origin/tags/$tag_name
 
         # git push $TARGET_REMOTE tag "$tag_name"
       fi
