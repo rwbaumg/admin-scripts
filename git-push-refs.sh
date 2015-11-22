@@ -63,6 +63,7 @@ usage()
 
      --no-tags              Don't process Git tag references (only branches)
      --dry-run              Do everything except actually send the updates.
+     --convert-svn-tags     Convert SVN tags to Git tags before pushing to the specified remote.
 
      -h, --help             Prints this usage.
     EOF
@@ -91,6 +92,7 @@ VERBOSITY=0
 GIT_VERBOSE=""
 GIT_DRY_RUN=""
 SKIP_TAGS="false"
+CONVERT_SVN_TAGS="false"
 
 while [ $# -gt 0 ]; do
 case "$1" in
@@ -123,6 +125,10 @@ case "$1" in
     ;;
   --no-tags)
     SKIP_TAGS="true"
+    shift
+    ;;
+  --convert-svn-tags)
+    CONVERT_SVN_TAGS="true"
     shift
     ;;
   -h|--help)
@@ -165,12 +171,20 @@ fi
 
 # prepare ref list
 GIT_REFS=$(git branch -r | grep "^..$SOURCE_REMOTE\/[a-zA-Z0-9\._-]*$" | sed -e 's/^..//' | grep -Ewv "$EXCLUDE_REFS_KEY")
+GIT_SVN_TAGS=$(git branch -r | grep "^..$SOURCE_REMOTE\/tags\/[a-zA-Z0-9\._-]*$" | sed -e 's/^..//' | sed -e 's/^..tags\///')
 
+# print processed refs
+if [ $VERBOSITY -gt 1 ]; then
+  echo "INFO: The following branches were found in $SOURCE_REMOTE: $(echo ${GIT_REFS[@]}|tr " " "|")"
+fi
+if [ $VERBOSITY -gt 1 ]; then
+  echo "INFO: The following SVN tags were found in $SOURCE_REMOTE: $(echo ${GIT_SVN_TAGS[@]}|tr " " "|")"
+fi
+
+# push all branches (excluding filtered)
 if [ $VERBOSITY -gt 0 ]; then
   echo "Pushing branches to $TARGET_REMOTE ..."
 fi
-
-# push all branches (excluding HEAD)
 for remote_ref in $GIT_REFS; do
   remote_name=$(echo $remote_ref | sed -e "s/$SOURCE_REMOTE\///")
 
@@ -181,12 +195,45 @@ for remote_ref in $GIT_REFS; do
   git push $GIT_EXTRA_ARGS $TARGET_REMOTE $remote_ref:refs/heads/$remote_name
 done
 
-if [ "$SKIP_TAGS" != "true" ]; then
+if [ "$CONVERT_SVN_TAGS" = "true" ] && [ -n "$GIT_SVN_TAGS" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Converting SVN tags to Git tags ..."
+  fi
+  for svn_tag in $GIT_SVN_TAGS; do
+    # get svn tag name
+    tag_name=$(echo $svn_tag | sed -e "s/$SOURCE_REMOTE\/tags\///")
+
+    if [ $VERBOSITY -gt 1 ]; then
+      echo "Processing SVN tag: $tag_name ($svn_tag) ..."
+    fi
+
+    if [ -z "$GIT_DRY_RUN" ]; then
+      if git tag --list --contains "$tag_name" > /dev/null 2>&1; then
+        if [ $VERBOSITY -gt 0 ]; then
+          echo "Tag already exists: $tag_name"
+        fi
+      else
+        # note: git-tag doesn't support --verbose or --dry-run
+        git tag -a -m "Converting SVN tag $tag_name" $tag_name refs/remotes/origin/tags/$tag_name
+
+        # git push $TARGET_REMOTE tag "$tag_name"
+      fi
+    else
+      # this is a dry run, just print a message if verbose enough
+      if [ $VERBOSITY -gt 0 ]; then
+        echo "Create tag $tag_name: $svn_tag -> refs/tags/$tag_name"
+      fi
+    fi
+  done
+fi
+
+# push tags
+if [ "$SKIP_TAGS" != "true" ] && git show-ref --tags > /dev/null 2>&1; then
   if [ $VERBOSITY -gt 0 ]; then
     echo "Pushing tags to $TARGET_REMOTE ..."
   fi
 
-  # push all tags without any filtering
+  # push all (tags without any filtering)
   git push $GIT_EXTRA_ARGS $TARGET_REMOTE +refs/tags/*:refs/tags/*
 
   # todo: could filter through tags if we wanted to...
