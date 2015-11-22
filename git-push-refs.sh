@@ -226,7 +226,7 @@ if [ "$CONVERT_SVN_TAGS" = "true" ] && [ -n "$GIT_SVN_TAGS" ]; then
         GIT_COMMITTER_NAME="$(git log -1 --pretty=format:%cn $svn_tag)" \
         GIT_COMMITTER_EMAIL="$(git log -1 --pretty=format:%ce $svn_tag)" \
         GIT_COMMITTER_DATE="$(git log -1 --pretty=format:%cd $svn_tag)" \
-        git tag -m "$(git log -1 --pretty=format:%s%n%b $svn_tag)" $tag_name refs/remotes/origin/tags/$tag_name
+        git tag -a -m "$(git log -1 --pretty=format:%s%n%b $svn_tag)" $tag_name refs/remotes/origin/tags/$tag_name
 
         # delete the converted branch (todo)
         # git branch -D $svn_tag
