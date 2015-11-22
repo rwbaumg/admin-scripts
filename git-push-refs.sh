@@ -195,6 +195,11 @@ for remote_ref in $GIT_REFS; do
   git push $GIT_EXTRA_ARGS $TARGET_REMOTE $remote_ref:refs/heads/$remote_name
 done
 
+if [ "$CONVERT_SVN_TAGS" = "true" ] && ! [ -d .git/svn  ]; then
+  echo >&2 "ERROR: Can't convert SVN tags for non-SVN working copy."
+  CONVERT_SVN_TAGS="false"
+fi
+
 if [ "$CONVERT_SVN_TAGS" = "true" ] && [ -n "$GIT_SVN_TAGS" ]; then
   if [ $VERBOSITY -gt 0 ]; then
     echo "Converting SVN tags to Git tags ..."
