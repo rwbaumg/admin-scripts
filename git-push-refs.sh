@@ -220,8 +220,11 @@ if [ "$CONVERT_SVN_TAGS" = "true" ] && [ -n "$GIT_SVN_TAGS" ]; then
       else
         # convert the svn branch to a git tag
         # note: git-tag doesn't support --verbose or --dry-run
-        GIT_TAG_MSG=$(git show --oneline --format="%s" $svn_tag)
-        git tag -a -m "Converted SVN tag: $GIT_TAG_MSG" $tag_name refs/remotes/origin/tags/$tag_name
+        GIT_AUTHOR_DATE="$(git log -1 --pretty=format:%ad $svn_tag)" \
+        GIT_COMMITTER_DATE="$(git log -1 --pretty=format:%cd $svn_tag)" \
+        GIT_COMMITTER_EMAIL="$(git log -1 --pretty=format:%ce $svn_tag)" \
+        GIT_COMMITTER_NAME="$(git log -1 --pretty=format:%cn $svn_tag)" \
+        git tag -m "$(git log -1 --pretty=format:%s%n%b $svn_tag)" $tag_name refs/remotes/origin/tags/$tag_name
 
         # delete the converted branch (todo)
         # git branch -D $svn_tag
