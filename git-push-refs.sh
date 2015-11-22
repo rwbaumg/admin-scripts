@@ -213,11 +213,13 @@ if [ "$CONVERT_SVN_TAGS" = "true" ] && [ -n "$GIT_SVN_TAGS" ]; then
           echo "Tag already exists: $tag_name"
         fi
       else
+        # convert the svn branch to a git tag
         # note: git-tag doesn't support --verbose or --dry-run
         GIT_TAG_MSG=$(git show --oneline --format="%s" $svn_tag)
-        git tag -a -m "$GIT_TAG_MSG" $tag_name refs/remotes/origin/tags/$tag_name
+        git tag -a -m "Converted SVN tag: $GIT_TAG_MSG" $tag_name refs/remotes/origin/tags/$tag_name
 
-        # git push $TARGET_REMOTE tag "$tag_name"
+        # delete the converted branch (todo)
+        # git branch -D $svn_tag
       fi
     else
       # this is a dry run, just print a message if verbose enough
