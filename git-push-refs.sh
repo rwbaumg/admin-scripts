@@ -6,7 +6,7 @@ hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1;
 
 # default remotes
 SOURCE_REMOTE="origin"
-TARGET_REMOTE="0x19e"
+TARGET_REMOTE=""
 
 # array of refs. to exclude from mirror
 EXCLUDE_REFS=("HEAD")
@@ -58,6 +58,7 @@ usage()
      -o, --origin <value>   The name of the remote to push refs from (default: origin)
      -r, --remote <value>   The name of the remote to push refs to (default: 0x19e)
      -i, --ignore <value>   Ignore the specified branch reference (HEAD is always ignored).
+     -f, --force            Pass the --force flag to the Git command to bypass reference checks.
 
      -v, --verbose          Make the script more verbose.
 
@@ -92,6 +93,7 @@ test_arg()
 VERBOSITY=0
 GIT_VERBOSE=""
 GIT_DRY_RUN=""
+GIT_FORCE=""
 GIT_PRUNE=""
 SKIP_TAGS="false"
 CONVERT_SVN_TAGS="false"
@@ -113,6 +115,10 @@ case "$1" in
   -v|--verbose)
     GIT_VERBOSE="-v"
     ((VERBOSITY++))
+    shift
+    ;;
+  -f|--force)
+    GIT_FORCE="--force"
     shift
     ;;
   -i|--ignore)
@@ -147,8 +153,15 @@ case "$1" in
 esac
 done
 
+if [ -z "$TARGET_REMOTE" ]; then
+  usage "No remote specified for target."
+fi
+if [ -z "$SOURCE_REMOTE" ]; then
+  usage "No remote specified for source."
+fi
+
 # combine git flags
-GIT_EXTRA_ARGS="$GIT_VERBOSE $GIT_DRY_RUN"
+GIT_EXTRA_ARGS="$GIT_VERBOSE $GIT_FORCE $GIT_DRY_RUN"
 EXCLUDE_REFS_KEY=$(echo ${EXCLUDE_REFS[@]}|tr " " "|")
 
 # print options
