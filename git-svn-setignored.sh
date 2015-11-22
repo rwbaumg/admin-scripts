@@ -14,4 +14,5 @@ if ! [ -d .git/svn  ]; then
 fi
 
 # set excluded files for project
+echo "Setting excluded files and folders for git-svn project..."
 git svn show-ignore > .git/info/exclude
