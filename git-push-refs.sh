@@ -64,6 +64,7 @@ usage()
      --no-tags              Don't process Git tag references (only branches)
      --dry-run              Do everything except actually send the updates.
      --convert-svn-tags     Convert SVN tags to Git tags before pushing to the specified remote.
+     --prune                Deletes all stale remote-tracking branches under the remote.
 
      -h, --help             Prints this usage.
     EOF
@@ -91,6 +92,7 @@ test_arg()
 VERBOSITY=0
 GIT_VERBOSE=""
 GIT_DRY_RUN=""
+GIT_PRUNE=""
 SKIP_TAGS="false"
 CONVERT_SVN_TAGS="false"
 
@@ -129,6 +131,10 @@ case "$1" in
     ;;
   --convert-svn-tags)
     CONVERT_SVN_TAGS="true"
+    shift
+    ;;
+  --prune)
+    GIT_PRUNE="--prune"
     shift
     ;;
   -h|--help)
@@ -247,7 +253,7 @@ if [ "$SKIP_TAGS" != "true" ] && git show-ref --tags > /dev/null 2>&1; then
   fi
 
   # push all (tags without any filtering)
-  git push $GIT_EXTRA_ARGS $TARGET_REMOTE +refs/tags/*:refs/tags/*
+  git push $GIT_EXTRA_ARGS $GIT_PRUNE $TARGET_REMOTE +refs/tags/*:refs/tags/*
 
   # todo: could filter through tags if we wanted to...
 else
@@ -258,6 +264,14 @@ fi
 
 if [ $VERBOSITY -gt 0 ]; then
   echo "Finished pushing references to $TARGET_REMOTE."
+fi
+
+if [ -n "$GIT_PRUNE" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Pruning $TARGET_REMOTE ..."
+  fi
+
+  git remote prune $TARGET_REMOTE $GIT_DRY_RUN
 fi
 
 exit_script 0
