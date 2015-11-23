@@ -215,7 +215,7 @@ for remote_ref in $GIT_REFS; do
 done
 
 if [ "$CONVERT_SVN_TAGS" = "true" ] && ! [ -d .git/svn  ]; then
-  echo >&2 "ERROR: Can't convert SVN tags for non-SVN working copy."
+  echo >&2 "WARNING: Can't convert SVN tags for non-SVN working copy."
   CONVERT_SVN_TAGS="false"
 fi
 
@@ -246,9 +246,6 @@ if [ "$CONVERT_SVN_TAGS" = "true" ] && [ -n "$GIT_SVN_TAGS" ]; then
         GIT_COMMITTER_EMAIL="$(git log -1 --pretty=format:%ce $svn_tag)" \
         GIT_COMMITTER_DATE="$(git log -1 --pretty=format:%cd $svn_tag)" \
         git tag -a -m "$(git log -1 --pretty=format:%s%n%b $svn_tag)" $tag_name refs/remotes/origin/tags/$tag_name
-
-        # delete the converted branch (todo)
-        # git branch -D $svn_tag
       fi
     else
       # this is a dry run, just print a message if verbose enough
@@ -284,6 +281,7 @@ if [ -n "$GIT_PRUNE" ]; then
     echo "Pruning $TARGET_REMOTE ..."
   fi
 
+  # prune remote refs
   git remote prune $TARGET_REMOTE $GIT_DRY_RUN
 fi
 
