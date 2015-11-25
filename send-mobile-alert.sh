@@ -44,11 +44,8 @@ SUBJECT="SECURITY ALERT"
 # $MOBILE     The mobile phone number the alert is being sent to.
 MESSAGE="A security related event was detected on $NOW \n Action may be required."
 
-while [[ $# > 1 ]]
-do
-key="$1"
-
-case $key in
+while [ $# -gt 0 ]; do
+case "$1" in
   -n|--mobile-number)
     MOBILE="$2"
     echo "Mobile number set to: $MOBILE"
