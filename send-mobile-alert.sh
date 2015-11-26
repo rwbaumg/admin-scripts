@@ -137,28 +137,24 @@ case "$1" in
     test_arg "$1" "$2"
     shift
     MOBILE="$1"
-    echo "Mobile number set to: $MOBILE"
     shift
   ;;
   -s|--subject)
     test_arg "$1" "$2"
     shift
     SUBJECT="$1"
-    echo "Subject set to: $SUBJECT"
     shift
   ;;
   -m|--message)
     test_arg "$1" "$2"
     shift
     MESSAGE=$(echo -e "$1")
-    echo "Message set to: $MESSAGE"
     shift
   ;;
   -f|--mail-from)
     test_arg "$1" "$2"
     shift
     MAIL_FROM="$1"
-    echo "MAIL_FROM set to: $MAIL_FROM"
     shift
   ;;
   -a|--attachment)
@@ -166,11 +162,11 @@ case "$1" in
     shift
     if [[ ! -z "$1" ]]; then
       if [ ! -f "$1" ]; then
-        echo >&2 "Specified file not found!"
+        echo >&2 "ERROR: Specified attachment file not found!"
         exit 1
       fi
       if [ ${ATTACHMENT: -4} == ".jpg" ] || [ ${ATTACHMENT: -4} == ".avi" ]; then
-        echo "Setting attachment file to $1 ..."
+        # echo "Setting attachment file to $1 ..."
         ATTACHMENT="$1"
         ATTACHMENT_EXT=${ATTACHMENT: -4}
 
@@ -179,21 +175,31 @@ case "$1" in
         # attachment otherwise)
         filesize=$(du -k "$ATTACHMENT" | cut -f 1)
         if [ $filesize -ge $ATTACHMENT_MAX_SIZE ]; then
-          echo >&2 "WARNING: Specified attachment is too large"
+          if [ $VERBOSITY -gt 0 ]; then
+            echo >&2 "WARNING: Specified attachment is too large"
+          fi
           if [ "$ATTACHMENT_EXT" == ".avi" ]; then
-            # hash $FFMPEG_BIN 2>/dev/null || { echo >&2 "You need to install ffmpeg. Aborting."; exit 1; }
             if [ ! -f "$FFMPEG_BIN" ]; then
-              echo >&2 "Fatal error: could not locate ffmpeg binary at '$FFMPEG_BIN'"
+              echo >&2 "FATAL: could not locate ffmpeg binary at '$FFMPEG_BIN'"
               exit 1
             fi
+
+            # calculate required bitrate to compress video to supported size
             duration=$($FFMPEG_BIN -i "$ATTACHMENT" 2>&1 | grep Duration | cut -d ' ' -f 4 | cut -d '.' -f 1)
             len_s=$(date +'%s' -d "$duration")
             bitrate=$(((($ATTACHMENT_MAX_SIZE / 1024) * 1024 * 1024) / len_s * 8))
             # bitrate=$(((($ATTACHMENT_MAX_SIZE * 1024) / len_s) * 8))
-            echo "Calculated a required birate of $bitrate for video length of $len_s second(s)."
+            if [ $VERBOSITY -gt 0 ]; then
+              echo "Calculated a required birate of $bitrate for video length of $len_s second(s)."
+            fi
+
             compressed_name="$ATTACHMENT.small.avi"
             if [ ! -f "$compressed_name" ]; then
-              echo "Compressing video stream to '$compressed_name' using '$FFMPEG_BIN' ..."
+              if [ $VERBOSITY -gt 0 ]; then
+                echo "Compressing video stream to '$compressed_name' using '$FFMPEG_BIN' ..."
+              fi
+
+              # invoke ffmpeg to compress video attachment
               $FFMPEG_BIN -i "$ATTACHMENT" \
                           -s 320x240 \
                           -b:v $bitrate \
@@ -201,15 +207,16 @@ case "$1" in
                           -vcodec mpeg4 \
                           "$compressed_name"
             fi
+
             # use compressed attachment
             ATTACHMENT="$compressed_name"
           else
-            echo >&2 "Cannot compress filetype '$ATTACHMENT_EXT' and it is too large to send, nothing left to do."
+            echo >&2 "ERROR: Cannot compress filetype '$ATTACHMENT_EXT' and it is too large to send, nothing left to do."
             exit 1
           fi
         fi
       else
-        echo >&2 "Specified attachment not supported by MMS: $1"
+        echo >&2 "ERROR: Specified attachment not supported by MMS: $1"
         exit 1
       fi
     fi
@@ -219,25 +226,21 @@ case "$1" in
     test_arg "$1" "$2"
     shift
     MMS_GATEWAY="$1"
-    echo "MMS_GATEWAY set to: $MMS_GATEWAY"
     shift
   ;;
   --txt-gateway)
     test_arg "$1" "$2"
     shift
     TXT_GATEWAY="$1"
-    echo "TXT_GATEWAY set to: $TXT_GATEWAY"
     shift
   ;;
   --smtp-server)
     test_arg "$1" "$2"
     shift
     SMTP_SERVER="$1"
-    echo "SMTP_SERVER set to: $SMTP_SERVER"
     shift
   ;;
   --force-mms)
-    echo "FORCE_MMS set to true"
     FORCE_MMS="yes"
     shift
   ;;
@@ -260,6 +263,19 @@ done
 if [[ -z "$MOBILE" ]]; then
   echo >&2 "A mobile number way not supplied."
   exit 1
+fi
+
+if [ $VERBOSITY -gt 0 ]; then
+  echo MOBILE NUMBER = "${MOBILE}"
+  echo SUBJECT       = "${SUBJECT}"
+  echo MESSAGE       = "${MESSAGE}"
+  echo MAIL FROM     = "${MAIL_FROM}"
+  echo MMS GATEWAY   = "${MMS_GATEWAY}"
+  echo TXT GATEWAY   = "${TXT_GATEWAY}"
+  echo SMTP SERVER   = "${SMTP_SERVER}"
+  echo FORCE MMS     = "${FORCE_MMS}"
+  echo ATTACHMENT    = "${ATTACHMENT}"
+  echo VERBOSITY     = "${VERBOSITY}"
 fi
 
 # Send the alert using the mailx command.
