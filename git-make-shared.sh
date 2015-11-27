@@ -254,14 +254,18 @@ if [ $VERBOSITY -gt 0 ]; then
   echo "Converting $GIT_DIR to a shared repository..."
 fi
 
+if [ "$DRY_RUN" = "true" ]; then
+  echo "pushd $GIT_DIR"
+fi
+
 # set recursive ownership
 if [ $VERBOSITY -gt 0 ]; then
   echo "Setting repository ownership..."
 fi
 if [ "$DRY_RUN" = "true" ]; then
-  echo "chown -R $VERBOSE $GIT_USER:$GIT_GROUP $GIT_DIR"
+  echo "chown -R $VERBOSE $GIT_USER:$GIT_GROUP ."
 else
-  chown -R $VERBOSE $GIT_USER:$GIT_GROUP $GIT_DIR
+  chown -R $VERBOSE $GIT_USER:$GIT_GROUP .
 fi
 
 # set shared repository
@@ -285,13 +289,17 @@ if [ $VERBOSITY -gt 0 ]; then
   echo "Setting file permissions..."
 fi
 if [ "$DRY_RUN" = "true" ]; then
-  echo "find $GIT_DIR -type f | xargs chmod $VERBOSE $FILE_MASK"
-  echo "find $GIT_DIR -type d | xargs chmod $VERBOSE $DIR_MASK"
-  echo "find $GIT_DIR -type d | xargs chmod $VERBOSE g+s"
+  echo "find . -type f | xargs chmod $VERBOSE $FILE_MASK"
+  echo "find . -type d | xargs chmod $VERBOSE $DIR_MASK"
+  echo "find . -type d | xargs chmod $VERBOSE g+s"
 else
-  find $GIT_DIR -type f | xargs chmod $VERBOSE $FILE_MASK
-  find $GIT_DIR -type d | xargs chmod $VERBOSE $DIR_MASK
-  find $GIT_DIR -type d | xargs chmod $VERBOSE g+s
+  find . -type f | xargs chmod $VERBOSE $FILE_MASK
+  find . -type d | xargs chmod $VERBOSE $DIR_MASK
+  find . -type d | xargs chmod $VERBOSE g+s
+fi
+
+if [ "$DRY_RUN" = "true" ]; then
+  echo "popd"
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
