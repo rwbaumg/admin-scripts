@@ -4,7 +4,7 @@
 
 # default settings
 GIT_USER="root"
-GIT_GROUP="git"
+GIT_GROUP="devel"
 
 FILE_MASK=664
 DIR_MASK=775
