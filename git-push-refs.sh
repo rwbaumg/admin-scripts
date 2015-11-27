@@ -42,7 +42,7 @@ exit_script()
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$0|" <<"    EOF"
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" <<"    EOF"
     USAGE
 
     Push Git refs to another remote.
