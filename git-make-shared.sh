@@ -7,7 +7,7 @@ GIT_USER="root"
 GIT_GROUP="git"
 
 FILE_MASK=664
-DIR_MASK=755
+DIR_MASK=775
 
 VERBOSITY=0
 
@@ -75,7 +75,8 @@ usage()
      -u, --user <value>    The user that should own the repository.
      -g, --group <value>   The group that should own the repository.
 
-     --dry-run             Print commands but don't change anything.
+     --no-shared           Do not reconfigure repository (only permissions).
+     --dry-run             Print commands without making any changes.
 
      -v, --verbose         Make the script more verbose.
      -h, --help            Prints this usage.
@@ -133,7 +134,7 @@ test_user_arg()
     argv="$arg"
   fi
 
-  if ! id -u "$argv" > /dev/null 2>&1; then
+  if ! getent passwd "$argv" > /dev/null 2>&1; then
     usage "Specified user does not exist."
   fi
 }
@@ -150,7 +151,7 @@ test_group_arg()
     argv="$arg"
   fi
 
-  if ! id -g "$argv" > /dev/null 2>&1; then
+  if ! getent group "$argv" > /dev/null 2>&1; then
     usage "Specified group does not exist."
   fi
 }
@@ -166,6 +167,7 @@ check_verbose()
 
 GIT_DIR=""
 DRY_RUN="false"
+NO_SHARED="false"
 
 # process arguments
 [ $# -gt 0 ] || usage
@@ -181,6 +183,10 @@ while [ $# -gt 0 ]; do
       test_group_arg "$1" "$2"
       shift
       GIT_GROUP="$1"
+      shift
+    ;;
+    --no-shared)
+      NO_SHARED="true"
       shift
     ;;
     --dry-run)
@@ -259,13 +265,19 @@ else
 fi
 
 # set shared repository
-if [ $VERBOSITY -gt 0 ]; then
-  echo "Setting core.sharedRepository to group..."
-fi
-if [ "$DRY_RUN" = "true" ]; then
-  echo "git config core.sharedRepository group"
+if [ "$NO_SHARED" = "true" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Skipped setting core.sharedRepository to group"
+  fi
 else
-  git config core.sharedRepository group
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Setting core.sharedRepository to group..."
+  fi
+  if [ "$DRY_RUN" = "true" ]; then
+    echo "git config core.sharedRepository group"
+  else
+    git config core.sharedRepository group
+  fi
 fi
 
 # set file permissions
