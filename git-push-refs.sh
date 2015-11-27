@@ -98,6 +98,8 @@ GIT_PRUNE=""
 SKIP_TAGS="false"
 CONVERT_SVN_TAGS="false"
 
+# process arguments
+[ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
 case "$1" in
   -o|--origin)
