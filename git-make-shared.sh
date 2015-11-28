@@ -218,8 +218,7 @@ done
 check_root() {
   # check if superuser
   if [[ $EUID -ne 0 ]]; then
-    echo >&2 "This script must be run as root"
-    exit_script 1
+    exit_script 1 "This script must be run as root."
   fi
 }
 

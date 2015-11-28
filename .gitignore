@@ -9,6 +9,8 @@
 *.txt
 *.zip
 *.pcap
+*.ids
+*.png
 
 tmp.address
 mac.address

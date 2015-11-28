@@ -11,6 +11,9 @@ else
   fi
 fi
 
+# another way using just dns:
+# dig +short myip.opendns.com @resolver1.opendns.com
+
 echo "you must install either curl or wget"
 
 exit 1
