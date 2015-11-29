@@ -257,16 +257,6 @@ if [ "$DRY_RUN" = "true" ]; then
   echo "pushd $GIT_DIR"
 fi
 
-# set recursive ownership
-if [ $VERBOSITY -gt 0 ]; then
-  echo "Setting repository ownership..."
-fi
-if [ "$DRY_RUN" = "true" ]; then
-  echo "chown -R $VERBOSE $GIT_USER:$GIT_GROUP ."
-else
-  chown -R $VERBOSE $GIT_USER:$GIT_GROUP .
-fi
-
 # set shared repository
 if [ "$NO_SHARED" = "true" ]; then
   if [ $VERBOSITY -gt 0 ]; then
@@ -281,6 +271,16 @@ else
   else
     git config core.sharedRepository group
   fi
+fi
+
+# set recursive ownership
+if [ $VERBOSITY -gt 0 ]; then
+  echo "Setting repository ownership..."
+fi
+if [ "$DRY_RUN" = "true" ]; then
+  echo "chown -R $VERBOSE $GIT_USER:$GIT_GROUP ."
+else
+  chown -R $VERBOSE $GIT_USER:$GIT_GROUP .
 fi
 
 # set file permissions
