@@ -11,6 +11,7 @@
 *.pcap
 *.ids
 *.png
+*.pdf
 
 tmp.address
 mac.address
