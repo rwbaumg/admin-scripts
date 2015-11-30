@@ -3,6 +3,8 @@
 # rwb[at]0x19e[dot]net
 
 hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1; }
+hash sed 2>/dev/null || { echo >&2 "You need to install sed. Aborting."; exit 1; }
+hash grep 2>/dev/null || { echo >&2 "You need to install grep. Aborting."; exit 1; }
 
 # default remotes
 SOURCE_REMOTE="origin"
