@@ -98,61 +98,74 @@ GIT_PRUNE=""
 SKIP_TAGS="false"
 CONVERT_SVN_TAGS="false"
 
+check_verbose()
+{
+  if [ $VERBOSITY -gt 1 ]; then
+    GIT_VERBOSE="-v"
+  fi
+}
+
 # process arguments
 [ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
-case "$1" in
-  -o|--origin)
-    test_arg "$1" "$2"
-    shift
-    SOURCE_REMOTE="$1"
-    shift
+  case "$1" in
+    -o|--origin)
+      test_arg "$1" "$2"
+      shift
+      SOURCE_REMOTE="$1"
+      shift
     ;;
-  -r|--remote)
-    test_arg "$1" "$2"
-    shift
-    TARGET_REMOTE="$1"
-    shift
+    -r|--remote)
+      test_arg "$1" "$2"
+      shift
+      TARGET_REMOTE="$1"
+      shift
     ;;
-  -v|--verbose)
-    GIT_VERBOSE="-v"
-    ((VERBOSITY++))
-    shift
+    -v|--verbose)
+      ((VERBOSITY++))
+      check_verbose
+      shift
     ;;
-  -f|--force)
-    GIT_FORCE="--force"
-    shift
+    -vv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      check_verbose
+      shift
     ;;
-  -i|--ignore)
-    test_arg "$1" "$2"
-    shift
-    EXCLUDE_REFS+=("$1")
-    shift
+    -f|--force)
+      GIT_FORCE="--force"
+      shift
     ;;
-  --dry-run)
-    GIT_DRY_RUN="--dry-run"
-    shift
+    -i|--ignore)
+      test_arg "$1" "$2"
+      shift
+      EXCLUDE_REFS+=("$1")
+      shift
     ;;
-  --no-tags)
-    SKIP_TAGS="true"
-    shift
+    --dry-run)
+      GIT_DRY_RUN="--dry-run"
+      shift
+      ;;
+    --no-tags)
+      SKIP_TAGS="true"
+      shift
     ;;
-  --convert-svn-tags)
-    CONVERT_SVN_TAGS="true"
-    shift
+    --convert-svn-tags)
+      CONVERT_SVN_TAGS="true"
+      shift
     ;;
-  --prune)
-    GIT_PRUNE="--prune"
-    shift
+    --prune)
+      GIT_PRUNE="--prune"
+      shift
     ;;
-  -h|--help)
-    usage
+    -h|--help)
+      usage
     ;;
-  *)
-    # unknown option
-    shift
+    *)
+      # unknown option
+      shift
     ;;
-esac
+  esac
 done
 
 if [ -z "$TARGET_REMOTE" ]; then
@@ -191,8 +204,9 @@ if ! git ls-remote $TARGET_REMOTE > /dev/null 2>&1; then
 fi
 
 # prepare ref list
-GIT_REFS=$(git branch -r | grep "^..$SOURCE_REMOTE\/[a-zA-Z0-9\._-]*$" | sed -e 's/^..//' | grep -Ewv "$EXCLUDE_REFS_KEY")
-GIT_SVN_TAGS=$(git branch -r | grep "^..$SOURCE_REMOTE\/tags\/[a-zA-Z0-9\._-]*$" | sed -e 's/^..//' | sed -e 's/^..tags\///')
+BRANCH_REGEX='(?!tags)([a-zA-Z0-9\/\._-]+)$'
+GIT_REFS=$(git branch -r | grep -P "^(..)?$SOURCE_REMOTE\/$BRANCH_REGEX" | sed -e 's/^..//' | grep -Ewv "$EXCLUDE_REFS_KEY")
+GIT_SVN_TAGS=$(git branch -r | grep "^(..)?$SOURCE_REMOTE\/tags\/[a-zA-Z0-9\._-]*$" | sed -e 's/^..//' | sed -e 's/^..tags\///')
 
 # print processed refs
 if [ $VERBOSITY -gt 1 ]; then
