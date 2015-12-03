@@ -2,12 +2,16 @@
 # find large files
 
 TOP_20_MSG="top 20 by size"
+INPUT_PATH="."
+
 if [ -n "$1" ]; then
-  echo "$TOP_20_MSG: $1"
+  INPUT_PATH=$(readlink -m "$@")
+  echo "$TOP_20_MSG: $INPUT_PATH"
 else
+  INPUT_PATH=$(readlink -m "$INPUT_PATH")
   echo "$TOP_20_MSG"
 fi
 
-du -hsx $1* \
+du -hsx "${INPUT_PATH}"/* \
   | sort -rh \
   | head -20
