@@ -1,7 +1,6 @@
 #!/bin/bash
-# DANGER - THIS SCRIPT IS UNSAFE!
-# Make sure you enter a valid (new) path for the repository
-# relative to /srv/git/
+# this script inits a new git repository at the specified location
+# rwb[at]0x19e[dot]net
 
 # check if git command exists
 hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1; }
@@ -14,10 +13,6 @@ SHARED_FILE_MASK=664
 SHARED_DIR_MASK=775
 
 VERBOSITY=0
-
-hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1; }
-hash sed 2>/dev/null || { echo >&2 "You need to install sed. Aborting."; exit 1; }
-hash grep 2>/dev/null || { echo >&2 "You need to install grep. Aborting."; exit 1; }
 
 exit_script()
 {
