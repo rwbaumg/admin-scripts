@@ -54,22 +54,25 @@ usage()
 
     ARGUMENTS
 
-     repository            The bare Git repository to make shared.
+     repository              The location where a new repository should
+                             should be created. If --script-relative is
+                             specified then the location of the script
+                             will be appended to the front.
 
     OPTIONS
 
-     -u, --user <value>    The user that should own the repository.
-     -g, --group <value>   The group that should own the repository.
+     -u, --user <value>      The user that should own the repository.
+     -g, --group <value>     The group that should own the repository.
 
-     --template <value>    Directory containing templates.
-     --script-relative     The specified path is relative to the location
-                           of this script.
+     -t,--template <value>   Directory containing templates.
+     -r,--script-relative    The specified path is relative to the location
+                             of this script.
 
-     --make-shared         Configure the repository for sharing.
-     --dry-run             Print commands without making any changes.
+     -s,--make-shared        Configure the repository for sharing.
+     --dry-run               Print commands without making any changes.
 
-     -v, --verbose         Make the script more verbose.
-     -h, --help            Prints this usage.
+     -v, --verbose           Make the script more verbose.
+     -h, --help              Prints this usage.
 
     EOF
 
@@ -139,10 +142,47 @@ test_group_arg()
   fi
 }
 
-check_root() {
-  # check if superuser
-  if [[ $EUID -ne 0 ]]; then
-    exit_script 1 "This script must be run as root."
+test_owner_permission() {
+  # test if root is required to set desired ownership
+  local desired_user="$1"
+  local desired_group="$2"
+  local needs_root="false"
+
+  # default values if arguments not specified
+  if [ -z "$desired_used" ]; then
+    desired_user="$GIT_USER"
+  fi
+  if [ -z "$desired_group" ]; then
+    argv="$GIT_GROUP"
+  fi
+
+  # check if the current user is the desired user
+  if [ $VERBOSITY -gt 1 ]; then
+    echo "Testing user permission..."
+  fi
+  if [ "$(whoami)" != "$desired_user" ]; then
+    if [ $VERBOSITY -gt 1 ]; then
+      echo "WARNING: $desired_user is not us ($whoami), root permission required."
+    fi
+    needs_root="true"
+  fi
+
+  # check if the current user belongs to the specified grop
+  if [ $VERBOSITY -gt 1 ]; then
+    echo "Testing group permission..."
+  fi
+  if ! groups $(whoami) | grep "\b$desired_group\b" &>/dev/null; then
+    if [ $VERBOSITY -gt 1 ]; then
+      echo "WARNING: $(whoami) not a member of $desired_group group, root permission required."
+    fi
+    needs_root="true"
+  fi
+
+  if [ "$needs_root" == "true" ]; then
+    # check if superuser
+    if [[ $EUID -ne 0 ]]; then
+      exit_script 1 "This script must be run as root to set the desired permissions."
+    fi
   fi
 }
 
@@ -178,11 +218,11 @@ while [ $# -gt 0 ]; do
       GIT_GROUP="$1"
       shift
     ;;
-    --script-relative)
+    -r|--script-relative)
       SCRIPT_RELATIVE="true"
       shift
     ;;
-    --make-shared)
+    -s|--make-shared)
       MAKE_SHARED="true"
       GIT_SHARED="--shared"
       shift
@@ -191,7 +231,7 @@ while [ $# -gt 0 ]; do
       DRY_RUN="true"
       shift
     ;;
-    --template)
+    -t|--template)
       test_arg "$1" "$2"
       shift
       GIT_TEMPLATE="--template $1"
@@ -220,7 +260,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-GIT_EXTRA_ARGS="$GIT_TEMPLATE $GIT_SHARED"
+GIT_EXTRA_ARGS="$GIT_SHARED $GIT_TEMPLATE"
 
 # check verbosity setting
 check_verbose
@@ -258,10 +298,9 @@ test_path "$GIT_DIR"
 test_user_arg "$GIT_USER"
 test_group_arg "$GIT_GROUP"
 
-# ensure the script is run as root, otherwise we may not have
-# sufficient permissions to reconfigure the repository
+# ensure we have enough privileges to set permissions
 #if [ "$DRY_RUN" = "false" ]; then
-#  check_root
+  test_owner_permission "$GIT_USER" "$GIT_GROUP"
 #fi
 
 if [ $VERBOSITY -gt 0 ]; then
@@ -269,15 +308,20 @@ if [ $VERBOSITY -gt 0 ]; then
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
+  # print out commands without running anything
   echo mkdir -p "$GIT_DIR"
   echo git init --bare $GIT_EXTRA_ARGS "$GIT_DIR"
   echo chown -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
 else
+  # create directory
   mkdir -p "$GIT_DIR"
+
+  # init the repository
   if ! git init --bare $GIT_EXTRA_ARGS "$GIT_DIR"; then
     exit_script 1 "Failed to init Git repository."
   fi
 
+  # set ownership
   chown -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
 fi
 
