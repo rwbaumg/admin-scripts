@@ -157,6 +157,7 @@ test_owner_permission() {
     argv="$GIT_GROUP"
   fi
 
+  # todo: this should resolve down to the first existing path
   if ! [ -z "$target_path" ]; then
     if ! [ -d "$target_path" ]; then
       # resolve path in case a filename was given
@@ -203,6 +204,8 @@ test_owner_permission() {
     if [ $VERBOSITY -gt 1 ]; then
       echo "INFO: Octal permissions for $target_path : $path_perm"
     fi
+
+    # todo: octal checks are broken
 
     if ((($path_perm & 0020) != 0)); then
       # Some group has write access.
