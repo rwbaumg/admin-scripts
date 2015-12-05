@@ -305,8 +305,11 @@ while [ $# -gt 0 ]; do
     ;;
     *)
       # test_path "$1"
+      test_arg "$1"
+      if [ -n "$GIT_DIR" ]; then
+        usage "Repository location can only be specified once."
+      fi
       GIT_DIR="$1"
-      # GIT_DIR=$(readlink -m "$1")
       shift
     ;;
   esac
