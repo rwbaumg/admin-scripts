@@ -362,7 +362,7 @@ test_group_arg "$GIT_GROUP"
 if [ "$DRY_RUN" = "false" ]; then
   test_owner_permission "$GIT_USER" "$GIT_GROUP" "$GIT_DIR"
 else
-  echo "WARNING: Skipping permission checks (--dry-run)"
+  echo >&2 "WARNING: Skipping permission checks (--dry-run)"
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
