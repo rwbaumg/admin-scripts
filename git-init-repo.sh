@@ -146,6 +146,7 @@ test_owner_permission() {
   # test if root is required to set desired ownership
   local desired_user="$1"
   local desired_group="$2"
+  local target_path="$3"
   local needs_root="false"
 
   # default values if arguments not specified
@@ -156,13 +157,27 @@ test_owner_permission() {
     argv="$GIT_GROUP"
   fi
 
+  if ! [ -z "$target_path" ]; then
+    if ! [ -d "$target_path" ]; then
+      # resolve path in case a filename was given
+      $target_path=$(dirname "${target_path}")
+      if [ $VERBOSITY -gt 1 ]; then
+        echo "Parent folder resolved to $target_path, checking permissions...."
+      fi
+    else
+      if [ $VERBOSITY -gt 1 ]; then
+        echo "Checking permissions for $target_path ...."
+      fi
+    fi
+  fi
+
   # check if the current user is the desired user
   if [ $VERBOSITY -gt 1 ]; then
     echo "Testing user permission..."
   fi
   if [ "$(whoami)" != "$desired_user" ]; then
     if [ $VERBOSITY -gt 1 ]; then
-      echo "WARNING: $desired_user is not us ($whoami), root permission required."
+      echo "WARNING: $desired_user is not us; root permission required."
     fi
     needs_root="true"
   fi
@@ -173,9 +188,53 @@ test_owner_permission() {
   fi
   if ! groups $(whoami) | grep "\b$desired_group\b" &>/dev/null; then
     if [ $VERBOSITY -gt 1 ]; then
-      echo "WARNING: $(whoami) not a member of $desired_group group, root permission required."
+      echo "WARNING: $(whoami) not a member of $desired_group; root permission required."
     fi
     needs_root="true"
+  fi
+
+  # test path permissions
+  if ! [ -z "$target_path" ]; then
+    STAT_INFO=( $(stat -c "%a %G %U" -L $target_path) )
+    local path_perm=${STAT_INFO[0]}
+    local path_group=${STAT_INFO[1]}
+    local path_user=${STAT_INFO[2]}
+
+    if [ $VERBOSITY -gt 1 ]; then
+      echo "INFO: Octal permissions for $target_path : $path_perm"
+    fi
+
+#    if ((($path_perm & 0002) != 0)); then
+#      # Everyone has write access
+#      if [ $VERBOSITY -gt 1 ]; then
+#        echo "INFO: Everybody has write access to $target_path"
+#      fi
+#      # needs_root="false"
+    if ((($path_perm & 0020) != 0)); then
+      # Some group has write access.
+      # test path group permission
+      if [ $VERBOSITY -gt 1 ]; then
+        echo "INFO: Checking if we are a member of path group $path_group ..."
+      fi
+      if ! groups $(whoami) | grep "\b$path_group\b" &>/dev/null; then
+        if [ $VERBOSITY -gt 1 ]; then
+          echo "WARNING: $(whoami) not a member of $path_group; root permission required."
+        fi
+        needs_root="true"
+      fi
+    elif ((($path_perm & 0200) != 0)); then
+      # The owner has write access.
+      # Does the user own the file?
+      if [ $VERBOSITY -gt 1 ]; then
+        echo "INFO: Checking if we own target path ..."
+      fi
+      if [ "$(whoami)" != "$path_user" ]; then
+        if [ $VERBOSITY -gt 1 ]; then
+          echo "WARNING: $desired_user is not us; root permission required."
+        fi
+        needs_root="true"
+      fi
+    fi
   fi
 
   if [ "$needs_root" == "true" ]; then
@@ -260,6 +319,11 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+# make sure a path was specified
+if [ -z "$GIT_DIR" ]; then
+  usage
+fi
+
 GIT_EXTRA_ARGS="$GIT_SHARED $GIT_TEMPLATE"
 
 # check verbosity setting
@@ -300,7 +364,7 @@ test_group_arg "$GIT_GROUP"
 
 # ensure we have enough privileges to set permissions
 #if [ "$DRY_RUN" = "false" ]; then
-  test_owner_permission "$GIT_USER" "$GIT_GROUP"
+  test_owner_permission "$GIT_USER" "$GIT_GROUP" "$(dirname ${GIT_DIR})"
 #fi
 
 if [ $VERBOSITY -gt 0 ]; then
