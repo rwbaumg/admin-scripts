@@ -191,7 +191,7 @@ test_owner_permission() {
   fi
 
   # test path permissions
-  if [ -n "$target_path" ] && [ -d "$target_path" ]; then
+  if [ "$needs_root" != "true" ] && [ -n "$target_path" ] && [ -d "$target_path" ]; then
     STAT_INFO=( $(stat -c "0%a %G %U" -L $target_path) )
     local path_perm=${STAT_INFO[0]}
     local path_group=${STAT_INFO[1]}
