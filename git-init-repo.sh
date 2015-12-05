@@ -154,21 +154,17 @@ test_owner_permission() {
     desired_user="$GIT_USER"
   fi
   if [ -z "$desired_group" ]; then
-    argv="$GIT_GROUP"
+    desired_group="$GIT_GROUP"
   fi
 
   # todo: this should resolve down to the first existing path
-  if ! [ -z "$target_path" ]; then
-    if ! [ -d "$target_path" ]; then
-      # resolve path in case a filename was given
-      $target_path=$(dirname "${target_path}")
-      if [ $VERBOSITY -gt 1 ]; then
-        echo "Parent folder resolved to $target_path, checking permissions...."
-      fi
-    else
-      if [ $VERBOSITY -gt 1 ]; then
-        echo "Checking permissions for $target_path ...."
-      fi
+  if [ -n "$target_path" ]; then
+    while [ ! -d "$target_path" ]; do
+      # resolve the part of $target_path that already exists
+      target_path=$(dirname "${target_path}")
+    done
+    if [ $VERBOSITY -gt 1 ]; then
+      echo "Parent folder resolved to $target_path, checking permissions...."
     fi
   fi
 
@@ -195,7 +191,7 @@ test_owner_permission() {
   fi
 
   # test path permissions
-  if ! [ -z "$target_path" ]; then
+  if [ -n "$target_path" ] && [ -d "$target_path" ]; then
     STAT_INFO=( $(stat -c "0%a %G %U" -L $target_path) )
     local path_perm=${STAT_INFO[0]}
     local path_group=${STAT_INFO[1]}
@@ -240,11 +236,13 @@ test_owner_permission() {
   fi
 }
 
+VERBOSE=""
 GIT_VERBOSE="-q"
 
 check_verbose()
 {
   if [ $VERBOSITY -gt 0 ]; then
+    VERBOSE="-v"
     GIT_VERBOSE=""
   fi
 }
@@ -319,7 +317,7 @@ if [ -z "$GIT_DIR" ]; then
   usage
 fi
 
-GIT_EXTRA_ARGS="$GIT_SHARED $GIT_TEMPLATE"
+GIT_EXTRA_ARGS="$GIT_SHARED $GIT_VERBOSE $GIT_TEMPLATE"
 
 # check verbosity setting
 check_verbose
@@ -345,11 +343,11 @@ fi
 
 # print options
 if [ $VERBOSITY -gt 1 ]; then
-  echo GIT REPOSITORY   = "${GIT_DIR}"
-  echo DESIRED OWNER    = "${GIT_USER}"
-  echo DESIRED GROUP    = "${GIT_GROUP}"
-  echo GIT EXTRA ARGS   = "${GIT_EXTRA_ARGS}"
-  echo SCRIPT VERBOSITY = "${VERBOSITY}"
+  printf "%-16s = %s\n" "GIT REPOSITORY" ${GIT_DIR}
+  printf "%-16s = %s\n" "DESIRED OWNER" ${GIT_USER}
+  printf "%-16s = %s\n" "DESIRED GROUP" ${GIT_GROUP}
+  printf "%-16s = %s\n" "GIT EXTRA ARGS" ${GIT_EXTRA_ARGS}
+  printf "%-16s = %s\n" "SCRIPT VERBOSITY" ${VERBOSITY}
 fi
 
 # perform final checks
@@ -359,7 +357,7 @@ test_group_arg "$GIT_GROUP"
 
 # ensure we have enough privileges to set permissions
 #if [ "$DRY_RUN" = "false" ]; then
-  test_owner_permission "$GIT_USER" "$GIT_GROUP" "$(dirname ${GIT_DIR})"
+  test_owner_permission "$GIT_USER" "$GIT_GROUP" "$GIT_DIR"
 #fi
 
 if [ $VERBOSITY -gt 0 ]; then
@@ -368,12 +366,12 @@ fi
 
 if [ "$DRY_RUN" = "true" ]; then
   # print out commands without running anything
-  echo mkdir -p "$GIT_DIR"
+  echo mkdir $VERBOSE -p "$GIT_DIR"
   echo git init --bare $GIT_EXTRA_ARGS "$GIT_DIR"
-  echo chown -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
+  echo chown $VERBOSE -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
 else
   # create directory
-  mkdir -p "$GIT_DIR"
+  mkdir $VERBOSE -p "$GIT_DIR"
 
   # init the repository
   if ! git init --bare $GIT_EXTRA_ARGS "$GIT_DIR"; then
@@ -381,7 +379,7 @@ else
   fi
 
   # set ownership
-  chown -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
+  chown $VERBOSE -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
 fi
 
 # set file permissions
