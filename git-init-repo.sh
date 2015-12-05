@@ -242,8 +242,10 @@ GIT_VERBOSE="-q"
 check_verbose()
 {
   if [ $VERBOSITY -gt 0 ]; then
-    VERBOSE="-v"
     GIT_VERBOSE=""
+  fi
+  if [ $VERBOSITY -gt 1 ]; then
+    VERBOSE="-v"
   fi
 }
 
