@@ -221,7 +221,7 @@ test_owner_permission() {
       fi
       if [ "$(whoami)" != "$path_user" ]; then
         if [ $VERBOSITY -gt 1 ]; then
-          echo "WARNING: $desired_user is not us; root permission required."
+          echo "WARNING: $path_user is not us; root permission required."
         fi
         needs_root="true"
       fi
