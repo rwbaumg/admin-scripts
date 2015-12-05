@@ -57,8 +57,8 @@ usage()
 
     OPTIONS
 
-     -o, --origin <value>   The name of the remote to push refs from (default: origin)
-     -r, --remote <value>   The name of the remote to push refs to (default: 0x19e)
+     -o, --origin <value>   The name of the remote to push refs from (default: origin).
+     -r, --remote <value>   The name of the remote to push refs to.
      -i, --ignore <value>   Ignore the specified branch reference (HEAD is always ignored).
      -f, --force            Pass the --force flag to the Git command to bypass reference checks.
 
