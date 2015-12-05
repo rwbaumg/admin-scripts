@@ -359,9 +359,11 @@ test_user_arg "$GIT_USER"
 test_group_arg "$GIT_GROUP"
 
 # ensure we have enough privileges to set permissions
-#if [ "$DRY_RUN" = "false" ]; then
+if [ "$DRY_RUN" = "false" ]; then
   test_owner_permission "$GIT_USER" "$GIT_GROUP" "$GIT_DIR"
-#fi
+else
+  echo "WARNING: Skipping permission checks (--dry-run)"
+fi
 
 if [ $VERBOSITY -gt 0 ]; then
   echo "Creating Git repository at $GIT_DIR ..."
