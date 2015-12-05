@@ -196,7 +196,7 @@ test_owner_permission() {
 
   # test path permissions
   if ! [ -z "$target_path" ]; then
-    STAT_INFO=( $(stat -c "%a %G %U" -L $target_path) )
+    STAT_INFO=( $(stat -c "0%a %G %U" -L $target_path) )
     local path_perm=${STAT_INFO[0]}
     local path_group=${STAT_INFO[1]}
     local path_user=${STAT_INFO[2]}
@@ -204,8 +204,6 @@ test_owner_permission() {
     if [ $VERBOSITY -gt 1 ]; then
       echo "INFO: Octal permissions for $target_path : $path_perm"
     fi
-
-    # todo: octal checks are broken
 
     if ((($path_perm & 0020) != 0)); then
       # Some group has write access.
