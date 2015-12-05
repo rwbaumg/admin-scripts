@@ -204,12 +204,6 @@ test_owner_permission() {
       echo "INFO: Octal permissions for $target_path : $path_perm"
     fi
 
-#    if ((($path_perm & 0002) != 0)); then
-#      # Everyone has write access
-#      if [ $VERBOSITY -gt 1 ]; then
-#        echo "INFO: Everybody has write access to $target_path"
-#      fi
-#      # needs_root="false"
     if ((($path_perm & 0020) != 0)); then
       # Some group has write access.
       # test path group permission
