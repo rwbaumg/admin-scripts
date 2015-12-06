@@ -12,6 +12,7 @@
 *.ids
 *.png
 *.pdf
+*.example
 
 tmp.address
 mac.address
