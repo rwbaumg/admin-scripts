@@ -1,13 +1,11 @@
 #!/bin/bash
-# generates a whitelist for mod_security2
-# rwb[at]0x19e[dot]net
-
-# regular expressions:
-# Match Phase: (?<=\(phase\s)\d(?=\))
-# Request URI: (?<=\[uri\s\")([A-Za-z0-9\.\/\-_]+)(?=\"\])
-#    Hostname: (?<=\[hostname\s\")([A-Za-z\.-_]+)(?=\"\])
-#     Rule ID: (?<=\[id\s\")\d+(?=\"\])
-#   Arg. Name: (?<=at\sARGS\:)[A-Za-z]+(?=\.\s)
+#
+# -=[ 0x19e Networks ]=-
+#
+# mod_security2 whitelist generator
+#
+# Author: rwb[at]0x19e[dot]net
+# Date: 2015/12/06
 
 BASE_ID=9999000
 RULE_COUNT=0
@@ -18,6 +16,8 @@ MODULE_CHECK="false"
 
 MODSEC_HEADER="<IfModule mod_security2.c>"
 MODSEC_FOOTER="</IfModule>"
+
+IP_REGEX="((([1-9]?\d|1\d\d|2[0-5][0-5]|2[0-4]\d)\.){3}([1-9]?\d|1\d\d|2[0-5][0-5]|2[0-4]\d))"
 
 read -r -d '' RULE_TEMPLATE_FULL << EOF
 SecRule SERVER_NAME "HOSTNAME" phase:MATCH_PHASE,chain,nolog,id:WHITELIST_ID
@@ -201,6 +201,7 @@ create_rule()
 
   local log_entry="$1"
   local whitelist_id=$(($BASE_ID+$RULE_COUNT))
+  local client_ip=$(echo $log_entry | grep -Po "(?<=\[client\s)$IP_REGEX(?=\])")
   local request_uri=$(echo $log_entry | grep -Po '(?<=\[uri\s\")([A-Za-z0-9\.\/\-_]+)(?=\"\])')
   local match_phase=$(echo $log_entry | grep -Po '(?<=\(phase\s)\d(?=\))')
   local hostname=$(echo $log_entry | grep -Po '(?<=\[hostname\s\")([A-Za-z\.-_]+)(?=\"\])')
