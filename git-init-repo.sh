@@ -75,6 +75,7 @@ usage()
 
      -u, --user <value>      The user that should own the repository.
      -g, --group <value>     The group that should own the repository.
+     -h, --set-head <value>  Set the head branch for the repository.
 
      -t,--template <value>   Directory containing templates.
      -r,--script-relative    The specified path is relative to the location

@@ -74,14 +74,15 @@ usage()
 
     OPTIONS
 
-     -u, --user <value>    The user that should own the repository.
-     -g, --group <value>   The group that should own the repository.
+     -u, --user <value>      The user that should own the repository.
+     -g, --group <value>     The group that should own the repository.
+     -h, --set-head <value>  Set the head branch for the repository.
 
-     --no-shared           Do not reconfigure repository (only permissions).
-     --dry-run             Print commands without making any changes.
+     --no-shared             Do not reconfigure repository (only permissions).
+     --dry-run               Print commands without making any changes.
 
-     -v, --verbose         Make the script more verbose.
-     -h, --help            Prints this usage.
+     -v, --verbose           Make the script more verbose.
+     -h, --help              Prints this usage.
 
     EOF
 
@@ -168,6 +169,7 @@ check_verbose()
 }
 
 GIT_DIR=""
+GIT_HEAD=""
 DRY_RUN="false"
 NO_SHARED="false"
 
@@ -185,6 +187,12 @@ while [ $# -gt 0 ]; do
       test_group_arg "$1" "$2"
       shift
       GIT_GROUP="$1"
+      shift
+    ;;
+    -h|--set-head)
+      test_arg "$1" "$2"
+      shift
+      GIT_HEAD="$1"
       shift
     ;;
     --no-shared)
@@ -297,6 +305,17 @@ else
   find . -type f | xargs chmod $VERBOSE $FILE_MASK
   find . -type d | xargs chmod $VERBOSE $DIR_MASK
   find . -type d | xargs chmod $VERBOSE g+s
+fi
+
+if [ -n "$GIT_HEAD" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Setting head to $GIT_HEAD ..."
+  fi
+  if [ "$DRY_RUN" = "true" ]; then
+    echo git symbolic-ref HEAD refs/heads/$GIT_HEAD
+  else
+    git symbolic-ref HEAD refs/heads/$GIT_HEAD
+  fi
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
