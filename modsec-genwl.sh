@@ -14,6 +14,10 @@ RULE_COUNT=0
 RULE_ARRAY=()
 RULE_DOC=""
 VERBOSITY=0
+MODULE_CHECK="false"
+
+MODSEC_HEADER="<IfModule mod_security2.c>"
+MODSEC_FOOTER="</IfModule>"
 
 read -r -d '' RULE_TEMPLATE_FULL << EOF
 SecRule SERVER_NAME "HOSTNAME" phase:MATCH_PHASE,chain,nolog,id:WHITELIST_ID
@@ -76,6 +80,9 @@ usage()
     OPTIONS
 
      -b, --base-id <value>   The user that should own the repository.
+     -o, --output <value>    Save output to the specified file.
+
+     --module-check          Use mod_security2 header and footer.
 
      -v, --verbose           Make the script more verbose.
      -h, --help              Prints this usage.
@@ -102,7 +109,7 @@ test_arg()
   fi
 }
 
-test_path()
+test_input_path()
 {
   # test directory argument
   local arg="$1"
@@ -111,6 +118,19 @@ test_path()
 
   if ! ls -la $arg* > /dev/null 2>&1; then
     usage "Specified input file does not exist."
+  fi
+}
+
+test_output_path()
+{
+  # test directory argument
+  local arg="$1"
+  local argv="$2"
+
+  test_arg "$arg" "$argv"
+
+  if [ -e "$arg" ] || [ -e "$argv" ]; then
+    usage "Specified output file already exists."
   fi
 }
 
@@ -128,6 +148,7 @@ test_numeric()
 }
 
 INPUT_LOG=""
+OUTPUT_FILE=""
 
 # process arguments
 [ $# -gt 0 ] || usage
@@ -137,6 +158,16 @@ while [ $# -gt 0 ]; do
       test_numeric "$1" "$2"
       shift
       BASE_ID="$1"
+      shift
+    ;;
+    -o|--output)
+      test_output_path "$1" "$2"
+      shift
+      OUTPUT_FILE="$1"
+      shift
+    ;;
+    --module-check)
+      MODULE_CHECK="true"
       shift
     ;;
     -v|--verbose)
@@ -155,7 +186,7 @@ while [ $# -gt 0 ]; do
       if [ -n "$INPUT_LOG" ]; then
         usage "Input file can only be specified once."
       fi
-      test_path "$1"
+      test_input_path "$1"
       INPUT_LOG="$1"
       shift
     ;;
@@ -175,6 +206,20 @@ create_rule()
   local hostname=$(echo $log_entry | grep -Po '(?<=\[hostname\s\")([A-Za-z\.-_]+)(?=\"\])')
   local rule_id=$(echo $log_entry | grep -Po '(?<=\[id\s\")\d+(?=\"\])')
   local arg_name=$(echo $log_entry | grep -Po '(?<=at\sARGS\:)[A-Za-z]+(?=\.\s)')
+
+  if [ -z "$request_uri" ] || [ -z "$hostname" ]; then
+    if [ $VERBOSITY -gt 1 ]; then
+      echo >&2 "ERROR: Failed to process log entry: $log_entry"
+    fi
+   return 1
+  fi
+
+  if [ -z "$rule_id" ]; then
+    if [ $VERBOSITY -gt 1 ]; then
+      echo >&2 "ERROR: Failed to find rule ID in log entry: $log_entry"
+    fi
+   return 1
+  fi
 
   if [ "$match_phase" == "4" ]; then
     # ignore phase 4 since its not possible to whitelist
@@ -207,32 +252,56 @@ create_rule()
     RULE_DOC+=${rule}'\n\n'
     ((RULE_COUNT++))
   else
-    if [ $VERBOSITY -gt 0 ]; then
+    if [ $VERBOSITY -gt 1 ]; then
       echo >&2 "INFO: Found duplicate entry for rule violation (rule id: $rule_id)"
     fi
   fi
 }
 
 # gather log entries
-# LOG_ENTRIES=$(grep -i modsec /var/log/apache2/*error*log \
+if [ $VERBOSITY -gt 0 ]; then
+  echo >&2 "INFO: Grepping logs for rule violations..."
+fi
 LOG_ENTRIES=$(grep -i modsec $INPUT_LOG \
   | grep -v "Warning" \
   | grep -v "(http://www.modsecurity.org/) configured." \
   | grep -v "compiled version=" \
   | sed "s/$/\\n/")
 
+if [ $VERBOSITY -gt 0 ]; then
+  echo >&2 "INFO: Generating rules..."
+fi
+
+if [ "$MODULE_CHECK" == "true" ]; then
+  RULE_DOC+=${MODSEC_HEADER}'\n\n'
+fi
 IFS=$'\n'; for entry in $LOG_ENTRIES; do
   create_rule "$entry"
 done
+if [ "$MODULE_CHECK" == "true" ]; then
+  RULE_DOC+=${MODSEC_FOOTER}'\n'
+fi
 
 if [ $VERBOSITY -gt 0 ]; then
   echo >&2 "INFO: Generated $RULE_COUNT rule(s)."
+  if [ -z "$OUTPUT_FILE" ]; then
+    # print an extra newline
+    echo >&2
+  fi
 fi
 
-echo -e "$RULE_DOC"
+# output rule buffer
+if [ -z "$OUTPUT_FILE" ]; then
+  echo -e "$RULE_DOC"
+else
+  if [ $VERBOSITY -gt 0 ]; then
+    echo >&2 "INFO: Saving generated rules to $OUTPUT_FILE"
+  fi
+  echo -e "$RULE_DOC" > "$OUTPUT_FILE"
+fi
 
 if [ $VERBOSITY -gt 0 ]; then
-  echo >&2 "Finished."
+  echo >&2 "INFO: Finished."
 fi
 
 exit 0
