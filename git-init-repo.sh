@@ -14,6 +14,18 @@ SHARED_DIR_MASK=775
 
 VERBOSITY=0
 
+pushd()
+{
+  command pushd "$@" > /dev/null
+}
+
+popd()
+{
+  if [ `dirs -p -v | wc -l` -gt 1 ]; then
+    command popd "$@" > /dev/null
+  fi
+}
+
 exit_script()
 {
   # Default exit code is 1
@@ -250,6 +262,7 @@ check_verbose()
 }
 
 GIT_DIR=""
+GIT_HEAD=""
 GIT_TEMPLATE=""
 GIT_SHARED=""
 DRY_RUN="false"
@@ -270,6 +283,12 @@ while [ $# -gt 0 ]; do
       test_group_arg "$1" "$2"
       shift
       GIT_GROUP="$1"
+      shift
+    ;;
+    -h|--set-head)
+      test_arg "$1" "$2"
+      shift
+      GIT_HEAD="$1"
       shift
     ;;
     -r|--script-relative)
@@ -403,6 +422,15 @@ if [ "$MAKE_SHARED" = "true" ]; then
     find $GIT_DIR/ -type d | xargs chmod $VERBOSE $SHARED_DIR_MASK
     find $GIT_DIR/ -type d | xargs chmod $VERBOSE g+s
   fi
+fi
+
+if [ -n "$GIT_HEAD" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Setting head to $GIT_HEAD ..."
+  fi
+  pushd "$GIT_DIR"
+  git symbolic-ref HEAD refs/heads/$GIT_HEAD
+  popd
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
