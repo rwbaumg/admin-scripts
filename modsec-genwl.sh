@@ -11,6 +11,7 @@ BASE_ID=9999000
 RULE_COUNT=0
 RULE_ARRAY=()
 RULE_DOC=""
+SEARCH_CLIENTS=()
 VERBOSITY=0
 MODULE_CHECK="false"
 
@@ -34,6 +35,23 @@ read -r -d '' RULE_TEMPLATE_NOARGS_NOPHASE << EOF
 SecRule SERVER_NAME "HOSTNAME" pass,chain,nolog,id:WHITELIST_ID
   SecRule REQUEST_FILENAME "@streq REQUEST_URI" ctl:ruleRemoveById=RULE_ID
 EOF
+
+function valid_ip()
+{
+  local ip=$1
+  local stat=1
+
+  if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+    OIFS=$IFS
+    IFS='.'
+    ip=($ip)
+    IFS=$OIFS
+    [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
+    && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+    stat=$?
+  fi
+  return $stat
+}
 
 exit_script()
 {
@@ -81,6 +99,9 @@ usage()
 
      -b, --base-id <value>   The user that should own the repository.
      -o, --output <value>    Save output to the specified file.
+     -c, --client <value>    Only consider violations from the specified client
+                             IP address. This option can be specified multiple
+                             times.
 
      --module-check          Use mod_security2 header and footer.
 
@@ -142,8 +163,20 @@ test_numeric()
   test_arg "$arg" "$argv"
 
   re='^[0-9]+$'
-  if ! [[ $argv =~ $re ]] ; then
+  if ! [[ $argv =~ $re ]]; then
     usage "Argument for $arg must be numeric."
+  fi
+}
+
+test_ip_arg()
+{
+  local arg="$1"
+  local argv="$2"
+
+  test_arg "$arg" "$argv"
+
+  if ! valid_ip "$argv"; then
+    usage "Argument specified for $arg is not a valid IP address."
   fi
 }
 
@@ -164,6 +197,12 @@ while [ $# -gt 0 ]; do
       test_output_path "$1" "$2"
       shift
       OUTPUT_FILE="$1"
+      shift
+    ;;
+    -c|--client)
+      test_ip_arg "$1" "$2"
+      shift
+      SEARCH_CLIENTS+="$1"
       shift
     ;;
     --module-check)
@@ -207,6 +246,17 @@ create_rule()
   local hostname=$(echo $log_entry | grep -Po '(?<=\[hostname\s\")([A-Za-z\.-_]+)(?=\"\])')
   local rule_id=$(echo $log_entry | grep -Po '(?<=\[id\s\")\d+(?=\"\])')
   local arg_name=$(echo $log_entry | grep -Po '(?<=at\sARGS\:)[A-Za-z]+(?=\.\s)')
+
+  if [ ${#SEARCH_CLIENTS[@]} -ge 1 ]; then
+    # client filtering enabled, check ip address
+    if ! echo "${SEARCH_CLIENTS[@]}" | fgrep --word-regexp "$client_ip" > /dev/null 2>&1; then
+      # client not in array, ignore violation
+      if [ $VERBOSITY -gt 1 ]; then
+        echo >&2 "INFO: Skipping violation for ignored client (ip: $client_ip)"
+        return 1
+      fi
+    fi
+  fi
 
   if [ -z "$request_uri" ] || [ -z "$hostname" ]; then
     if [ $VERBOSITY -gt 1 ]; then
