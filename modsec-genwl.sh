@@ -249,7 +249,7 @@ create_rule()
 
   if [ ${#SEARCH_CLIENTS[@]} -ge 1 ]; then
     # client filtering enabled, check ip address
-    if ! echo "${SEARCH_CLIENTS[@]}" | fgrep --word-regexp "$client_ip" > /dev/null 2>&1; then
+   if ! echo "${SEARCH_CLIENTS[@]}" | fgrep --exact-regexp "$client_ip" > /dev/null 2>&1; then
       # client not in array, ignore violation
       if [ $VERBOSITY -gt 1 ]; then
         echo >&2 "INFO: Skipping violation for ignored client (ip: $client_ip)"
@@ -292,10 +292,17 @@ create_rule()
                                        -e "s|HOSTNAME|$hostname|" \
                                        -e "s|RULE_ID|$rule_id|" \
                                        -e "s|ARG_NAME|$arg_name|")
+  # create a hash for checking duplicates
+  local rule_hash=$(echo "$rule" | tr '\n' ';' | sed -e 's/ //g' | sha1sum | awk '{print $1}')
 
-  if ! echo "${RULE_ARRAY[@]}" | fgrep --word-regexp "$rule" > /dev/null 2>&1; then
-    # store the generated rule
-    RULE_ARRAY+="$rule"
+  if [ $VERBOSITY -gt 2 ]; then
+    echo "Rule hash: $rule_hash"
+    echo -e "Rule items:\n${RULE_ARRAY[@]}"
+  fi
+
+  if ! echo -e "${RULE_ARRAY[@]}" | fgrep --line-regexp "$rule_hash" > /dev/null 2>&1; then
+    # store the generated rule hash
+    RULE_ARRAY+=$rule_hash'\n'
 
     # assign id to the generated rule
     rule=$( echo "$rule" | sed -e "s|WHITELIST_ID|$whitelist_id|")
