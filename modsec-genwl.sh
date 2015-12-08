@@ -5,13 +5,16 @@
 # mod_security2 whitelist generator
 #
 # Author: rwb[at]0x19e[dot]net
-# Date: 2015/12/06
+# Date: 2015/12/07
 
+INPUT_LOG="/var/log/apache2/*error*log"
+OUTPUT_FILE=""
 BASE_ID=9999000
 RULE_COUNT=0
 RULE_ARRAY=()
 RULE_DOC=""
 SEARCH_CLIENTS=()
+SEARCH_HOSTS=()
 VERBOSITY=0
 MODULE_CHECK="false"
 
@@ -51,6 +54,16 @@ function valid_ip()
     stat=$?
   fi
   return $stat
+}
+
+function valid_hostname()
+{
+  local host=$1
+
+  if [[ $host =~ ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$ ]]; then
+    return 0
+  fi
+  return 1
 }
 
 exit_script()
@@ -99,8 +112,13 @@ usage()
 
      -b, --base-id <value>   The user that should own the repository.
      -o, --output <value>    Save output to the specified file.
+
      -c, --client <value>    Only consider violations from the specified client
                              IP address. This option can be specified multiple
+                             times.
+
+     -s, --hostname <value>  Only consider violations for the specified server
+                             hostname. This option can be specified multiple
                              times.
 
      --module-check          Use mod_security2 header and footer.
@@ -180,8 +198,17 @@ test_ip_arg()
   fi
 }
 
-INPUT_LOG=""
-OUTPUT_FILE=""
+test_host_arg()
+{
+  local arg="$1"
+  local argv="$2"
+
+  test_arg "$arg" "$argv"
+
+  if ! valid_hostname "$argv"; then
+    usage "Argument specified for $arg is not a valid hostname."
+  fi
+}
 
 # process arguments
 [ $# -gt 0 ] || usage
@@ -202,7 +229,13 @@ while [ $# -gt 0 ]; do
     -c|--client)
       test_ip_arg "$1" "$2"
       shift
-      SEARCH_CLIENTS+="$1"
+      SEARCH_CLIENTS+="$1"'\n'
+      shift
+    ;;
+    -s|--hostname)
+      test_host_arg "$1" "$2"
+      shift
+      SEARCH_HOSTS+="$1"'\n'
       shift
     ;;
     --module-check)
@@ -249,12 +282,23 @@ create_rule()
 
   if [ ${#SEARCH_CLIENTS[@]} -ge 1 ]; then
     # client filtering enabled, check ip address
-   if ! echo "${SEARCH_CLIENTS[@]}" | fgrep --exact-regexp "$client_ip" > /dev/null 2>&1; then
+   if ! echo -e "${SEARCH_CLIENTS[@]}" | fgrep --line-regexp "$client_ip" > /dev/null 2>&1; then
       # client not in array, ignore violation
       if [ $VERBOSITY -gt 1 ]; then
         echo >&2 "INFO: Skipping violation for ignored client (ip: $client_ip)"
-        return 1
       fi
+      return 1
+    fi
+  fi
+
+  if [ ${#SEARCH_HOSTS[@]} -ge 1 ]; then
+    # client filtering enabled, check ip address
+   if ! echo -e "${SEARCH_HOSTS[@]}" | fgrep --line-regexp "$hostname" > /dev/null 2>&1; then
+      # client not in array, ignore violation
+      if [ $VERBOSITY -gt 1 ]; then
+        echo >&2 "INFO: Skipping violation for ignored host (ip: $hostname)"
+      fi
+      return 1
     fi
   fi
 
@@ -316,17 +360,32 @@ create_rule()
   fi
 }
 
-# gather log entries
-if [ $VERBOSITY -gt 0 ]; then
-  echo >&2 "INFO: Grepping logs for rule violations..."
+if [ -z "$INPUT_LOG" ]; then
+ usage "No input log(s) were specified."
 fi
+
+if [ $VERBOSITY -gt 0 ]; then
+  echo >&2 "INFO: Grepping log(s) for rule violations..."
+fi
+if [ $VERBOSITY -gt 1 ]; then
+  echo >&2 "INFO: Log path: $INPUT_LOG"
+fi
+
+# gather log entries
 LOG_ENTRIES=$(grep -i modsec $INPUT_LOG \
   | grep -v "Warning" \
   | grep -v "(http://www.modsecurity.org/) configured." \
   | grep -v "compiled version=" \
   | sed "s/$/\\n/")
 
+# get a count of the results
+violation_count=0
+IFS=$'\n'; for entry in $LOG_ENTRIES; do
+  ((violation_count++))
+done
+
 if [ $VERBOSITY -gt 0 ]; then
+  echo >&2 "INFO: Found a total of $violation_count rule violation(s)."
   echo >&2 "INFO: Generating rules..."
 fi
 
