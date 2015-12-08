@@ -210,6 +210,8 @@ test_host_arg()
   fi
 }
 
+PATH_SUPPLIED="false"
+
 # process arguments
 [ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
@@ -255,11 +257,12 @@ while [ $# -gt 0 ]; do
       usage
     ;;
     *)
-      if [ -n "$INPUT_LOG" ]; then
+      if [ "$PATH_SUPPLIED" == "true" ]; then
         usage "Input file can only be specified once."
       fi
       test_input_path "$1"
       INPUT_LOG="$1"
+      PATH_SUPPLIED="true"
       shift
     ;;
   esac
@@ -401,20 +404,22 @@ fi
 
 if [ $VERBOSITY -gt 0 ]; then
   echo >&2 "INFO: Generated $RULE_COUNT rule(s)."
-  if [ -z "$OUTPUT_FILE" ]; then
+  if [ -z "$OUTPUT_FILE" ] && [ -n "$RULE_DOC" ]; then
     # print an extra newline
     echo >&2
   fi
 fi
 
 # output rule buffer
-if [ -z "$OUTPUT_FILE" ]; then
-  echo -e "$RULE_DOC"
-else
-  if [ $VERBOSITY -gt 0 ]; then
-    echo >&2 "INFO: Saving generated rules to $OUTPUT_FILE"
+if [ -n "$RULE_DOC" ]; then
+  if [ -z "$OUTPUT_FILE" ]; then
+    echo -e "$RULE_DOC"
+  else
+    if [ $VERBOSITY -gt 0 ]; then
+      echo >&2 "INFO: Saving generated rules to $OUTPUT_FILE"
+    fi
+    echo -e "$RULE_DOC" > "$OUTPUT_FILE"
   fi
-  echo -e "$RULE_DOC" > "$OUTPUT_FILE"
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
