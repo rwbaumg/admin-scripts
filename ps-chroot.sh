@@ -1,8 +1,14 @@
 #!/bin/bash
 # list processes running inside of schroot jails
-# this script will enumerate all of the installed 
+# this script will enumerate all of the installed
 # schroots, and then check the mount point to see
 # if it's jailed.
+
+# check if superuser
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" >&2
+   exit 1
+fi
 
 # the mountpoint used by schroot
 # this is used to determine which procs are jailed so it must be correct!
