@@ -318,6 +318,10 @@ if [ -n "$GIT_HEAD" ]; then
   fi
 fi
 
+# todo: need to find out where the below setting comes from, and allow
+# changing it if it's associated with --shared
+# git config receive.denynonfastforwards false
+
 if [ "$DRY_RUN" = "true" ]; then
   echo "popd"
 fi
