@@ -110,7 +110,7 @@ usage()
 
     OPTIONS
 
-     -b, --base-id <value>   The user that should own the repository.
+     -b, --base-id <value>   The starting rule ID. Default: 9999000
      -o, --output <value>    Save output to the specified file.
 
      -c, --client <value>    Only consider violations from the specified client
