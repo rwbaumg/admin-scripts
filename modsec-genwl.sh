@@ -1,3 +1,4 @@
+
 #!/bin/bash
 #
 # -=[ 0x19e Networks ]=-
@@ -5,7 +6,7 @@
 # mod_security2 whitelist generator
 #
 # Author: rwb[at]0x19e[dot]net
-# Date: 2015/12/07
+# Date: 2015/12/23
 
 INPUT_LOG="/var/log/apache2/*error*log"
 OUTPUT_FILE=""
@@ -18,6 +19,7 @@ SEARCH_HOSTS=()
 VERBOSITY=0
 MODULE_CHECK="false"
 DATE_RANGE=""
+DATE_FORMAT="+%a %b %d (\d\d\:\d\d\:\d\d\.[\d]+) %Y"
 
 MODSEC_HEADER="<IfModule mod_security2.c>"
 MODSEC_FOOTER="</IfModule>"
@@ -390,7 +392,10 @@ if [ -n "$DATE_RANGE" ]; then
     echo >&2 "INFO: Using date range '$DATE_RANGE' ..."
   fi
 
-  DATE_REGEX=$(date -d "$DATE_RANGE" '+%a %b %d (\d\d\:\d\d\:\d\d\.[\d]+) %Y')
+  DATE_REGEX=$(date -d "$DATE_RANGE" "$DATE_FORMAT")
+  if (($? > 0)); then
+    exit_script $?
+  fi
 
   LOG_ENTRIES=$(grep -i modsec $INPUT_LOG \
     | grep -v "Warning" \
@@ -404,6 +409,10 @@ else
     | grep -v "(http://www.modsecurity.org/) configured." \
     | grep -v "compiled version=" \
     | sed "s/$/\\n/")
+fi
+
+if (($? > 0)); then
+  exit_script $?
 fi
 
 # get a count of the results
