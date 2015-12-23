@@ -17,6 +17,7 @@ SEARCH_CLIENTS=()
 SEARCH_HOSTS=()
 VERBOSITY=0
 MODULE_CHECK="false"
+DATE_RANGE=""
 
 MODSEC_HEADER="<IfModule mod_security2.c>"
 MODSEC_FOOTER="</IfModule>"
@@ -120,6 +121,9 @@ usage()
      -s, --hostname <value>  Only consider violations for the specified server
                              hostname. This option can be specified multiple
                              times.
+
+     -d, --date <value>      Select the date range for processing (for example,
+                             'today' or 'yesterday').
 
      --module-check          Use mod_security2 header and footer.
 
@@ -238,6 +242,12 @@ while [ $# -gt 0 ]; do
       test_host_arg "$1" "$2"
       shift
       SEARCH_HOSTS+="$1"'\n'
+      shift
+    ;;
+    -d|--date)
+      test_arg "$1" "$2"
+      shift
+      DATE_RANGE="$1"
       shift
     ;;
     --module-check)
@@ -375,11 +385,26 @@ if [ $VERBOSITY -gt 1 ]; then
 fi
 
 # gather log entries
-LOG_ENTRIES=$(grep -i modsec $INPUT_LOG \
-  | grep -v "Warning" \
-  | grep -v "(http://www.modsecurity.org/) configured." \
-  | grep -v "compiled version=" \
-  | sed "s/$/\\n/")
+if [ -n "$DATE_RANGE" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo >&2 "INFO: Using date range '$DATE_RANGE' ..."
+  fi
+
+  DATE_REGEX=$(date -d "$DATE_RANGE" '+%a %b %d (\d\d\:\d\d\:\d\d\.[\d]+) %Y')
+
+  LOG_ENTRIES=$(grep -i modsec $INPUT_LOG \
+    | grep -v "Warning" \
+    | grep -v "(http://www.modsecurity.org/) configured." \
+    | grep -v "compiled version=" \
+    | grep -P "$DATE_REGEX" \
+    | sed "s/$/\\n/")
+else
+  LOG_ENTRIES=$(grep -i modsec $INPUT_LOG \
+    | grep -v "Warning" \
+    | grep -v "(http://www.modsecurity.org/) configured." \
+    | grep -v "compiled version=" \
+    | sed "s/$/\\n/")
+fi
 
 # get a count of the results
 violation_count=0
