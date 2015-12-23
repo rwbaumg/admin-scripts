@@ -421,6 +421,10 @@ IFS=$'\n'; for entry in $LOG_ENTRIES; do
   ((violation_count++))
 done
 
+if [ $violation_count -eq 0 ]; then
+  exit_script 1 "No rule violations found."
+fi
+
 if [ $VERBOSITY -gt 0 ]; then
   echo >&2 "INFO: Found a total of $violation_count rule violation(s)."
   echo >&2 "INFO: Generating rules..."
