@@ -1,6 +1,8 @@
 #!/bin/bash
 # print an overview of current system load
 
+hash iostat 2>/dev/null || { echo >&2 "You need to install sysstat. Aborting."; exit 1; }
+
 iostat -m
 
 free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
