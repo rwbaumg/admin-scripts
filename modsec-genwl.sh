@@ -20,6 +20,10 @@ MODULE_CHECK="false"
 DATE_RANGE=""
 DATE_FORMAT="+%a %b %d (\d\d\:\d\d\:\d\d\.[\d]+) %Y"
 
+MAKE_TMPL="false"
+TMPL_SN="%SERVER_NAME%"
+TMPL_ID="%RULE_ID%"
+
 MODSEC_HEADER="<IfModule mod_security2.c>"
 MODSEC_FOOTER="</IfModule>"
 
@@ -125,6 +129,8 @@ usage()
 
      -d, --date <value>      Select the date range for processing (for example,
                              'today' or 'yesterday').
+
+     -t, --make-template     Output rules in modsec-wl template format.
 
      --module-check          Use mod_security2 header and footer.
 
@@ -255,6 +261,10 @@ while [ $# -gt 0 ]; do
       MODULE_CHECK="true"
       shift
     ;;
+    -t|--make-template)
+      MAKE_TMPL="true"
+      shift
+    ;;
     -v|--verbose)
       ((VERBOSITY++))
       shift
@@ -293,6 +303,11 @@ create_rule()
   local hostname=$(echo $log_entry | grep -Po '(?<=\[hostname\s\")([A-Za-z\.-_]+)(?=\"\])')
   local rule_id=$(echo $log_entry | grep -Po '(?<=\[id\s\")\d+(?=\"\])')
   local arg_name=$(echo $log_entry | grep -Po '(?<=at\sARGS\:)[A-Za-z]+(?=\.\s)')
+
+  if [ "$MAKE_TMPL" == "true" ]; then
+    whitelist_id="$TMPL_ID"
+    hostname="$TMPL_SN"
+  fi
 
   if [ ${#SEARCH_CLIENTS[@]} -ge 1 ]; then
     # client filtering enabled, check ip address
