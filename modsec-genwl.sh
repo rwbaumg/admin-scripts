@@ -5,7 +5,7 @@
 # mod_security2 whitelist generator
 #
 # Author: rwb[at]0x19e[dot]net
-# Date: 2015/12/23
+# Date: 2016/01/02
 
 INPUT_LOG="/var/log/apache2/*error*log"
 OUTPUT_FILE=""
