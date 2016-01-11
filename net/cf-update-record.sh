@@ -293,8 +293,10 @@ if [ -z "$record_identifier" ]; then
   exit 1
 fi
 
-echo "Zone identifier: $zone_identifier"
-echo "Record identifier: $record_identifier"
+if [ $VERBOSITY -gt 1 ]; then
+  echo "Zone identifier: $zone_identifier"
+  echo "Record identifier: $record_identifier"
+fi
 
 update=$(curl $VERBOSE -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records/$record_identifier" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json" --data "{\"id\":\"$zone_identifier\",\"type\":\"A\",\"name\":\"$record_name\",\"content\":\"$requested_ip\"}")
 
