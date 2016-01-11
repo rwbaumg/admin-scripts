@@ -13,6 +13,7 @@
 *.png
 *.pdf
 *.example
+*.cfg
 
 tmp.address
 mac.address
