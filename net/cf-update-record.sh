@@ -246,10 +246,10 @@ fi
 
 # print options
 if [ $VERBOSITY -gt 0 ]; then
-  echo AUTH. E-MAIL = "${auth_email}"
-  echo AUTH. KEY    = "${auth_key}"
-  echo ZONE NAME    = "${zone_name}"
-  echo RECORD NAME  = "${record_name}"
+  printf "%-16s = %s\n" "AUTH. E-MAIL" ${auth_email}
+  printf "%-16s = %s\n" "AUTH. KEY" ${auth_key}
+  printf "%-16s = %s\n" "ZONE NAME" ${zone_name}
+  printf "%-16s = %s\n" "RECORD NAME" ${record_name}
 fi
 
 log "Check Initiated"
@@ -272,11 +272,11 @@ if [ -z "$requested_ip" ]; then
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
-  echo REQUESTED IP  = "${requested_ip}"
-  echo REGISTERED IP = "${registered_ip}"
+  printf "%-16s = %s\n" "REQUESTED IP" ${requested_ip}
+  printf "%-16s = %s\n" "REGISTERED IP" ${registered_ip}
 fi
 
-if [ "$requested_ip" == "$registered_ip" ]; then
+if [ "$FORCE_UPDATE" != "true" ] && [ "$requested_ip" == "$registered_ip" ]; then
   echo "DNS already up to date ($registered_ip)"
   exit 0
 fi
@@ -294,8 +294,8 @@ if [ -z "$record_identifier" ]; then
 fi
 
 if [ $VERBOSITY -gt 1 ]; then
-  echo "Zone identifier: $zone_identifier"
-  echo "Record identifier: $record_identifier"
+  printf "%-16s = %s\n" "ZONE ID" ${zone_identifier}
+  printf "%-16s = %s\n" "RECORD ID" ${record_identifier}
 fi
 
 update=$(curl $VERBOSE -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records/$record_identifier" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json" --data "{\"id\":\"$zone_identifier\",\"type\":\"A\",\"name\":\"$record_name\",\"content\":\"$requested_ip\"}")
