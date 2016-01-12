@@ -17,7 +17,9 @@ if [ -e `dirname $0`/cf.cfg ]; then
   source `dirname $0`/cf.cfg
 fi
 
-# LOGGER
+# check if curl command exists
+hash curl 2>/dev/null || { echo >&2 "You need to install curl. Aborting."; exit 1; }
+
 log() {
   if [ -n "$log_file" ]; then
     if [ "$1" ]; then
@@ -55,30 +57,37 @@ function valid_hostname()
 
 exit_script()
 {
-    # Default exit code is 1
-    local exit_code=1
-    local re var
+  # Default exit code is 1
+  local exit_code=1
+  local re var
 
-    re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
-    if echo "$1" | egrep -q "$re"; then
-        exit_code=$1
-        shift
+  re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+  if echo "$1" | egrep -q "$re"; then
+    exit_code=$1
+    shift
+  fi
+
+  re='[[:alnum:]]'
+  if echo "$@" | egrep -iq "$re"; then
+    if [ $exit_code -eq 0 ]; then
+      echo "INFO: $@"
+      log "$@"
+    else
+      echo "ERROR: $@" 1>&2
+      log "ERROR: $@"
     fi
+  fi
 
-    re='[[:alnum:]]'
-    if echo "$@" | egrep -iq "$re"; then
-        echo
-        if [ $exit_code -eq 0 ]; then
-            echo "INFO: $@"
-        else
-            echo "ERROR: $@" 1>&2
-        fi
-    fi
+  # Print 'aborting' string if exit code is not 0
+  if [ $exit_code -ne 0 ]; then
+    message="Aborting script..."
+    echo "$message"
+    log "$message"
+  else
+    log "Script completed successfully."
+  fi
 
-    # Print 'aborting' string if exit code is not 0
-    [ $exit_code -ne 0 ] && echo "Aborting script..."
-
-    exit $exit_code
+  exit $exit_code
 }
 
 usage()
@@ -115,19 +124,19 @@ usage()
 
 test_arg()
 {
-    # Used to validate user input
-    local arg="$1"
-    local argv="$2"
+  # Used to validate user input
+  local arg="$1"
+  local argv="$2"
 
-    if [ -z "$argv" ]; then
-        if echo "$arg" | egrep -q '^-'; then
-            usage "Null argument supplied for option $arg"
-        fi
+  if [ -z "$argv" ]; then
+    if echo "$arg" | egrep -q '^-'; then
+      usage "Null argument supplied for option $arg"
     fi
+  fi
 
-    if echo "$argv" | egrep -q '^-'; then
-        usage "Argument for option $arg cannot start with '-'"
-    fi
+  if echo "$argv" | egrep -q '^-'; then
+    usage "Argument for option $arg cannot start with '-'"
+  fi
 }
 
 test_ip_arg()
@@ -244,6 +253,8 @@ if [ -z "$IP_ADDRESS" ] && [ "$LOCAL_IP" != "true" ]; then
   usage "No IP address specified and local mode not set."
 fi
 
+log "Updating DNS record for $record_name ..."
+
 # print options
 if [ $VERBOSITY -gt 0 ]; then
   printf "%-16s = %s\n" "AUTH. E-MAIL" ${auth_email}
@@ -252,14 +263,10 @@ if [ $VERBOSITY -gt 0 ]; then
   printf "%-16s = %s\n" "RECORD NAME" ${record_name}
 fi
 
-log "Check Initiated"
-
 # get current A record IP
 registered_ip=$(dig +short $record_name @$wan_dns)
-if ! valid_ip "$requested_ip"; then
-  message="WARNING: $record_name resolved to an invalid IP address."
-  echo >&2 "$message"
-  log "$message"
+if ! valid_ip "$registered_ip"; then
+  exit_script 1 "Failed to resolve IP for $record_name"
 fi
 
 if [ "$LOCAL_IP" == "true" ]; then
@@ -268,20 +275,14 @@ if [ "$LOCAL_IP" == "true" ]; then
   fi
   requested_ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
   if ! valid_ip "$requested_ip"; then
-    message="ERROR: Failed to determine public IP address."
-    echo >&2 "$message"
-    log "$message"
-    exit 1
+    exit_script 1 "Failed to determine public IP address."
   fi
 else
   requested_ip="$IP_ADDRESS"
 fi
 
 if [ -z "$requested_ip" ]; then
-  message="ERROR: Failed to determine IP to update with."
-  echo >&2 "$message"
-  log "$message"
-  exit 1
+  exit_script 1 "Failed to detemine update IP."
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
@@ -290,26 +291,17 @@ if [ $VERBOSITY -gt 0 ]; then
 fi
 
 if [ "$FORCE_UPDATE" != "true" ] && [ "$requested_ip" == "$registered_ip" ]; then
-  message="DNS already up to date ($registered_ip)"
-  echo "$message"
-  log "$message"
-  exit 0
+  exit_script 0 "DNS already up to date ($registered_ip)"
 fi
 
 zone_identifier=$(curl $VERBOSE -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$zone_name" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json" | grep -Po '(?<="id":")[^"]*' | head -1 )
 record_identifier=$(curl $VERBOSE -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records?name=$record_name" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json"  | grep -Po '(?<="id":")[^"]*')
 
 if [ -z "$zone_identifier" ]; then
-  message="ERROR: Failed to retrieve zone identifier for $zone_name"
-  echo >&2 "$message"
-  log "$message"
-  exit 1
+  exit_script 1 "Failed to retrieve zone identifier for $zone_name"
 fi
 if [ -z "$record_identifier" ]; then
-  message="Failed to retrieve record identifier for $record_name"
-  echo >&2 "$message"
-  log "$message"
-  exit 1
+  exit_script 1 "Failed to retrieve record identifier for $record_name"
 fi
 
 if [ $VERBOSITY -gt 1 ]; then
@@ -321,13 +313,9 @@ update=$(curl $VERBOSE -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zo
 
 if [[ $update == *"\"success\":false"* ]]; then
   message="API UPDATE FAILED. DUMPING RESULTS:\n$update"
-  log "$message"
   echo -e "$message"
-  exit 1
-else
-  message="IP changed to: $requested_ip"
   log "$message"
-  echo "$message"
+  exit 1
 fi
 
-exit 0
+exit_script 0 "IP changed to: $requested_ip"
