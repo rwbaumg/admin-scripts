@@ -9,5 +9,5 @@ GREP_LOGS="/var/log/kern.log /var/log/syslog /var/log/dmesg"
 GREP_REGEX="Attached (SCSI|scsi)"
 
 cat $GREP_LOGS \
-    | grep -P "$GREP_REGEX" | cut -d ' ' -f 13-30 \
+    | grep -P "$GREP_REGEX" | cut -d ' ' -f 7-10  \
     | sort | uniq | sed -e '/^[[:space:]]*$/d'
