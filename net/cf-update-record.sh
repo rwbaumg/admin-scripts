@@ -256,18 +256,31 @@ log "Check Initiated"
 
 # get current A record IP
 registered_ip=$(dig +short $record_name @$wan_dns)
+if ! valid_ip "$requested_ip"; then
+  message="WARNING: $record_name resolved to an invalid IP address."
+  echo >&2 "$message"
+  log "$message"
+fi
 
 if [ "$LOCAL_IP" == "true" ]; then
   if [ $VERBOSITY -gt 1 ]; then
     echo "Getting local WAN IP for update..."
   fi
   requested_ip=$(dig +short myip.opendns.com @resolver1.opendns.com)
+  if ! valid_ip "$requested_ip"; then
+    message="ERROR: Failed to determine public IP address."
+    echo >&2 "$message"
+    log "$message"
+    exit 1
+  fi
 else
   requested_ip="$IP_ADDRESS"
 fi
 
 if [ -z "$requested_ip" ]; then
-  echo >&2 "Failed to determine IP to update with."
+  message="ERROR: Failed to determine IP to update with."
+  echo >&2 "$message"
+  log "$message"
   exit 1
 fi
 
@@ -277,7 +290,9 @@ if [ $VERBOSITY -gt 0 ]; then
 fi
 
 if [ "$FORCE_UPDATE" != "true" ] && [ "$requested_ip" == "$registered_ip" ]; then
-  echo "DNS already up to date ($registered_ip)"
+  message="DNS already up to date ($registered_ip)"
+  echo "$message"
+  log "$message"
   exit 0
 fi
 
@@ -285,11 +300,15 @@ zone_identifier=$(curl $VERBOSE -s -X GET "https://api.cloudflare.com/client/v4/
 record_identifier=$(curl $VERBOSE -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records?name=$record_name" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json"  | grep -Po '(?<="id":")[^"]*')
 
 if [ -z "$zone_identifier" ]; then
-  echo >&2 "Failed to retrieve zone identifier."
+  message="ERROR: Failed to retrieve zone identifier for $zone_name"
+  echo >&2 "$message"
+  log "$message"
   exit 1
 fi
 if [ -z "$record_identifier" ]; then
-  echo >&2 "Failed to retrieve record identifier."
+  message="Failed to retrieve record identifier for $record_name"
+  echo >&2 "$message"
+  log "$message"
   exit 1
 fi
 
