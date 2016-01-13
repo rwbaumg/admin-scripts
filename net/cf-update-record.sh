@@ -12,9 +12,10 @@ auth_key=""
 log_file=""
 record_name=""
 zone_name=""
+config_file=`dirname $0`/cf.cfg
 
-if [ -e `dirname $0`/cf.cfg ]; then
-  source `dirname $0`/cf.cfg
+if [ -e "$config_file" ]; then
+  source "$config_file"
 fi
 
 # check if curl command exists
@@ -113,6 +114,9 @@ usage()
 
      -f, --force               Skip update checks.
 
+     -c, --config <value>      The configuration file to use.
+                               Defaults to ./cf.cfg
+
      -o, --log-file <value>    The log file to write output to.
      -v, --verbose             Make the script more verbose.
 
@@ -163,6 +167,7 @@ VERBOSE=""
 FORCE_UPDATE="false"
 LOCAL_IP="false"
 IP_ADDRESS=""
+USER_CONFIG="false"
 
 # process arguments
 # [ $# -gt 0 ] || usage
@@ -212,6 +217,13 @@ while [ $# -gt 0 ]; do
       log_file="$1"
       shift
     ;;
+    -c|--config)
+      test_arg "$1" "$2"
+      shift
+      config_file="$1"
+      USER_CONFIG="true"
+      shift
+    ;;
     -v|--verbose)
       ((VERBOSITY++))
       check_verbose
@@ -232,6 +244,14 @@ while [ $# -gt 0 ]; do
     ;;
   esac
 done
+
+if [ "$USER_CONFIG" == "true" ]; then
+  if [ -e "$config_file" ]; then
+    source "$config_file"
+  else
+    exit_script 1 "Config file not found: $config_file"
+  fi
+fi
 
 if [ -z "$record_name" ]; then
   usage "No record specified."
