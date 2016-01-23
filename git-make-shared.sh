@@ -283,16 +283,6 @@ else
   fi
 fi
 
-# set recursive ownership
-if [ $VERBOSITY -gt 0 ]; then
-  echo "Setting repository ownership..."
-fi
-if [ "$DRY_RUN" = "true" ]; then
-  echo "chown -R $VERBOSE $GIT_USER:$GIT_GROUP ."
-else
-  chown -R $VERBOSE $GIT_USER:$GIT_GROUP .
-fi
-
 # set file permissions
 if [ $VERBOSITY -gt 0 ]; then
   echo "Setting file permissions..."
@@ -316,6 +306,16 @@ if [ -n "$GIT_HEAD" ]; then
   else
     git symbolic-ref HEAD refs/heads/$GIT_HEAD
   fi
+fi
+
+# set recursive ownership
+if [ $VERBOSITY -gt 0 ]; then
+  echo "Setting repository ownership..."
+fi
+if [ "$DRY_RUN" = "true" ]; then
+  echo "chown -R $VERBOSE $GIT_USER:$GIT_GROUP ."
+else
+  chown -R $VERBOSE $GIT_USER:$GIT_GROUP .
 fi
 
 # todo: need to find out where the below setting comes from, and allow
