@@ -5,7 +5,7 @@
 # mod_security2 whitelist generator
 #
 # Author: rwb[at]0x19e[dot]net
-# Date: 2016/01/02
+# Date: 2016/01/23
 
 INPUT_LOG="/var/log/apache2/*error*log"
 OUTPUT_FILE=""
@@ -304,11 +304,6 @@ create_rule()
   local rule_id=$(echo $log_entry | grep -Po '(?<=\[id\s\")\d+(?=\"\])')
   local arg_name=$(echo $log_entry | grep -Po '(?<=at\sARGS\:)[A-Za-z]+(?=\.\s)')
 
-  if [ "$MAKE_TMPL" == "true" ]; then
-    whitelist_id="$TMPL_ID"
-    hostname="$TMPL_SN"
-  fi
-
   if [ ${#SEARCH_CLIENTS[@]} -ge 1 ]; then
     # client filtering enabled, check ip address
    if ! echo -e "${SEARCH_CLIENTS[@]}" | fgrep --line-regexp "$client_ip" > /dev/null 2>&1; then
@@ -343,6 +338,11 @@ create_rule()
       echo >&2 "ERROR: Failed to find rule ID in log entry: $log_entry"
     fi
    return 1
+  fi
+
+  if [ "$MAKE_TMPL" == "true" ]; then
+    whitelist_id="$TMPL_ID"
+    hostname="$TMPL_SN"
   fi
 
   if [ "$match_phase" == "4" ]; then
