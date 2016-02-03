@@ -5,7 +5,7 @@
 # mod_security2 whitelist generator
 #
 # Author: rwb[at]0x19e[dot]net
-# Date: 2016/01/23
+# Date: 2016/02/03
 
 INPUT_LOG="/var/log/apache2/*error*log"
 OUTPUT_FILE=""
@@ -424,6 +424,8 @@ else
     | grep -v "compiled version=" \
     | sed "s/$/\\n/")
 fi
+
+# todo: support "Warning" flag as option in above
 
 if (($? > 0)); then
   exit_script $?
