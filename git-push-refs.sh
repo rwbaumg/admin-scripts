@@ -197,11 +197,15 @@ fi
 
 # check remotes
 if ! git ls-remote $SOURCE_REMOTE > /dev/null 2>&1; then
-  echo >&2 "Working copy doesn't have a remote named '$SOURCE_REMOTE'. Aborting."
-  exit 1
+  if [ "$GIT_FORCE" == "--force" ]; then
+    echo >&2 "WARNING: Working copy doesn't have a source remote named '$SOURCE_REMOTE'."
+  else
+    echo >&2 "Working copy doesn't have a source remote named '$SOURCE_REMOTE'. Aborting."
+    exit 1
+  fi
 fi
 if ! git ls-remote $TARGET_REMOTE > /dev/null 2>&1; then
-  echo >&2 "Working copy doesn't have a remote named '$TARGET_REMOTE'. Aborting."
+  echo >&2 "Working copy doesn't have a target remote named '$TARGET_REMOTE'. Aborting."
   exit 1
 fi
 
