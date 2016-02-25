@@ -32,7 +32,7 @@ if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
         -C "$COMMENT" < /dev/null # > /dev/null 2> /dev/null
     printf "$COL_GREEN%s$COL_RESET\n" "Created /etc/ssh_host_rsa_key"
 else
-    printf "$COL_RED%s$COL_RESET\n" "Key already exists: /etc/ssh_host_rsa_key"
+    printf "$COL_RED%s$COL_RESET\n" "Key already exists: /etc/ssh/ssh_host_rsa_key"
 fi
 
 if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
@@ -41,7 +41,7 @@ if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
         -C "$COMMENT" < /dev/null # > /dev/null 2> /dev/null
     printf "$COL_GREEN%s$COL_RESET\n" "Created /etc/ssh_host_dsa_key"
 else
-    printf "$COL_RED%s$COL_RESET\n" "Key already exists: /etc/ssh_host_dsa_key"
+    printf "$COL_RED%s$COL_RESET\n" "Key already exists: /etc/ssh/ssh_host_dsa_key"
 fi
 
 # printf "$COL_BLUE%.0s-$COL_RESET" {1..40}; echo
