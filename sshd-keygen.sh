@@ -1,7 +1,6 @@
 #!/bin/bash
 # sshd-keygen.sh
-# post-apply script that properly manages ssh authentication keys
-# Install in /var/radmind/postapply
+# generates a new host ssh keypair
 
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" >&2
@@ -10,6 +9,7 @@ fi
 
 SSHKEYGEN=/usr/bin/ssh-keygen
 RSA_BITS=2048
+DSA_BITS=1024
 COMMENT=""
 
 # Colors
@@ -29,7 +29,7 @@ printf "$COL_BLUE%.0s-$COL_RESET" {1..40}; echo
 if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
     printf "$COL_YELLOW%s$COL_RESET\n" "Using $RSA_BITS bits for new RSA key..."
     $SSHKEYGEN -t rsa -b $RSA_BITS -f /etc/ssh/ssh_host_rsa_key -N "" \
-        -C "$COMMENT" < /dev/null # > /dev/null 2> /dev/null
+        -C "$COMMENT" < /dev/null
     printf "$COL_GREEN%s$COL_RESET\n" "Created /etc/ssh_host_rsa_key"
 else
     printf "$COL_RED%s$COL_RESET\n" "Key already exists: /etc/ssh/ssh_host_rsa_key"
@@ -37,13 +37,11 @@ fi
 
 if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
     printf "$COL_YELLOW%s$COL_RESET\n" "Using 1024 bits for new DSA key..."
-    $SSHKEYGEN -t dsa -b 1024 -f /etc/ssh/ssh_host_dsa_key -N "" \
-        -C "$COMMENT" < /dev/null # > /dev/null 2> /dev/null
+    $SSHKEYGEN -t dsa -b $DSA_BITS -f /etc/ssh/ssh_host_dsa_key -N "" \
+        -C "$COMMENT" < /dev/null
     printf "$COL_GREEN%s$COL_RESET\n" "Created /etc/ssh_host_dsa_key"
 else
     printf "$COL_RED%s$COL_RESET\n" "Key already exists: /etc/ssh/ssh_host_dsa_key"
 fi
-
-# printf "$COL_BLUE%.0s-$COL_RESET" {1..40}; echo
 
 exit 0
