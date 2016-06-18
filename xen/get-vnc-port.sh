@@ -1,6 +1,6 @@
 #!/bin/bash
 # gets the vnc port for a named qemu domain
-# rwb@0x19e.net
+# [0x19e Networks] rwb@0x19e.net
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then

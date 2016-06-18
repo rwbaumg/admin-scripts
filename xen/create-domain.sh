@@ -2,14 +2,15 @@
 # create a new xen domain
 # this script also checks for post-up scripts
 # following the format '<domain_name>.sh'
-# rwb@0x19e.net
+# requires xen-tools package (xl) toolchain
+# [0x19e Networks] rwb@0x19e.net
 
 # check if xl command exists
 hash xl 2>/dev/null || { echo >&2 "You need to install xen-tools. Aborting."; exit 1; }
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" >&2
+   echo "This script must be run as root." >&2
    exit 1
 fi
 
@@ -27,7 +28,15 @@ if [ ! -f "$DOMAIN_CONF" ]; then
   exit 1
 fi
 
-# todo: check if domain is already running
+# check if domain is already running
+PS_OUT=$(ps -eo pid,cmd|grep -v grep|grep xl|grep "$DOMAIN_NAME")
+if [ ! -z "$PS_OUT" ]; then
+  pid=$(echo $PS_OUT | awk '{print $1}')
+  if ( kill -0 $pid > /dev/null 2>&1; ); then
+    echo "The domain $DOMAIN_NAME is already running under xl on pid $pid"
+    exit 1
+  fi
+fi
 
 # create the new domain
 xl create $DOMAIN_CONF
