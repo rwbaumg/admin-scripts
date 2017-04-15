@@ -82,6 +82,7 @@ usage()
                              of this script.
 
      -s,--make-shared        Configure the repository for sharing.
+     -n,--allow-non-ff       Allow non-fast-forward push from the client.
      --dry-run               Print commands without making any changes.
 
      -v, --verbose           Make the script more verbose.
@@ -268,6 +269,7 @@ GIT_TEMPLATE=""
 GIT_SHARED=""
 DRY_RUN="false"
 MAKE_SHARED="false"
+ALLOW_NONFF="false"
 SCRIPT_RELATIVE="false"
 
 # process arguments
@@ -299,6 +301,10 @@ while [ $# -gt 0 ]; do
     -s|--make-shared)
       MAKE_SHARED="true"
       GIT_SHARED="--shared"
+      shift
+    ;;
+    -n|--allow-non-ff)
+      ALLOW_NONFF="true"
       shift
     ;;
     --dry-run)
@@ -431,6 +437,15 @@ if [ -n "$GIT_HEAD" ]; then
   fi
   pushd "$GIT_DIR"
   git symbolic-ref HEAD refs/heads/$GIT_HEAD
+  popd
+fi
+
+if [ "$ALLOW_NONFF" = "true" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Configure to enable non-fast-forward pushes ..."
+  fi
+  pushd "$GIT_DIR"
+  git config receive.denynonfastforwards false
   popd
 fi
 
