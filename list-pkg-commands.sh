@@ -22,7 +22,7 @@ printf '\n'
 printf "$COL_RESET"
 
 for d in `dpkg -L $1 | grep bin/ | sort`; do \
-  echo $(man $d | head -4 | tail -n1 ) \
+  echo $(man $d | grep NAME -A1 | head -2 | tail -n1 ) \
     | awk -F'—|-|,' -v N=2 'BEGIN {OFS="\t"}; { \
       printf("%-20s", $1); \
       OFS=" "; sep=""; for (i=N; i<=NF; i++) { \
