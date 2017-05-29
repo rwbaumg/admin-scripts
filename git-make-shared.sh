@@ -77,6 +77,7 @@ usage()
      -u, --user <value>      The user that should own the repository.
      -g, --group <value>     The group that should own the repository.
      -h, --set-head <value>  Set the head branch for the repository.
+     -n,--allow-non-ff       Allow non-fast-forward push from the client.
 
      --no-shared             Do not reconfigure repository (only permissions).
      --dry-run               Print commands without making any changes.
@@ -172,6 +173,7 @@ GIT_DIR=""
 GIT_HEAD=""
 DRY_RUN="false"
 NO_SHARED="false"
+ALLOW_NONFF="false"
 
 # process arguments
 [ $# -gt 0 ] || usage
@@ -197,6 +199,10 @@ while [ $# -gt 0 ]; do
     ;;
     --no-shared)
       NO_SHARED="true"
+      shift
+    ;;
+    -n|--allow-non-ff)
+      ALLOW_NONFF="true"
       shift
     ;;
     --dry-run)
@@ -318,13 +324,18 @@ else
   chown -R $VERBOSE $GIT_USER:$GIT_GROUP .
 fi
 
-# todo: need to find out where the below setting comes from, and allow
-# changing it if it's associated with --shared
-# git config receive.denynonfastforwards false
+if [ "$ALLOW_NONFF" = "true" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Configure to enable non-fast-forward pushes ..."
+  fi
+  git config receive.denynonfastforwards false
+fi
 
 if [ "$DRY_RUN" = "true" ]; then
   echo "popd"
 fi
+
+popd
 
 if [ $VERBOSITY -gt 0 ]; then
   echo "Finished."
