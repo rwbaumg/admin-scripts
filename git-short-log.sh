@@ -3,6 +3,19 @@
 
 hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1; }
 
+# specify the default number of entries to display
+LOG_COUNT=20
+
+# check if an argument was provided
+if [ $# -gt 0 ]; then
+  if [[ "$@" =~ ^-?[0-9]+$ ]]; then
+    LOG_COUNT=$@
+  else
+    echo >&2 "ERROR: Argument must be a valid number."
+    exit 1
+  fi
+fi
+
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a syml$
   DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
@@ -29,7 +42,7 @@ if ! `git -C "$GIT_DIR" rev-parse`; then
 fi
 
 pushd "$GIT_DIR" 2>&1 >/dev/null
-git log -n 10 --format="%h %s"
+git log -n $LOG_COUNT --format="%h %s"
 popd 2>&1 >/dev/null
 
 exit 0
