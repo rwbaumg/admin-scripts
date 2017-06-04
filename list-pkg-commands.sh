@@ -2,7 +2,7 @@
 # List commands provided by the specified package
 # rwb[at]0x19e[dot]net
 
-if [ ! `dpkg -s $1 > /dev/null 2>&1` ]; then
+if ! `dpkg -s $1 > /dev/null 2>&1`; then
   echo >&2 "Package '$1' is not installed."
   exit 1
 fi
@@ -29,7 +29,7 @@ printf "$COL_RESET"
 for d in `dpkg -L $1 | grep bin/ | sort`; do \
   echo $(man -P cat $d 2>/dev/null | grep NAME -A1 | head -2 | tail -n1 ) \
     | awk -F' - ' -v N=2 'BEGIN {OFS=" "}; { \
-      printf("%-20s", $1); \
+      printf("%-21s", $1); \
       OFS=" "; sep=""; for (i=N; i<=NF; i++) { \
         printf("%s%s",sep,$i); sep=OFS }; \
         printf("\n"); } \
