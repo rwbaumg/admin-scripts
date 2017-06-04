@@ -1,6 +1,11 @@
 #!/bin/bash
+# List commands provided by the specified package
+# rwb[at]0x19e[dot]net
 
-# TODO: Check if package is installed
+if [ ! `dpkg -s $1 > /dev/null 2>&1` ]; then
+  echo >&2 "Package '$1' is not installed."
+  exit 1
+fi
 
 # Colors
 ESC_SEQ="\x1b["
