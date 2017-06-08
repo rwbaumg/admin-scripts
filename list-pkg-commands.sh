@@ -21,17 +21,30 @@ COL_CYAN=$ESC_SEQ"36;01m"
 printf "$COL_RESET"
 printf '=%.0s' {1..50}
 printf '\n'
-printf "$COL_RESET%-20s %s \n$COL_RESET" "Command" "Description"
+printf "$COL_RED%-19s %s \n$COL_RESET" "Command" "Description"
 printf '=%.0s' {1..50}
 printf '\n'
 printf "$COL_RESET"
 
+
 for d in `dpkg -L $1 | grep bin/ | sort`; do \
-  echo $(man -P cat $d 2>/dev/null | grep NAME -A1 | head -2 | tail -n1 ) \
-    | awk -F' - ' -v N=2 'BEGIN {OFS=" "}; { \
-      printf("%-21s", $1); \
+  man_header=$(man -P cat $(basename $d) 2>/dev/null | grep NAME -A1 | head -2 | tail -n1 )
+  if [ -n "$man_header" ]; then
+    echo $man_header | awk -F' - ' -v N=2 'BEGIN {OFS=" "}; \
+    function print_command(string) { printf ("%s%-20s%s", "\033[1;36m", string, "\033[0m"); } \
+    function start_yellow() { printf ("%s", "\033[1;33m"); } \
+    function stop_yellow() { printf ("%s", "\033[0m"); } \
+    { \
+      print_command($1); \
+      start_yellow(); \
       OFS=" "; sep=""; for (i=N; i<=NF; i++) { \
-        printf("%s%s",sep,$i); sep=OFS }; \
-        printf("\n"); } \
-    ' ; \
-  done
+        printf("%s%s",sep,$i); \
+        sep=OFS \
+      }; \
+      stop_yellow(); \
+      printf("\n"); \
+    }'; \
+  fi
+done
+
+exit 0
