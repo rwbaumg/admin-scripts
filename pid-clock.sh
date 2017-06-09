@@ -24,7 +24,6 @@ i=1;
 SP='\|/-';
 while `ps -p $PID > /dev/null`; do
 	PROC_TIME=$(ps -p $PID -o etime= | awk '{ print $1 }');
-	printf "\n";
 	printf "\b\r[${SP:i++%${#SP}:1}] PID $PID is running ($PROC_TIME)";
 	sleep 1;
 done;
