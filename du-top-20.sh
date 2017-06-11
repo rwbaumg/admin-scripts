@@ -50,7 +50,11 @@ stop_spinner()
 
 start_spinner "Calculating directory sizes ..."
 
-OUTPUT=$(du -hsx "${INPUT_PATH}"/* \
+if [ "$INPUT_PATH" != "/" ]; then
+  INPUT_PATH=${INPUT_PATH}"/"
+fi
+
+OUTPUT=$(du -hsx "${INPUT_PATH}"* 2>/dev/null \
            | sort -rh \
            | head -20)
 
