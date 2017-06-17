@@ -26,10 +26,10 @@ COL_CYAN=$ESC_SEQ"36;01m"
 
 # print table header
 printf "$COL_RESET"
-printf '=%.0s' {1..50}
+printf '=%.0s' {1..60}
 printf '\n'
-printf "$COL_RED%-19s %s \n$COL_RESET" "Command" "Description"
-printf '=%.0s' {1..50}
+printf "$COL_RED%-29s %s \n$COL_RESET" "Command" "Description"
+printf '=%.0s' {1..60}
 printf '\n'
 printf "$COL_RESET"
 
@@ -37,7 +37,7 @@ for d in `dpkg -L $1 | grep -P "$BIN_REGEX" | sort`; do \
   man_header=$(man -P cat $(basename $d) 2>/dev/null | grep NAME -A1 | head -2 | tail -n1 )
   if [ -n "$man_header" ]; then
     echo $man_header | awk -F' - ' -v N=2 'BEGIN {OFS=" "}; \
-    function print_command(string) { printf ("%s%-20s%s", "\033[1;36m", string, "\033[0m"); } \
+    function print_command(string) { printf ("%s%-30s%s", "\033[1;36m", string, "\033[0m"); } \
     function start_yellow() { printf ("%s", "\033[1;33m"); } \
     function stop_yellow() { printf ("%s", "\033[0m"); } \
     { \
