@@ -31,7 +31,7 @@ API_KEY="374e4810c5a6584c9a2fcf456b39223e09c198233996e0181a35a713abab4e2f"
 file_path=$1
 #file_path=$(realpath $1)
 
-echo "$(tput setaf 7)Uploading $1 to VirusTotal$(tput sgr0)"
+echo "$(tput setaf 3)Uploading $1 to VirusTotal...$(tput sgr0)"
 vt_result=$(curl -X POST 'https://www.virustotal.com/vtapi/v2/file/scan' --form apikey=$API_KEY --form file=@"$file_path")
 
 # uncomment to debug response
@@ -40,21 +40,30 @@ vt_result=$(curl -X POST 'https://www.virustotal.com/vtapi/v2/file/scan' --form 
 # 6 is sha256, 9 is md5
 vt_hash=$(echo -e $vt_result | awk -F: ' {print $6}' |  awk -F, '{print $1}' | sed -e 's/^[[:space:]]*//' | tr -d \")
 
-echo "$(tput setaf 4)SHA256:$vt_hash waiting for report..$(tput sgr0)"
+echo "$(tput setaf 3)SHA256:$vt_hash$(tput sgr0)"
+echo "$(tput setaf 3)Waiting for report...$(tput sgr0)"
 
+# wait for the report to finish
+# TODO: set abort timeout?
 while true; do
   response=`curl -X POST 'https://www.virustotal.com/vtapi/v2/file/report' --form apikey=$API_KEY --form resource=$vt_hash 2>/dev/null`
-  # echo $response
-  echo `echo $response|grep -o '"scans"'`
+
   if [ $(echo -n "$response"|grep -o '"response_code": 1'| wc -l) -eq 1 ]; then
+    # scan finished; display report
+    echo "$(tput setaf 2)Displaying report...$(tput sgr0)"
+
+    # use pygmentize if available to display the report
     if hash pygmentize 2>/dev/null; then
       echo "$response" | python -mjson.tool | pygmentize -l javascript -f console | less -r
     else
+      # use python to pretify - no pretty colors
       echo "$response" | python -mjson.tool | less -r
     fi
 
     break;
   fi
-  echo -e -n "$(tput setaf 7).$(tput sgr0)\r"
+
+  # sleep before checking again
+  echo -e -n "$(tput setaf 3).$(tput sgr0)\r"
   sleep 5
 done
