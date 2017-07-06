@@ -30,7 +30,7 @@ fi
 hash curl 2>/dev/null || { echo >&2 "You need to install curl. Aborting."; exit 1; }
 hash awk 2>/dev/null || { echo >&2 "You need to install gawk. Aborting."; exit 1; }
 
-#process file
+# process file
 if [[ -f "$1" ]]; then
   MD5_SUM=$(md5sum "$1" | awk '{print $1}')
   echo "Processing $1 ($MD5_SUM) ..."
@@ -40,7 +40,7 @@ if [[ -f "$1" ]]; then
   exit 0
 fi
 
-#process single hash
+# process single hash
 HTEST=$(echo $1 | grep -e "[0-9a-f]\{32\}")
 if [ ! -f "$1" ] && [ "$HTEST" != "$1" ]; then
   echo "$1 is not a valid md5 hash"
