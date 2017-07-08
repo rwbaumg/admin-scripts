@@ -40,11 +40,7 @@ usage()
     This script converts piped input text to a PNG image.
 
     SYNTAX
-            SCRIPT_NAME [OPTIONS] ARGUMENTS
-
-    ARGUMENTS
-
-     input                 The input to convert.
+            SCRIPT_NAME [OPTIONS]
 
     OPTIONS
 
@@ -107,7 +103,6 @@ OUTPUT="out.png"
 FORCE="false"
 
 # process arguments
-[ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
   case "$1" in
     -o|--output)
