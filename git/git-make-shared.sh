@@ -266,7 +266,7 @@ if [ $VERBOSITY -gt 1 ]; then
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
-  echo "Converting $GIT_DIR to a shared repository..."
+  echo "Converting $GIT_DIR to a shared repository ..."
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
@@ -276,11 +276,11 @@ fi
 # set shared repository
 if [ "$NO_SHARED" = "true" ]; then
   if [ $VERBOSITY -gt 0 ]; then
-    echo "Skipped setting core.sharedRepository to group"
+    echo "Skipped setting core.sharedRepository to 'group'"
   fi
 else
   if [ $VERBOSITY -gt 0 ]; then
-    echo "Setting core.sharedRepository to group..."
+    echo "Setting core.sharedRepository to 'group' ..."
   fi
   if [ "$DRY_RUN" = "true" ]; then
     echo "git config core.sharedRepository group"
@@ -291,7 +291,7 @@ fi
 
 # set file permissions
 if [ $VERBOSITY -gt 0 ]; then
-  echo "Setting file permissions..."
+  echo "Setting file permissions ..."
 fi
 if [ "$DRY_RUN" = "true" ]; then
   echo "find . -type f | xargs chmod $VERBOSE $FILE_MASK"
@@ -314,21 +314,26 @@ if [ -n "$GIT_HEAD" ]; then
   fi
 fi
 
+# configure fast-forwards
+if [ "$ALLOW_NONFF" = "true" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Configure to enable non-fast-forward pushes ..."
+  fi
+  if [ "$DRY_RUN" = "true" ]; then
+    echo git config receive.denynonfastforwards false
+  else
+    git config receive.denynonfastforwards false
+  fi
+fi
+
 # set recursive ownership
 if [ $VERBOSITY -gt 0 ]; then
-  echo "Setting repository ownership..."
+  echo "Setting repository ownership to $GIT_USER:$GIT_GROUP ..."
 fi
 if [ "$DRY_RUN" = "true" ]; then
   echo "chown -R $VERBOSE $GIT_USER:$GIT_GROUP ."
 else
   chown -R $VERBOSE $GIT_USER:$GIT_GROUP .
-fi
-
-if [ "$ALLOW_NONFF" = "true" ]; then
-  if [ $VERBOSITY -gt 0 ]; then
-    echo "Configure to enable non-fast-forward pushes ..."
-  fi
-  git config receive.denynonfastforwards false
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
