@@ -401,7 +401,6 @@ if [ "$DRY_RUN" = "true" ]; then
   # print out commands without running anything
   echo mkdir $VERBOSE -p "$GIT_DIR"
   echo git init --bare $GIT_EXTRA_ARGS "$GIT_DIR"
-  echo chown $VERBOSE -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
 else
   # create directory
   mkdir $VERBOSE -p "$GIT_DIR"
@@ -409,25 +408,6 @@ else
   # init the repository
   if ! git init --bare $GIT_EXTRA_ARGS "$GIT_DIR"; then
     exit_script 1 "Failed to init Git repository."
-  fi
-
-  # set ownership
-  chown $VERBOSE -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
-fi
-
-# set file permissions
-if [ "$MAKE_SHARED" = "true" ]; then
-  if [ $VERBOSITY -gt 0 ]; then
-    echo "Setting file permissions for shared repository..."
-  fi
-  if [ "$DRY_RUN" = "true" ]; then
-    echo "find $GIT_DIR/ -type f | xargs chmod $VERBOSE $SHARED_FILE_MASK"
-    echo "find $GIT_DIR/ -type d | xargs chmod $VERBOSE $SHARED_DIR_MASK"
-    echo "find $GIT_DIR/ -type d | xargs chmod $VERBOSE g+s"
-  else
-    find $GIT_DIR/ -type f | xargs chmod $VERBOSE $SHARED_FILE_MASK
-    find $GIT_DIR/ -type d | xargs chmod $VERBOSE $SHARED_DIR_MASK
-    find $GIT_DIR/ -type d | xargs chmod $VERBOSE g+s
   fi
 fi
 
@@ -447,6 +427,28 @@ if [ "$ALLOW_NONFF" = "true" ]; then
   pushd "$GIT_DIR"
   git config receive.denynonfastforwards false
   popd
+fi
+
+if [ "$DRY_RUN" = "true" ]; then
+  echo chown $VERBOSE -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
+else
+  chown $VERBOSE -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
+fi
+
+# set file permissions
+if [ "$MAKE_SHARED" = "true" ]; then
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Setting file permissions for shared repository..."
+  fi
+  if [ "$DRY_RUN" = "true" ]; then
+    echo "find $GIT_DIR/ -type f | xargs chmod $VERBOSE $SHARED_FILE_MASK"
+    echo "find $GIT_DIR/ -type d | xargs chmod $VERBOSE $SHARED_DIR_MASK"
+    echo "find $GIT_DIR/ -type d | xargs chmod $VERBOSE g+s"
+  else
+    find $GIT_DIR/ -type f | xargs chmod $VERBOSE $SHARED_FILE_MASK
+    find $GIT_DIR/ -type d | xargs chmod $VERBOSE $SHARED_DIR_MASK
+    find $GIT_DIR/ -type d | xargs chmod $VERBOSE g+s
+  fi
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
