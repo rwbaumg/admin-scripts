@@ -47,7 +47,8 @@ pushd "$GIT_DIR" 2>&1 >/dev/null
 git log -n $LOG_COUNT \
         --graph \
         --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' \
-        --abbrev-commit
+        --abbrev-commit \
+        --date=relative
 
 popd 2>&1 >/dev/null
 
