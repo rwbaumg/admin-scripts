@@ -42,7 +42,13 @@ if ! `git -C "$GIT_DIR" rev-parse`; then
 fi
 
 pushd "$GIT_DIR" 2>&1 >/dev/null
-git log -n $LOG_COUNT --format="%h %s"
+
+# git log -n $LOG_COUNT --format="%h %s"
+git log -n $LOG_COUNT \
+        --graph \
+        --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' \
+        --abbrev-commit
+
 popd 2>&1 >/dev/null
 
 exit 0
