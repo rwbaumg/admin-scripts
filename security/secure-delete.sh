@@ -1,13 +1,8 @@
 #!/bin/bash
 # securely deletes a file
 
-if [[ -z "$1" ]]; then
-  echo "Usage: $0 <file>" >&2
-  exit 1
-fi
-
-if [[ ! -e "$1" ]]; then
-  echo >&2 "ERROR: File does not exist: $1"
+if [[ -z "$@" ]]; then
+  echo "Usage: $0 <file> ..." >&2
   exit 1
 fi
 
@@ -19,4 +14,4 @@ shred -v \
       --iterations "$SHRED_TIMES" \
       --zero \
       --remove \
-      "$1"
+      $@
