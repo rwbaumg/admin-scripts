@@ -30,7 +30,7 @@ if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
     printf "$COL_YELLOW%s$COL_RESET\n" "Using $RSA_BITS bits for new RSA key..."
     $SSHKEYGEN -t rsa -b $RSA_BITS -f /etc/ssh/ssh_host_rsa_key -N "" \
         -C "$COMMENT" < /dev/null
-    printf "$COL_GREEN%s$COL_RESET\n" "Created /etc/ssh_host_rsa_key"
+    printf "$COL_GREEN%s$COL_RESET\n" "Created /etc/ssh/ssh_host_rsa_key"
 else
     printf "$COL_RED%s$COL_RESET\n" "Key already exists: /etc/ssh/ssh_host_rsa_key"
 fi
@@ -39,7 +39,7 @@ if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
     printf "$COL_YELLOW%s$COL_RESET\n" "Using 1024 bits for new DSA key..."
     $SSHKEYGEN -t dsa -b $DSA_BITS -f /etc/ssh/ssh_host_dsa_key -N "" \
         -C "$COMMENT" < /dev/null
-    printf "$COL_GREEN%s$COL_RESET\n" "Created /etc/ssh_host_dsa_key"
+    printf "$COL_GREEN%s$COL_RESET\n" "Created /etc/ssh/ssh_host_dsa_key"
 else
     printf "$COL_RED%s$COL_RESET\n" "Key already exists: /etc/ssh/ssh_host_dsa_key"
 fi
