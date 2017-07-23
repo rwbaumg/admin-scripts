@@ -45,7 +45,7 @@ if [[ -z "$QEMU_PID" ]]; then
 fi
 
 # get the vnc port
-VNC_PORT=$(lsof -nPi | grep "$QEMU_PID" | awk '{print $9}' | awk -F":" '{print $2}')
+VNC_PORT=$(lsof -nPi | grep "LISTEN" | grep "$QEMU_PID" | awk '{print $9}' | awk -F":" '{print $2}')
 if [ "$VNC_PORT" = "" ]; then
   echo >&2 "ERROR: Failed to find VNC port for '$DOMAIN_NAME'"
   exit 1
