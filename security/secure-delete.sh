@@ -28,12 +28,12 @@ function shred_file()
 
   echo "Shredding file : $file ..."
 
-#  shred $verbose_flag \
-#        --random-source "$RND_SOURCE" \
-#        --iterations "$SHRED_TIMES" \
-#        --zero \
-#        --remove \
-#        "$file"
+  shred $verbose_flag \
+        --random-source "$RND_SOURCE" \
+        --iterations "$SHRED_TIMES" \
+        --zero \
+        --remove \
+        "$file"
 
   echo "Shredded file  : $file"
   ((FILE_COUNT++))
