@@ -195,6 +195,11 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
   exit 1
 fi
 
+# TODO: git-ls-remote will attempt to contact the remote repository
+# If the remote fails to respond, this can result in wasted time
+# It would be nice to have some way of detecting a non-responsive remote
+# to notify the user and abort before proceeding
+
 # check remotes
 if ! git ls-remote $SOURCE_REMOTE > /dev/null 2>&1; then
   if [ "$GIT_FORCE" == "--force" ]; then
