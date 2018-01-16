@@ -123,7 +123,10 @@ found=0
 
 find "$SEARCH_DIR" -not -empty -type f -name "*.crt" -print0 |
 while IFS= read -r -d $'\0' cert; do
-  if ! openssl x509 -noout -checkend $EXPIRE_TIME -in $cert;
+  if [ $VERBOSITY -gt 0 ]; then
+    echo >&2 "Checking certificate: $cert"
+  fi
+  if ! openssl x509 -noout -checkend $EXPIRE_TIME -in $cert > /dev/null 2>&1;
   then
     let found+=1
     echo "$cert"
