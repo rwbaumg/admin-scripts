@@ -39,6 +39,9 @@ if [[ -z "$VNC_PID" ]]; then
   exit 3
 fi
 
+# give the socket a moment to bind
+sleep 1
+
 # get the port number
 PORT=$(lsof -nPi | grep "IPv4" | grep "$VNC_PID" | awk '{print $9}' | awk -F":" '{print $2}')
 
