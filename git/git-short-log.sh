@@ -1,6 +1,8 @@
 #!/bin/bash
 # Displays a short-log of the current branch
 
+# todo: refactor to properly handle arguments, including path argument
+
 hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1; }
 
 # specify the default number of entries to display
