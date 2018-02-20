@@ -2,7 +2,14 @@
 # List commands provided by the specified package
 # rwb[at]0x19e[dot]net
 
+# todo: fix multiline support (ie. 'lspgpot' command from 'gnupg' package contains multiple lines)
+
 BIN_REGEX="(sbin|bin)\/"
+
+if [ -z "$1" ]; then
+  echo >&2 "No package specified."
+  exit 1
+fi
 
 if ! `dpkg -s $1 > /dev/null 2>&1`; then
   echo >&2 "Package '$1' is not installed."
@@ -42,7 +49,7 @@ for d in `dpkg -L $1 | grep -P "$BIN_REGEX" | sort`; do \
   # man_synopsis=$(echo "$man_synopsis" | sed -e 's/[]\/$*.^[]/\\&/g')
 
   if [ -n "$man_header" ]; then
-    echo $man_header | awk -v synop="$man_synopsis" -v x=0 -v N=2 'BEGIN {OFS="\b+"}; {FS="\b+(-|—)\b+"}; \
+    echo $man_header | awk -v synop="$man_synopsis" -v x=0 -v N=2 'BEGIN {RS="\n\n"}; {OFS="\b"}; {FS="\b+(-|—)\b+"}; \
     function print_command(string) {  printf ("%s%-30s%s", "\033[1;36m", string, "\033[0m"); } \
     function print_synopsis(string) { printf ("%80s%s%s", "\033[1;36m", string, "\033[0m"); } \
     function start_yellow() { printf ("%s", "\033[1;33m"); } \
