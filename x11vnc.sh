@@ -11,6 +11,8 @@
 # to configure a password, run:
 #   `x11vnc -storepasswd`
 
+hash x11vnc 2>/dev/null || { echo >&2 "You need to install x11vnc. Aborting."; exit 1; }
+
 AUTH_COOKIE="/run/user/$UID/gdm/Xauthority"
 LOG_FILE="$HOME/x11vnc.log"
 
