@@ -6,7 +6,7 @@
 hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1; }
 
 # specify the default number of entries to display
-LOG_COUNT=20
+LOG_COUNT=50
 
 # check if an argument was provided
 if [ $# -gt 0 ]; then
