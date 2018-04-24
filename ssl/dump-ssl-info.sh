@@ -27,7 +27,7 @@ fi
 
 SERVER="$1"
 PORT="$SP"
-if ! timeout 2 bash -c "echo QUIT | openssl s_client -connect $SERVER:$PORT -servername $SERVER -status"; then
+if ! timeout 2 bash -c "echo QUIT | openssl s_client -CApath /etc/ssl/certs -connect $SERVER:$PORT -servername $SERVER -status"; then
   echo >&2 "ERROR: Failed to connect to server."
   exit 1
 fi
