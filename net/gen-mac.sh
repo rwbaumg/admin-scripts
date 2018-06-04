@@ -115,7 +115,7 @@ FQDN=""
 RNDSEED="false"
 
 # process arguments
-# [ $# -gt 0 ] || usage
+[ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
   case "$1" in
     -p|--prefix)
