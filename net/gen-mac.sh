@@ -42,14 +42,17 @@ usage()
 
     ARGUMENTS
 
-     seed                 A seed which is used to genrate the new
-                          MAC address. Something like a FQDN works
-                          well, but any unique string is valid.
+     seed                  A seed which is used to genrate the new
+                           MAC address. Something like a FQDN works
+                           well, but any unique string is valid.
 
     OPTIONS
 
-     -o, --output <value>  The path to save the output image to.
-     -f, --force           Overwrite output file if it exists.
+     -r, --random          Use /dev/urandom to seed generation.
+     -s, --seed <value>    Specify the seed to use for generation.
+     -p, --prefix <value>  Specify the single-byte prefix for the
+                           generated address (must be even).
+                           Default: \x88
 
      -v, --verbose         Make the script more verbose.
      -h, --help            Prints this usage.
@@ -109,7 +112,7 @@ check_verbose()
 
 PREFIX="88"
 FQDN=""
-RANDOM="false"
+RNDSEED="false"
 
 # process arguments
 # [ $# -gt 0 ] || usage
@@ -131,7 +134,7 @@ while [ $# -gt 0 ]; do
       shift
     ;;
     -r|--random)
-      RANDOM="true"
+      RNDSEED="true"
       shift
     ;;
     -v|--verbose)
@@ -155,7 +158,7 @@ done
 
 test_prefix "$PREFIX"
 
-if [ "$RANDOM" = "true" ]; then
+if [ "$RNDSEED" = "true" ]; then
   # SEED=$(uuidgen)
   SEED=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 elif [ -z "$SEED" ]; then
