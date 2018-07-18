@@ -174,14 +174,14 @@ if [ $VERBOSITY -gt 0 ]; then
 fi
 
 if [ "$GIT_DRY_RUN" = "--dry-run" ]; then
+  echo git checkout $SOURCE_BRANCH
   echo git fetch $GIT_EXTRA_ARGS --all
   echo git reset --hard $SOURCE_PATH
-  echo git checkout $SOURCE_BRANCH
   echo git pull $GIT_EXTRA_ARGS $SOURCE_REMOTE $SOURCE_BRANCH
 else
+  git checkout $SOURCE_BRANCH
   git fetch $GIT_EXTRA_ARGS --all
   git reset --hard $SOURCE_PATH
-  git checkout $SOURCE_BRANCH
   git pull $GIT_EXTRA_ARGS $SOURCE_REMOTE $SOURCE_BRANCH
 fi
 
