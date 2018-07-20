@@ -12,7 +12,7 @@ fi
 
 FILE=$(readlink -m "$1")
 
-echo "File: $FILE"
+echo "filePath=$FILE"
 openssl x509 -in $FILE -noout -serial -subject -issuer -startdate -enddate
 
 exit 0
