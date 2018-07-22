@@ -1,5 +1,6 @@
 #!/bin/bash
-# Grablogins parses the Security.evtx from Windows systems into consoidated html and csv
+# Parses the Security.evtx event log from a Windows systems
+# and consoidates the results into HTML and CSV reports.
 #
 USAGE="$0 [file or directory...]"
 DESCRIPTION=$(echo -e "\tParses one or more Security.evtx log files from Windows systems\n"\
@@ -60,5 +61,5 @@ echo "see https://www.nsa.gov/ia/_files/app/Spotting_the_Adversary_with_Windows_
 cat Security.evtx.csv|grep ",NTLM," |grep -v ANONYMOUSLOGON |grep ,4625, |grep ,3,|tee -a PTH-lateral.csv
 cat Security.evtx.csv|grep ",NTLM," |grep -vc ANONYMOUSLOGON |grep ,4624, |grep ,3,|tee -a PTH-lateral.csv
 echo "File PTH-lateral.csv created!"
-exit
 echo "Process Complete!"
+exit
