@@ -5,35 +5,42 @@ UBUNTU_RELEASE=$(lsb_release -a 2>/dev/null | grep Release | awk '{print $2}')
 
 echo "Installing Bareos FileDaemon for Ubuntu v${UBUNTU_VERSION} backup client..."
 
+PKG_LST="/etc/apt/sources.list.d/bareos.list"
+PKG_SRC="deb http://download.bareos.org/bareos/release/latest/xUbuntu_${UBUNTU_RELEASE}/ ./"
+PKG_KEY="http://download.bareos.org/bareos/release/latest/xUbuntu_${UBUNTU_RELEASE}/Release.key"
+
 # add the package source
-echo "deb http://download.bareos.org/bareos/release/latest/xUbuntu_${UBUNTU_RELEASE}/ ./" \
-  | sudo tee -a /etc/apt/sources.list.d/bareos.list
+echo "Configuring package source in list file ${PKG_LIST} ..."
+grep -qF "${PKG_SRC}" "${PKG_LST}"  || echo "${PKG_SRC}" | sudo tee -a "${PKG_LST}"
 if ! [ $? -eq 0 ]; then
   exit 1
 fi
 
 # add the release key
-wget -qO - http://download.bareos.org/bareos/release/latest/xUbuntu_${UBUNTU_RELEASE}/Release.key \
-  | sudo apt-key add -
+echo "Retrieve release signing key ..."
+wget -qO - "${PKG_KEY}"  | sudo apt-key add -
 if ! [ $? -eq 0 ]; then
   exit 1
 fi
 
 if [ -d /etc/.git  ]; then
   # commit /etc changes
+  echo "Auto-commit changes to /etc (directory under version control) ..."
   pushd /etc
   sudo git add --all /etc/apt
-  sudo git commit -m "apt: add bareos package source"
+  sudo git commit -v -m "apt: add bareos package source"
   popd
 fi
 
 # update the package cache
+echo "Updating package list ..."
 sudo apt-get update
 if ! [ $? -eq 0 ]; then
   exit 1
 fi
 
 # install the actual package
+echo "Running installation ..."
 sudo apt-get install bareos-filedaemon
 if ! [ $? -eq 0 ]; then
   exit 1
