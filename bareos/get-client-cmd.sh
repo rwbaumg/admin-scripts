@@ -1,4 +1,9 @@
 #!/bin/bash
+# 0x19e Networks
+#
+# Generate a bconsole command for adding a client to Bareos
+#
+# Robert W. Baumgartner <rwb@0x19e.net>
 
 DIR_NAME="bareos-dir"
 

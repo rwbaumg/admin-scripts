@@ -1,7 +1,9 @@
 #!/bin/bash
+# 0x19e Networks
 #
-# clean a tape for re-use
+# Clean the specified tape by writing an EOF to the start.
 #
+# Robert W. Baumgartner <rwb@0x19e.net>
 
 if [[ -z "$1" ]]; then
   echo "Usage: $0 <slot-number>"
