@@ -1,17 +1,23 @@
 #!/bin/bash
 
+DIR_NAME="bareos-dir"
+
 if [[ $EUID -ne 0 ]] && [[ "$USER" != "bareos" ]]; then
    echo "This script must have permissions to read the Bareos configuration files." >&2
    exit 1
 fi
 
-if ! [ -e /etc/bareos/bareos-fd.d/director/bareos-dir.conf ]; then
-  echo >&2 "ERROR: Missing /etc/bareos/bareos-fd.d/director/bareos-dir.conf (is Bareos installed?)"
+if [ ! -z "$1" ]; then
+  DIR_NAME="$1"
+fi
+
+if ! [ -e /etc/bareos/bareos-fd.d/director/${DIR_NAME}.conf ]; then
+  echo >&2 "ERROR: Missing /etc/bareos/bareos-fd.d/director/${DIR_NAME}.conf (is Bareos installed?)"
   exit 1
 fi
 
 # get (unquoted) password from config file
-FD_PASS=$(grep Password /etc/bareos/bareos-fd.d/director/bareos-dir.conf | awk '{print $3}' | sed -e 's/^"//' -e 's/"$//')
+FD_PASS=$(grep Password /etc/bareos/bareos-fd.d/director/${DIR_NAME}.conf | awk '{print $3}' | sed -e 's/^"//' -e 's/"$//')
 
 if [ -z "$FD_PASS" ]; then
   echo >&2 "ERROR: Failed to determine client password."
