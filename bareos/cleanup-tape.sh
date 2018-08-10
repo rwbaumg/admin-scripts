@@ -80,8 +80,10 @@ if [ "${TAPE_IN_DRIVE}" != "${SLOT_NUMBER}" ]; then
   fi
 fi
 
-echo "Writing EOF to start of tape..."
+echo "Rewinding tape..."
 mt -f ${TAPE_DRIVE} rewind
+
+echo "Writing EOF to start of tape..."
 mt -f ${TAPE_DRIVE} weof
 
 echo "Status after write:"
