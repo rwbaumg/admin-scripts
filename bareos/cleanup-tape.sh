@@ -10,11 +10,17 @@ if [[ -z "$1" ]]; then
   exit 1
 fi
 
+# check if superuser
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root." >&2
+   exit 1
+fi
+
 SLOT_NUMBER=$1
 DRIVE_INDEX=0
 AUTOCHANGER=/dev/sg1
 TAPE_DRIVE=/dev/st0
-CHANGER_SCRIPT="/usr/lib/bareos/scripts/mtx-changer1"
+CHANGER_SCRIPT="/usr/lib/bareos/scripts/mtx-changer"
 
 # check slot number
 re='^[1-9]+$'
@@ -41,8 +47,9 @@ fi
 
 echo "Processing cleanup request for tape ${SLOT_NUMBER} in autochanger ${AUTOCHANGER} ..."
 
-SLOT_STATUS=$(mtx -f ${AUTOCHANGER} status | grep "Storage Element ${SLOT_NUMBER}:" | awk -F: '{print $2}')
-DRIVE_STATUS=$(mtx -f ${AUTOCHANGER} status | grep "Data Transfer Element ${DRIVE_INDEX}:" | awk -F: '{print $2}')
+STATUS_OUTPUT=$(mtx -f ${AUTOCHANGER} status)
+SLOT_STATUS=$(echo ${STATUS_OUTPUT} | grep "Storage Element ${SLOT_NUMBER}:" | awk -F: '{print $2}')
+DRIVE_STATUS=$(echo ${STATUS_OUTPUT} | grep "Data Transfer Element ${DRIVE_INDEX}:" | awk -F: '{print $2}')
 
 # check the drive to make sure it is empty
 if [ "${DRIVE_STATUS}" != "Empty" ]; then
@@ -76,7 +83,6 @@ fi
 echo "Writing EOF to start of tape..."
 mt -f ${TAPE_DRIVE} rewind
 mt -f ${TAPE_DRIVE} weof
-mt -f ${TAPE_DRIVE} rewind
 
 echo "Status after write:"
 mt -f ${TAPE_DRIVE} status
