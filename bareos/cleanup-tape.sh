@@ -50,12 +50,13 @@ echo "Processing cleanup request for tape ${SLOT_NUMBER} in autochanger ${AUTOCH
 STATUS_OUTPUT=$(mtx -f ${AUTOCHANGER} status)
 SLOT_STATUS=$(echo ${STATUS_OUTPUT} | grep "Storage Element ${SLOT_NUMBER}:" | awk -F: '{print $2}')
 DRIVE_STATUS=$(echo ${STATUS_OUTPUT} | grep "Data Transfer Element ${DRIVE_INDEX}:" | awk -F: '{print $2}')
+TAPE_IN_DRIVE=$(${CHANGER_SCRIPT} ${AUTOCHANGER} loaded 0 ${TAPE_DRIVE} ${DRIVE_INDEX})
 
 # check the drive to make sure it is empty
-if [ "${DRIVE_STATUS}" != "Empty" ]; then
+#if [ "${DRIVE_STATUS}" != "Empty" ]; then
+if [ "${DRIVE_STATUS}" != "Empty" ] && [  "${TAPE_IN_DRIVE}" != "0" ]; then
   # get the element number of the loaded tape
   # TAPE_IN_DRIVE=$(echo $DRIVE_STATUS | grep -Po '(?<=\(Storage\sElement\s)\d(?=\sLoaded\))')
-  TAPE_IN_DRIVE=$(${CHANGER_SCRIPT} ${AUTOCHANGER} loaded 0 ${TAPE_DRIVE} ${DRIVE_INDEX})
 
   echo "Found tape ${TAPE_IN_DRIVE} loaded in drive ${DRIVE_INDEX} (${TAPE_DRIVE})"
 
