@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DRIVE="/dev/st0"
+DRIVE="/dev/sg0"
 if [ ! -z "$1" ]; then
   DRIVE="$1"
 fi
