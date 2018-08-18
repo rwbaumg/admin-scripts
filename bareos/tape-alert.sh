@@ -6,7 +6,7 @@
 #
 # Robert W. Baumgartner <rwb@0x19e.net>
 #
-DRIVE="/dev/sg0"
+DRIVE="/dev/nst0"
 if [ ! -z "$1" ]; then
   DRIVE="$1"
 fi
@@ -25,7 +25,7 @@ if ! [ $? -eq 0 ]; then
 fi
 
 ALERT=$(echo "${OUTPUT}" | tail -n+5 | cut -d ':' -f2 | awk '{$1=$1};1')
-if [ "${ALERT}" != "OK" ]; then
+if [ ! -z "${ALERT}" ] && [ "${ALERT}" != "OK" ]; then
   # Error detected
   echo "Tape alert: ${ALERT}"
   exit 1
