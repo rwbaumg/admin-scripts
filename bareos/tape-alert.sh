@@ -31,5 +31,5 @@ if [ "${ALERT}" != "OK" ]; then
   exit 1
 fi
 
-echo >&2 "No errors found."
+# No errors detected
 exit 0
