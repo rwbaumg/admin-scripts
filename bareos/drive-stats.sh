@@ -10,14 +10,17 @@ if [ ! -c "${DRIVE}" ]; then
   exit 1
 fi
 
-# check if superuser
-if [[ $EUID -ne 0 ]]; then
-   echo >&2 "This script must be run as root."
-   exit 1
+STATUS=$(tapestat ${DRIVE})
+if ! [ $? -eq 0 ]; then
+  echo >&2 "ERROR: Failed to read tape status from ${DRIVE}."
+  exit 1
 fi
 
-STATUS=$(tapestat ${DRIVE})
 REPORT=$(smartctl -H -l error ${DRIVE})
+if ! [ $? -eq 0 ]; then
+  echo >&2 "ERROR: Failed to read S.M.A.R.T. status from ${DRIVE}."
+  exit 1
+fi
 
 echo "${STATUS}"
 echo "${REPORT}" | tail -n+3

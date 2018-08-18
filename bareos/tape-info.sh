@@ -1,3 +1,5 @@
 #!/bin/bash
 
-tapeinfo -f /dev/st0 && echo && bscrypto -e /dev/st0
+DRIVE="/dev/nst0"
+
+tapeinfo -f ${DRIVE} && echo && bscrypto -e ${DRIVE}
