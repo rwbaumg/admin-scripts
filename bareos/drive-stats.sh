@@ -16,7 +16,7 @@ if ! [ $? -eq 0 ]; then
   exit 1
 fi
 
-REPORT=$(smartctl -H -l error ${DRIVE})
+REPORT=$(smartctl -i -H -l error ${DRIVE})
 if ! [ $? -eq 0 ]; then
   echo >&2 "ERROR: Failed to read S.M.A.R.T. status from ${DRIVE}."
   exit 1
