@@ -19,7 +19,7 @@ fi
 SLOT_NUMBER=$1
 DRIVE_INDEX=0
 AUTOCHANGER=/dev/sg1
-TAPE_DRIVE=/dev/st0
+TAPE_DRIVE=/dev/nst0
 CHANGER_SCRIPT="/usr/lib/bareos/scripts/mtx-changer"
 
 # check slot number
