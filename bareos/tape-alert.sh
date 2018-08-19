@@ -6,7 +6,7 @@
 #
 # Robert W. Baumgartner <rwb@0x19e.net>
 #
-DRIVE="/dev/nst0"
+DRIVE="/dev/sg0"
 if [ ! -z "$1" ]; then
   DRIVE="$1"
 fi
