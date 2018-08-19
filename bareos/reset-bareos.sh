@@ -13,6 +13,9 @@ sudo service bareos-dir stop
 sudo service bareos-fd stop
 sudo service bareos-sd stop
 
+# disable LTO encryption
+sudo bscrypto -c /dev/nst0
+
 # remove files
 sudo rm -rf /var/lib/bareos/storage/*
 sudo rm -rf /var/lib/bareos/bootstrap/*
