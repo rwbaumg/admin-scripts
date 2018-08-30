@@ -1,10 +1,12 @@
 #!/bin/bash
-# 0x19e Networks
+#
+# -=[ 0x19e Networks ]=-
 #
 # Initialize tape storage for use with Bareos.
 #
 # Robert W. Baumgartner <rwb@0x19e.net>
 
+# Default options
 START_INDEX=1
 INIT_COUNT=0
 POOL="Scratch"
@@ -13,6 +15,7 @@ DEV_DRIVE="/dev/nst0"
 DEV_CHNGR="/dev/sg1"
 MTX_SCRIPT="/usr/lib/bareos/scripts/mtx-changer"
 
+# Check for required commands
 hash mt 2>/dev/null || { echo >&2 "You need to install mt-st. Aborting."; exit 1; }
 hash bconsole 2>/dev/null || { echo >&2 "You need to install bareos-bconsole. Aborting."; exit 1; }
 
@@ -288,14 +291,21 @@ if [ $VERBOSITY -gt 1 ]; then
 fi
 
 X=0
-for ((idx=${START_INDEX};idx<=${INIT_COUNT};idx++)); do
+for ((idx=1;idx<=${INIT_COUNT};idx++)); do
+  CURRENT_ELEMENT=$(((idx + START_INDEX) - 1))
+
   if [ $VERBOSITY -gt 0 ]; then
-    echo "Initializing storage element #${idx}..."
+    echo "Initializing storage element #${CURRENT_ELEMENT}..."
   fi
 
-  # InitTape ${idx}
+  InitTape ${CURRENT_ELEMENT}
   ((X++))
+
+  if [ $VERBOSITY -gt 1 ]; then
+    echo "Storage element #${CURRENT_ELEMENT} labeled for pool '${POOL}'."
+  fi
 done
 
 echo "${X} storage element(s) initialized for pool '${POOL}'."
+
 exit_script 0
