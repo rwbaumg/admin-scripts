@@ -1,50 +1,301 @@
 #!/bin/bash
 # 0x19e Networks
 #
-# Erase the first three tapes and label using barcodes as 'Scratch' volumes
-#
-# WARNING: Any existing data on tapes 1-3 will be lost!
+# Initialize tape storage for use with Bareos.
 #
 # Robert W. Baumgartner <rwb@0x19e.net>
 
-ENCRYPT=""
-if [ "$1" == "encrypt" ]; then
-  echo "Labeling for LTO encryption..."
-  ENCRYPT="$1"
-elif [ ! -z "$1" ]; then
-  echo >&2 "ERROR: Invalid argument (only 'encrypt' is supported)."
-  exit 1
+START_INDEX=1
+INIT_COUNT=0
+POOL="Scratch"
+DRIVE_IDX=0
+DEV_DRIVE="/dev/nst0"
+DEV_CHNGR="/dev/sg1"
+MTX_SCRIPT="/usr/lib/bareos/scripts/mtx-changer"
+
+hash mt 2>/dev/null || { echo >&2 "You need to install mt-st. Aborting."; exit 1; }
+hash bconsole 2>/dev/null || { echo >&2 "You need to install bareos-bconsole. Aborting."; exit 1; }
+
+function InitTape()
+{
+  local tape_num=$1
+  if ! [[ "${tape_num}" =~ ^-?[0-9]+$ ]]; then
+    echo >&2 "ERROR: '${tape_num}' is not a valid index number."
+    exit 1
+  fi
+
+  ${MTX_SCRIPT} ${DEV_CHNGR} load ${tape_num} ${DEV_DRIVE} ${DRIVE_IDX}
+  if ! [ $? -eq 0 ]; then
+    echo >&2 "ERROR: Failed to load tape ${tape_num} to drive ${DRIVE_IDX} (${DEV_DRIVE})."
+    exit 1
+  fi
+
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Writing EOF to start of tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE})..."
+  fi
+
+  mt -f ${DEV_DRIVE} rewind
+  if ! [ $? -eq 0 ]; then
+    echo >&2 "ERROR: Rewind tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE}) failed."
+    exit 1
+  fi
+
+  mt -f ${DEV_DRIVE} weof
+  if ! [ $? -eq 0 ]; then
+    echo >&2 "ERROR: Writing EOF to start of tape ${tape_num} failed on drive ${DRIVE_IDX} (${DEV_DRIVE})."
+    exit 1
+  fi
+
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Writing label for pool '${POOL}' to tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE})..."
+  fi
+
+  echo "label barcodes pool=${POOL} drive=${DRIVE_IDX} slot=${tape_num} ${ENCRYPT} yes" | bconsole
+  if ! [ $? -eq 0 ]; then
+    echo >&2 "ERROR: Failed to label tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE})."
+    exit 1
+  fi
+
+  ${MTX_SCRIPT} ${DEV_CHNGR} unload ${tape_num} ${DEV_DRIVE} ${DRIVE_IDX}
+  if ! [ $? -eq 0 ]; then
+    echo >&2 "ERROR: Failed to unload tape ${tape_num} from drive ${DRIVE_IDX} (${DEV_DRIVE})."
+    exit 1
+  fi
+}
+
+exit_script()
+{
+    # Default exit code is 1
+    local exit_code=1
+    local re var
+
+    re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+    if echo "$1" | egrep -q "$re"; then
+        exit_code=$1
+        shift
+    fi
+
+    re='[[:alnum:]]'
+    if echo "$@" | egrep -iq "$re"; then
+        if [ $exit_code -eq 0 ]; then
+            echo "INFO: $@"
+        else
+            echo "ERROR: $@" 1>&2
+        fi
+    fi
+
+    # Print 'aborting' string if exit code is not 0
+    [ $exit_code -ne 0 ] && echo "Aborting script..."
+
+    exit $exit_code
+}
+
+usage()
+{
+    # Prints out usage and exit.
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" <<"    EOF"
+    USAGE
+
+    Initializes one or more LTO tape storage elements for Bareos.
+
+    Existing tape labels are overwritten enabling tape re-use.
+    This script starts at storage element 1 and continues until
+    'count' elements are initialized.
+
+    SYNTAX
+            SCRIPT_NAME [OPTIONS]
+
+    OPTIONS
+
+     -c, --count <value>         The number of storage elements
+                                 to initialize.
+     -s, --start <value>         The index to start initializing
+                                 elements at (default: 1).
+     -p, --pool <value>          The name of the pool to label
+                                 elements for (default: Scratch).
+     -a, --autochanger <value>   The full path to the autochanger
+                                 device (default: /dev/sg1).
+     -d, --drive <value>         The full path to the tape drive
+                                 device (default: /dev/nst0).
+     -i, --drive-index <value>   The index of the tape drive (default: 0).
+
+     -e, --encrypt               Label the element to use LTO hardware
+                                 encryption.
+
+     -v, --verbose               Make the script more verbose.
+     -h, --help                  Prints this usage.
+    EOF
+
+    exit_script $@
+}
+
+test_arg()
+{
+    # Used to validate user input
+    local arg="$1"
+    local argv="$2"
+
+    if [ -z "$argv" ]; then
+        if echo "$arg" | egrep -q '^-'; then
+            usage "Null argument supplied for option $arg"
+        fi
+    fi
+
+    if echo "$argv" | egrep -q '^-'; then
+        usage "Argument for option $arg cannot start with '-'"
+    fi
+}
+
+test_number()
+{
+  local arg="$1"
+  local argv="$2"
+
+  test_arg "$arg" "$argv"
+
+  if [ -z "$argv" ]; then
+    argv="$arg"
+  fi
+
+  re='^[0-9]+$'
+  if ! [[ $argv =~ $re ]] ; then
+    usage "Argument must be numeric"
+  fi
+}
+
+# Check permission
+if ! `bconsole -t > /dev/null 2>&1;`; then
+  usage "User $USER does not have permission to initialize storage elements."
 fi
 
-# slot 1
-sudo /usr/lib/bareos/scripts/mtx-changer /dev/sg1 load 1 /dev/st0 0
-sudo mt -f /dev/st0 status
-sudo mt -f /dev/st0 rewind
-sudo mt -f /dev/st0 weof
-sudo mt -f /dev/st0 rewind
-echo "label barcodes pool=Scratch drive=0 slot=1 ${ENCRYPT} yes" | sudo bconsole
-sudo mt -f /dev/st0 status
-sudo /usr/lib/bareos/scripts/mtx-changer /dev/sg1 unload 1 /dev/st0 0
+VERBOSITY=0
+VERBOPT=""
+check_verbose()
+{
+  if [ $VERBOSITY -gt 1 ]; then
+    VERBOPT="-v"
+  fi
+}
 
-# slot 2
-sudo /usr/lib/bareos/scripts/mtx-changer /dev/sg1 load 2 /dev/st0 0
-sudo mt -f /dev/st0 status
-sudo mt -f /dev/st0 rewind
-sudo mt -f /dev/st0 weof
-sudo mt -f /dev/st0 rewind
-echo "label barcodes pool=Scratch drive=0 slot=2 ${ENCRYPT} yes" | sudo bconsole
-sudo mt -f /dev/st0 status
-sudo /usr/lib/bareos/scripts/mtx-changer /dev/sg1 unload 2 /dev/st0 0
+# process arguments
+[ $# -gt 0 ] || usage
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -c|--count)
+      test_number "$1" "$2"
+      shift
+      INIT_COUNT="$1"
+      shift
+    ;;
+    -s|--start)
+      test_number "$1" "$2"
+      shift
+      START_INDEX="$1"
+      shift
+    ;;
+    -p|--pool)
+      test_arg "$1" "$2"
+      shift
+      POOL="$1"
+      shift
+    ;;
+    -i|--drive-index)
+      test_number "$1" "$2"
+      shift
+      DRIVE_IDX="$1"
+      shift
+    ;;
+    -d|--drive)
+      test_arg "$1" "$2"
+      shift
+      DEV_DRIVE="$1"
+      shift
+    ;;
+    -a|--autochanger)
+      test_arg "$1" "$2"
+      shift
+      DEV_CHNGR="$1"
+      shift
+    ;;
+    -e|--encrypt)
+      ENCRYPT="yes"
+      shift
+    ;;
+    -v|--verbose)
+      ((VERBOSITY++))
+      check_verbose
+      shift
+    ;;
+    -vv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      check_verbose
+      shift
+    ;;
+    -h|--help)
+      usage
+    ;;
+    *)
+      # unknown option
+      usage "Unknown option: ${1}."
+    ;;
+  esac
+done
 
-# slot 3
-sudo /usr/lib/bareos/scripts/mtx-changer /dev/sg1 load 3 /dev/st0 0
-sudo mt -f /dev/st0 status
-sudo mt -f /dev/st0 rewind
-sudo mt -f /dev/st0 weof
-sudo mt -f /dev/st0 rewind
-echo "label barcodes pool=Scratch drive=0 slot=3 ${ENCRYPT} yes" | sudo bconsole
-sudo mt -f /dev/st0 status
-sudo /usr/lib/bareos/scripts/mtx-changer /dev/sg1 unload 3 /dev/st0 0
+if [ ${START_INDEX} -lt 1 ]; then
+  usage "Start index must be greater than or equal to 1."
+fi
+if [ ${INIT_COUNT} -lt 1 ]; then
+  usage "Count must be greater than or equal to 1."
+fi
 
-# unmount drive
-echo 'unmount storage=Tape drive=0' | sudo bconsole
+if [ ! -e "${MTX_SCRIPT}" ]; then
+  echo >&2 "ERROR: Autochanger script '${MTX_SCRIPT}' does not exist."
+  echo >&2 "Make sure the bareos-storage-tape package is installed."
+  exit_script
+fi
+
+echo "Running storage initialization for ${INIT_COUNT} element(s), starting at index ${START_INDEX}..."
+
+if [ ! -z "${ENCRYPT}" ]; then
+  echo "Hardware LTO encryption enabled."
+fi
+
+if [ $VERBOSITY -gt 0 ]; then
+  echo "Using autochanger ${DEV_CHNGR}"
+  echo "Using tape drive ${DEV_DRIVE}"
+fi
+
+# print options
+if [ $VERBOSITY -gt 1 ]; then
+  echo >&2
+  echo >&2 "============================="
+  echo >&2 "Initialization options"
+  echo >&2 "============================="
+  echo >&2 "START INDEX   = ${START_INDEX}"
+  echo >&2 "ELEMENT COUNT = ${INIT_COUNT}"
+  echo >&2 "STORAGE POOL  = ${POOL}"
+  echo >&2 "AUTOCHANGER   = ${DEV_CHNGR}"
+  echo >&2 "DRIVE DEVICE  = ${DEV_DRIVE}"
+  echo >&2 "DRIVE INDEX   = ${DRIVE_IDX}"
+  if [ ! -z "${ENCRYPT}" ]; then
+  echo >&2 "ENCRYPTION    = enabled"
+  else
+  echo >&2 "ENCRYPTION    = disabled"
+  fi
+  echo >&2 "============================="
+  echo >&2
+fi
+
+X=0
+for ((idx=${START_INDEX};idx<=${INIT_COUNT};idx++)); do
+  if [ $VERBOSITY -gt 0 ]; then
+    echo "Initializing storage element #${idx}..."
+  fi
+
+  # InitTape ${idx}
+  ((X++))
+done
+
+echo "${X} storage element(s) initialized for pool '${POOL}'."
+exit_script 0
