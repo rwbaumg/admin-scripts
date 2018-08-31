@@ -11,9 +11,9 @@ BACKUP_CONFIG_FILE="/etc/bareos/keys-backup.cfg"
 # Default settings
 DIR_CONFIG_NAME="bareos-dir"
 DIR_CONFIG_PATH="/etc/bareos/bareos-sd.d/director"
-PASSWORD_FILE="/etc/bareos/.backup/.backup-password"
+PASSWORD_FILE="/etc/bareos/backup/.backup-password"
 BACKUP_NAME="lto-hwe-keys.gpg"
-BACKUP_PATH="/etc/bareos/.backup"
+BACKUP_PATH="/etc/bareos/backup"
 BACKUP_SCRIPT="/etc/bareos/scripts/hwe-backup.sh"
 DECRYPT_IS_CRITICAL="true"
 ETCKEEPER_AUTOCOMMIT="false"
@@ -22,7 +22,7 @@ MAIL_ENABLE="false"
 MAIL_HOST="localhost"
 MAIL_FROM="(Bareos) <bareos@localhost>"
 MAIL_TO="root"
-MAIL_SUBJECT="New LTO HWE Backup"
+MAIL_SUBJECT="LTO HWE Backup"
 MAIL_HEADER=""
 MAIL_FOOTER=""
 
@@ -74,7 +74,6 @@ function panic()
 
   # Remove temporary home and exit.
   echo >&2 "ERROR: ${msg}"
-  echo >&2 "ERROR: Failed to decrypt previous backup."
   rm -rf $GNUPGHOME
   exit 1
 }
