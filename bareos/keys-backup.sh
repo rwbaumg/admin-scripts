@@ -15,6 +15,7 @@ PASSWORD_FILE="/etc/bareos/.backup/.backup-password"
 BACKUP_NAME="lto-hwe-keys.gpg"
 BACKUP_PATH="/etc/bareos/.backup"
 BACKUP_SCRIPT="/etc/bareos/scripts/hwe-backup.sh"
+DECRYPT_IS_CRITICAL="true"
 ETCKEEPER_AUTOCOMMIT="false"
 
 MAIL_ENABLE="false"
@@ -64,16 +65,32 @@ fi
 # Create a temporary home directory
 GNUPGHOME=$(mktemp -d /tmp/.gnupgXXXXXX)
 
+function panic()
+{
+  local msg="$1"
+  if [ -z "${msg}" ]; then
+    msg="Unknown failure."
+  fi
+
+  # Remove temporary home and exit.
+  echo >&2 "ERROR: ${msg}"
+  echo >&2 "ERROR: Failed to decrypt previous backup."
+  rm -rf $GNUPGHOME
+  exit 1
+}
+
 # Read the current backup (if one exists)
 FILE1="${BACKUP_PATH}/${BACKUP_NAME}"
 CURRENT=""
+DECRYPT_FAILED="false"
 if [ -e "${FILE1}" ]; then
   CURRENT=$(echo "${GPG_PASSWORD}" | gpg --batch --no-options --passphrase-file="${PASSWORD_FILE}" --homedir="${GNUPGHOME}" --armor --decrypt "${FILE1}" 2>/dev/null)
   if ! [ $? -eq 0 ]; then
-    echo >&2 "ERROR: Failed to decrypt previous backup."
-    # Remove temporary home and exit.
-    rm -rf $GNUPGHOME
-    exit 1
+    if [ "${DECRYPT_IS_CRITICAL}" == "false" ]; then
+      panic "Failed to decrypt previous backup."
+    else
+      DECRYPT_FAILED="true"
+    fi
   fi
 fi
 
@@ -83,7 +100,7 @@ NEW=$(${BACKUP_SCRIPT} ${DIR_CONFIG_NAME})
 # Check for differences between backups
 HEAD_LINES=3
 DIFF=$(diff <( echo "${NEW}" | tail -n +${HEAD_LINES}) <(echo "${CURRENT}" | tail -n +${HEAD_LINES}))
-if [ ! -z "${DIFF}" ]; then
+if [ ! -z "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
   # Backup has changed; update file
   if [ -e "${FILE1}" ]; then
     rm "${FILE1}"
@@ -104,10 +121,7 @@ if [ ! -z "${DIFF}" ]; then
                       --output "${FILE1}" > /dev/null 2>&1
 
   if ! [ $? -eq 0 ]; then
-    echo >&2 "ERROR: Backup encryption failed; update aborted."
-    # Remove temporary home and exit.
-    rm -rf $GNUPGHOME
-    exit 1
+    panic "Backup encryption failed; update aborted."
   fi
 
   # git handling for etckeeper (check if /etc/.git exists)
@@ -132,10 +146,7 @@ if [ ! -z "${DIFF}" ]; then
       cat "${FILE1}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"
     fi
     if ! [ $? -eq 0 ]; then
-      echo >&2 "ERROR: Failed to e-mail backup file."
-      # Remove temporary home and exit.
-      rm -rf $GNUPGHOME
-      exit 1
+      panic "Failed to e-mail backup file."
     fi
   fi
 fi

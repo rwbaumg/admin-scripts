@@ -1,19 +1,33 @@
 # LTO HWE Backup Configuration
 
-DIR_CONFIG_NAME="kronos-dir"
+# The name of the director to backup keys for.
+DIR_CONFIG_NAME="bareos-dir"
 
-BACKUP_PATH="/etc/bareos/.backup"
+# Configure the backup name and path.
+BACKUP_PATH="/etc/bareos/backup"
 BACKUP_NAME="lto-hwe-keys.gpg"
 
-PASSWORD_FILE="/etc/bareos/.backup/.backup-password"
+# Set the full path to a file containing the password to use for asymmetric GnuPG encryption.
+PASSWORD_FILE="/etc/bareos/backup/.backup-password"
 
-# Configure git auto-commit
-ETCKEEPER_AUTOCOMMIT=true
+# Configure whether or not a decryption failure encountered when checking a previous backup
+# for changes should be considered a critical failure. If this value is set to 'true' (the
+# default), the backup will exit in error if decryption fails for any reason (eg. wrong
+# password).
+#
+# If this value is set to 'false', decryption failures simply trigger backup re-generation.
+# For example if the password is changed and DECRYPT_IS_CRITICAL="false" then the backup
+# will be re-generated on the next run.
+DECRYPT_IS_CRITICAL=false
 
-# Configure mail
+# Configure git auto-commit. This should be set to 'true' if /etc is under VCS (eg. etckeeper)
+# to automatically commit updated backups.
+ETCKEEPER_AUTOCOMMIT=false
+
+# Configure e-mail settings.
 MAIL_ENABLE=true
-MAIL_FROM="(Bareos) <notify@0x19e.net>"
-MAIL_TO="notify@0x19e.net"
+MAIL_FROM="(Bareos) <bareos@localhost>"
+MAIL_TO="root@localhost"
 MAIL_SUBJECT="LTO HWE Backup $DIR_CONFIG_NAME-$TIMESTAMP"
 
 # Configure an (optional) mail header
