@@ -12,7 +12,6 @@
 *.ids
 *.png
 *.pdf
-*.example
 *.cfg
 *.svg
 

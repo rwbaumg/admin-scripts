@@ -1,0 +1,31 @@
+# LTO HWE Backup Configuration
+
+DIR_CONFIG_NAME="kronos-dir"
+
+BACKUP_PATH="/etc/bareos/.backup"
+BACKUP_NAME="lto-hwe-keys.gpg"
+
+PASSWORD_FILE="/etc/bareos/.backup/.backup-password"
+
+# Configure git auto-commit
+ETCKEEPER_AUTOCOMMIT=true
+
+# Configure mail
+MAIL_ENABLE=true
+MAIL_FROM="(Bareos) <notify@0x19e.net>"
+MAIL_TO="notify@0x19e.net"
+MAIL_SUBJECT="LTO HWE Backup $DIR_CONFIG_NAME-$TIMESTAMP"
+
+# Configure an (optional) mail header
+read -r -d '' MAIL_HEADER << EOM
+A PGP-encrypted backup containing the LTO hardware encryption keys used by the Bareos director $DIR_CONFIG_NAME was generated on $DATE at $TIME.
+
+Backup written to: $BACKUP_PATH/$BACKUP_NAME
+
+The content of the encrypted backup is included below:
+EOM
+
+# Configure an (optional) mail footer
+read -r -d '' MAIL_FOOTER << EOM
+The above message is confidential and only for the intended recipient.
+EOM
