@@ -221,7 +221,7 @@ while [ $# -gt 0 ]; do
       shift
     ;;
     -e|--encrypt)
-      ENCRYPT="yes"
+      ENCRYPT="encrypt"
       shift
     ;;
     -v|--verbose)
