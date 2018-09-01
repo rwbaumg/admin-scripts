@@ -1,0 +1,13 @@
+# Example send-stats.sh configuration.
+# This file provides a(n optional) way to configure script settings.
+# IMPORTANT: This file must be placed in the same directory as the send-stats.sh script!
+
+# Drive to report on.
+# This option can be modified at the command line.
+DRIVE="/dev/sg0"
+
+# E-mail settings.
+MAIL_HOST="localhost"
+MAIL_FROM="(Bareos) <bareos@localhost>"
+MAIL_TO="root"
+MAIL_SUBJECT="Tape Drive Statistics"

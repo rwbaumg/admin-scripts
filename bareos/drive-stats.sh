@@ -1,4 +1,5 @@
 #!/bin/bash
+# Prints a variety of statistics for the specified tape drive
 
 DRIVE="/dev/sg0"
 if [ ! -z "$1" ]; then
