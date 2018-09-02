@@ -1,6 +1,9 @@
 #!/bin/bash
 # Blocks an IP address for 2 hours
 
+hash at 2>/dev/null || { echo >&2 "You need to install at. Aborting."; exit 1; }
+hash iptables 2>/dev/null || { echo >&2 "You need to install iptables. Aborting."; exit 1; }
+
 if [[ -z "$1" ]]; then
   echo "Usage: $0 <ip>" >&2
   exit 1
@@ -17,9 +20,6 @@ REMOTE_IP=$1
 
 # how many hours the offending IP should be blocked for
 BLOCK_TIME_HOURS=2
-
-# Path to iptables binary executed by user apache through sudo
-IPTABLES="/sbin/iptables"
 
 # The action to use for the blocking rule
 IPTABLES_ACTION="DROP"
@@ -58,7 +58,7 @@ function valid_ip()
 
 if valid_ip $REMOTE_IP; then
   $IPTABLES -I INPUT -s $REMOTE_IP -j $IPTABLES_ACTION
-  echo "$IPTABLES -D INPUT -s $REMOTE_IP -j $IPTABLES_ACTION" | at now + $BLOCK_TIME_HOURS hours
+  echo "iptables -D INPUT -s $REMOTE_IP -j $IPTABLES_ACTION" | at now + $BLOCK_TIME_HOURS hours
   rm -f "$LOCKFILE"
   echo "iptables rule added to $IPTABLES_ACTION $REMOTE_IP for the next $BLOCK_TIME_HOURS hour(s)"
 else
