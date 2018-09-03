@@ -165,10 +165,15 @@ case "$1" in
         echo >&2 "ERROR: Specified attachment file not found!"
         exit 1
       fi
-      if [ ${ATTACHMENT: -4} == ".jpg" ] || [ ${ATTACHMENT: -4} == ".avi" ]; then
+
+      filename=$(basename -- "$1")
+      extension="${filename##*.}"
+      filename="${filename%.*}"
+
+      if [ "${extension}" == "jpg" ] || [ "${extension}" == "avi" ]; then
         # echo "Setting attachment file to $1 ..."
-        ATTACHMENT="$1"
-        ATTACHMENT_EXT=${ATTACHMENT: -4}
+        ATTACHMENT=$1
+        ATTACHMENT_EXT=${extension}
 
         # check attachment size and if needed try to compress it down
         # before trying to send (the MMS gateway will just scrub the
