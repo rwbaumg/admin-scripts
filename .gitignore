@@ -15,6 +15,8 @@
 *.cfg
 *.svg
 *.old
+*.iso
+*.sha1
 
 tmp.address
 mac.address
