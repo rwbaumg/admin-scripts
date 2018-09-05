@@ -18,6 +18,8 @@
 *.iso
 *.sha1
 
+*.example
+
 tmp.address
 mac.address
 mac.manufacturer
