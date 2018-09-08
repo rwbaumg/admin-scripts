@@ -1,5 +1,5 @@
 #!/bin/bash
-#	
+#
 #	Linux-Bench CPU Benchmark Script
 #	(C) 2013-2017 ServeTheHome.com and ServeThe.biz
 #
@@ -7,7 +7,7 @@
 #
 #	Linux-Bench is a sscript that runs hardinfo, Unixbench 5.1.3, c-ray 1.1, STREAM, OpenSSL, sysbench (CPU),
 #	crafty, redis, NPB, NAMD, and 7-zip benchmarks without manual intervention.
-#	
+#
 #	Linux-Bench must be run as root or using a su prompt to automate download and installation of benchmarks
 #
 #	For more information go:
@@ -32,22 +32,22 @@ version()
 cat << EOF
 ##############################################################
 #  (c) 2013-2017 ServeTheHome.com and ServeThe.biz
-# 
+#
 #	Linux-Bench $rev
-#	- Linux-Bench the STH Benchmark Suite 
+#	- Linux-Bench the STH Benchmark Suite
 ###############################################################
 
 EOF
 }
 
 
-usage() 
+usage()
 {
 cat << EOF
 
-usage: $0 
+usage: $0
 
-This is the STH benchmark suite. 
+This is the STH benchmark suite.
 
 ARGS:
         ARG1 - none required for now
@@ -55,7 +55,7 @@ ARGS:
         ARG3 - none required for now
 
 OPTIONAL ARGS:
-        ARG -- script_option_1 script_option-2 
+        ARG -- script_option_1 script_option-2
 
 OPTIONS:
 	-h	help (usage info)
@@ -63,7 +63,7 @@ OPTIONS:
     	-p 	Private Result, results will not be in the public database
     	-e	Email results, a perfect pairing with private results.
     		use -e email@email.net
-    	
+
 
 ENVIRONMENT VARIABLES:
 
@@ -74,10 +74,10 @@ EOF
 
 
 # Verify if the script is executed with Root Privileges #
-rootcheck() 
+rootcheck()
 {
 	if [[ $EUID -ne 0 ]]; then
-   		echo "This script must be run as root" 
+   		echo "This script must be run as root"
 		echo "Ex. "sudo ./linux-bench.sh""
 		exit 1
 	fi
@@ -97,15 +97,15 @@ setup()
 	if [ -f /.dockerinit ] ; then
 		log=/data/"linux-bench"$rev"_"$host"_"$full_date.log
 	fi
-	
+
 	if [ -n "$isprivate" ]; then
 		echo $isprivate
 	fi
-	
+
 	if [ -n "$email" ]; then
 		echo $email
 	fi
-	
+
 	#outdir=$host"_"$full_date
 	#mkdir $outdir
 }
@@ -131,7 +131,7 @@ Update_Install_RHEL()
 
 
 # Detects which OS and if it is Linux then it will detect which Linux Distribution.
-whichdistro() 
+whichdistro()
 {
 	OS=`uname -s`
 	REV=`uname -r`
@@ -140,34 +140,34 @@ whichdistro()
 	if [ "${OS}" = "SunOS" ] ; then
 		OS=Solaris
 		DIST=Solaris
-		ARCH=`uname -p`	
+		ARCH=`uname -p`
 		OSSTR="${OS} ${REV}(${ARCH} `uname -v`)"
 	elif [ "${OS}" = "AIX" ] ; then
 		DIST=AIX
 		OSSTR="${OS} `oslevel` (`oslevel -r`)"
-		
+
 	elif [ "${OS}" = "Linux" ] ; then
 		KERNEL=`uname -r`
-	
+
 		if [ -f /etc/redhat-release ] ; then
 			DIST='RedHat'
 			PSUEDONAME=`cat /etc/redhat-release | sed s/.*\(// | sed s/\)//`
 			REV=`cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//`
-			
+
 		elif [ -f /etc/centos-release ] ; then
 			DIST='CentOS'
 			PSUEDONAME=`cat /etc/centos-release | sed s/.*\(// | sed s/\)//`
 			REV=`cat /etc/centos-release | sed s/.*release\ // | sed s/\ .*//`
-			
+
 		elif [ -f /etc/SuSE-release ] ; then
 			DIST=`cat /etc/SuSE-release | tr "\n" ' '| sed s/VERSION.*//`
 			REV=`cat /etc/SuSE-release | tr "\n" ' ' | sed s/.*=\ //`
-			
+
 		elif [ -f /etc/mandrake-release ] ; then
 			DIST='Mandrake'
 			PSUEDONAME=`cat /etc/mandrake-release | sed s/.*\(// | sed s/\)//`
 			REV=`cat /etc/mandrake-release | sed s/.*release\ // | sed s/\ .*//`
-			
+
 		elif [ -f /etc/debian_version ] ; then
 			DIST="Debian"
 			PSUEDONAME=`cat /etc/debian_version`
@@ -182,11 +182,11 @@ whichdistro()
 
 		elif [ -f /etc/UnitedLinux-release ] ; then
 			DIST="${DIST}[`cat /etc/UnitedLinux-release | tr "\n" ' ' | sed s/VERSION.*//`]"
-			
-		else 
-			DIST='Not detected'	
+
+		else
+			DIST='Not detected'
 		fi
-		
+
 		OSSTR="${OS} ${DIST} ${REV}(${PSUEDONAME} ${KERNEL} ${MACH})"
 	fi
 }
@@ -239,7 +239,7 @@ sysinfo()
 		lscpu
 		lscpu -V
 		lscpu -e
-	else 
+	else
 		lscpu;
 	fi
 	: ${VIRTUAL:=FALSE}
@@ -290,7 +290,7 @@ hardi()
 {
 	cd $benchdir
 	echo "Running HardInfo test"
-	hardinfo --generate-report --report-format text 
+	hardinfo --generate-report --report-format text
 }
 
 # UnixBench 5.1.3
@@ -298,44 +298,42 @@ ubench()
 {
 	cd $benchdir
 	echo "Building UnixBench"
-	wget -N http://files.linux-bench.com/lb/UnixBench5.1.3.tgz 
-	wget -N http://files.linux-bench.com/lb/fix-limitation.patch 
+	wget -N http://files.linux-bench.com/lb/UnixBench5.1.3.tgz
+	wget -N http://files.linux-bench.com/lb/fix-limitation.patch
 	tar -zxf UnixBench5.1.3.tgz
-	
-	cd UnixBench 
-	mv ../fix-limitation.patch .	
+
+	cd UnixBench
+	mv ../fix-limitation.patch .
 	make -j$(nproc)
 	patch Run fix-limitation.patch
 	echo "Running UnixBench"
 	./Run dhry2reg whetstone-double syscall pipe context1 spawn execl shell1 shell8 shell16
 	cd $benchdir
 	rm -rf UnixBench* fix-limitation.patch
-	
 }
 
 # C-Ray 1.1
 cray()
 {
 	cd $benchdir
-	
+
 	appbase=c-ray-1.1
 	apptgz=c-ray-1.1.gz
 	tgzstring=xfz
 	appbin=$appbase/c-ray-mt
 	appdlpath=http://files.linux-bench.com/lb/$apptgz
 	extract
-	
+
 	echo "Running C-Ray test"
 	cd c-ray-1.1 && make
 	echo "c-ray Easy Test"
-	cat scene | ./c-ray-mt -t $threads -s 7500x3500 > foo.ppm 
+	cat scene | ./c-ray-mt -t $threads -s 7500x3500 > foo.ppm
 	echo "c-ray Medium Test"
 	cat sphfract | ./c-ray-mt -t $threads -s 1920x1200 -r 8 > foo.ppm
 	echo "c-ray Hard Test"
-	cat sphfract | ./c-ray-mt -t $threads -s 3840x2160 -r 8 > foo.ppm 
+	cat sphfract | ./c-ray-mt -t $threads -s 3840x2160 -r 8 > foo.ppm
 	cd $benchdir
 	rm -rf $appbase*
-	
 }
 
 # STREAM by Dr. John D. McCalpin
@@ -358,7 +356,7 @@ stream()
 
 	echo "Running STREAM test"
 	./stream-me
-	
+
 	cd $benchdir
 	rm -rf stream-me stream.c
 }
@@ -367,7 +365,7 @@ stream()
 OSSL()
 {
 	cd $benchdir
-	
+
 	appbase=openssl-1.0.1g
 	apptgz=openssl-1.0.1g.tar.gz
 	tgzstring=xfz
@@ -381,11 +379,9 @@ OSSL()
 	make 2>&1 >> /dev/null
 	echo "Running OpenSSL test"
  	./apps/openssl speed rsa4096 -multi $nproc
-	
+
 	cd $benchdir
 	rm -rf openssl*
-
-	
 }
 
 crafty()
@@ -401,10 +397,9 @@ crafty()
    	make crafty-make
    	chmod +x crafty
    	./crafty bench end
-	
+
 	cd $benchdir
 	rm -rf crafty*
-	
 }
 
 
@@ -463,7 +458,7 @@ red()
 	done
 
 	redis-cli shutdown
-	
+
 	cd $benchdir
 	rm -rf redis* /etc/redis /var/redis* /usr/local/bin/redis-* /etc/init.d/redis_*
 
@@ -480,7 +475,7 @@ NPB()
 	appdlpath=http://files.linux-bench.com/lb/$apptgz
 	tgzstring=xfz
 	extract
-	
+
 	cd NPB3.3.1/NPB3.3-OMP/
 	echo "Building NPB"
 
@@ -506,7 +501,7 @@ NPB()
 	echo "Running NPB tests"
 	bin/bt.A.x
 	bin/ft.A.x
-	
+
 	cd $benchdir
 	rm -rf NPB*
 }
@@ -524,7 +519,7 @@ NAMD()
 	appbin=$appbase/namd2
 	appdlpath=http://files.linux-bench.com/lb/$apptgz
 	extract
-	
+
 	appbase=apoa1
 	apptgz=apoa1.tar.gz
 	tgzstring=xfz
@@ -539,12 +534,11 @@ NAMD()
 	timeperstep=$(./namd2 +p$threads +setcpuaffinity ../apoa1/apoa1.namd | grep "Benchmark time" | tail -1 | cut -d" " -f6)
 
 	echo "Time per step" $timeperstep
-	
+
 	cd $benchdir
 	rm -rf NAMD* apoa1*
-	
 }
-    
+
 # p7zip
 p7zip()
 {
@@ -563,25 +557,23 @@ p7zip()
 
 	echo "Starting 7zip benchmark, this will take a while"
 	bin/7za b >> output.txt
-	
+
 	compressmips=$(grep Avr output.txt | tr -s ' ' |cut -d" " -f4)
 	decompressmips=$(grep Avr output.txt | tr -s ' ' |cut -d" " -f7)
-	
+
 	echo "Compress speed (MIPS):" $compressmips
 	echo "Decompress speed (MIPS):" $decompressmips
-	
+
 	cd $benchdir
 	rm -rf p7zip*
-	
-
 }
 
 runBenches()
-{	
+{
 #Individual modules run below...comment them out to prevent them from running.
 #echo ${iterations:=1} passes
 #	while [ $iterations -gt 0 ] ; do
-		echo "hardinfo"  
+		echo "hardinfo"
 		time hardi
 		echo "ubench"
 		time ubench
@@ -590,20 +582,19 @@ runBenches()
 		echo "stream"
 		time stream
 		echo "OSSL"
-		time OSSL  
+		time OSSL
 		echo "sysbench"
-		time sysb 
+		time sysb
 		echo "redis"
 		time red
 		echo "NPB"
 		time NPB
-		echo "NAMD" 
+		echo "NAMD"
 		time NAMD
 		echo "p7zip"
 		time p7zip
 #		let iterations-=1
 #	done
-	
 }
 
 
@@ -614,7 +605,7 @@ runBenches()
 #
 
 main()
-{	
+{
 rootcheck
 
 while getopts "hVRpe:" arg; do
@@ -640,7 +631,6 @@ while getopts "hVRpe:" arg; do
      	;;
   esac
 done
-	
 	echo "setup"
 	setup
 	echo "version"
@@ -669,7 +659,7 @@ push_data() {
   sleep 1s
 #  curl -F file="@./tmpbench/$log" http://parser.linux-bench.com:3000/java-process/uploader -H "Connection: close"
   curl --form file="@./tmpbench/$log" --form press=Upload http://beta.linux-bench.com/upload_file/ --trace-ascii dumpfile
-  
+
 #Adding new script targets
   curl --form file="@./tmpbench/$log" --form press=Upload http://linux-bench.com/upload_file/ --trace-ascii dumpfile
 #  curl -F file="@./tmpbench/$log" http://linux-bench.com:3000/java-process/uploader -H "Connection: close"
