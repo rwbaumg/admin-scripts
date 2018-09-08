@@ -32,6 +32,8 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
   device=${attr:5:1}
   tgttype=${attr:6:1}
   zero=${attr:7:1}
+
+  # NOTE: Attributes after this point depend on lvs version
   health=${attr:8:1}
   skip=${attr:9:1}
 
@@ -366,8 +368,8 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
   echo "       Device: $device_desc"
   echo "  Target type: $tgttype_desc"
   echo "         Zero: $zero_desc"
-  echo "       Health: $health_desc"
-  echo "         Skip: $skip_desc"
+  #echo "       Health: $health_desc"
+  #echo "         Skip: $skip_desc"
   echo "EOF"
   echo
 
