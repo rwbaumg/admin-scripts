@@ -4,6 +4,8 @@
 JOB_ID=$1
 CATALOG="BareosCatalog"
 
+hash bconsole 2>/dev/null || { echo >&2 "You need to install bareos-bconsole. Aborting."; exit 1; }
+
 if [ -z "${JOB_ID}" ]; then
   echo >&2 "ERROR: No job specified."
   exit 1

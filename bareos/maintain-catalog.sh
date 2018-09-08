@@ -4,6 +4,8 @@
 CATALOG="BareosCatalog"
 STATS_DAYS=14
 
+hash bconsole 2>/dev/null || { echo >&2 "You need to install bareos-bconsole. Aborting."; exit 1; }
+
 bconsole <<END_OF_DATA 2>&1 >/dev/null
 @output /dev/null
 @output

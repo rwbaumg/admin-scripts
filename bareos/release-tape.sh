@@ -3,6 +3,8 @@
 #
 STORAGE="Tape"
 
+hash bconsole 2>/dev/null || { echo >&2 "You need to install bareos-bconsole. Aborting."; exit 1; }
+
 # Use bconsole to release storage
 bconsole <<END_OF_DATA 2>&1 >/dev/null
 @output /dev/null
