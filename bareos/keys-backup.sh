@@ -27,6 +27,7 @@ MAIL_HEADER=""
 MAIL_FOOTER=""
 
 # Make sure required packages are installed and in the current PATH
+hash bareos-sd 2>/dev/null || { echo >&2 "You need to install bareos-storage. Aborting."; exit 1; }
 hash bscrypto 2>/dev/null || { echo >&2 "You need to install bareos-storage-tape. Aborting."; exit 1; }
 hash bsmtp 2>/dev/null || { echo >&2 "You need to install bareos-common. Aborting."; exit 1; }
 hash gpg 2>/dev/null || { echo >&2 "You need to install gnupg. Aborting."; exit 1; }
@@ -124,7 +125,7 @@ if [ ! -z "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
   fi
 
   # git handling for etckeeper (check if /etc/.git exists)
-  if [ "${ETCKEEPER_AUTOCOMMIT}" == "true" ]; then
+  if [ "${ETCKEEPER_AUTOCOMMIT}" == "true" ] && hash git 2>/dev/null; then
     if `git -C "/etc" rev-parse > /dev/null 2>&1`; then
       if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- ${FILE1}|egrep '^(M| M)')" != "" ]]; then
         pushd /etc > /dev/null 2>&1

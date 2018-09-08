@@ -5,7 +5,7 @@
 #
 # Robert W. Baumgartner <rwb@0x19e.net>
 
-hash bareos-fd 2>/dev/null || { echo >&2 "You need to install bareos-fd. Aborting."; exit 1; }
+hash bareos-fd 2>/dev/null || { echo >&2 "You need to install bareos-filedaemon. Aborting."; exit 1; }
 
 sudo service bareos-fd stop
 sudo rm /var/lib/bareos/*

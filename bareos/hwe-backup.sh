@@ -16,7 +16,8 @@ DIR_CONFIG_PATH="/etc/bareos/bareos-sd.d/director"
 # Generate a timestamp to include in output
 TIMESTAMP=$(date '+%Y-%m-%d %r')
 
-# Make sure 'bscrypto' is installed
+# Make sure 'bareos-sd' and 'bscrypto' are installed
+hash bareos-sd 2>/dev/null || { echo >&2 "You need to install bareos-storage. Aborting."; exit 1; }
 hash bscrypto 2>/dev/null || { echo >&2 "You need to install bareos-storage-tape. Aborting."; exit 1; }
 
 # Enable overriding director name

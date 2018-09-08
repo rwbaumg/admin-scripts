@@ -1,6 +1,9 @@
 #!/bin/bash
 # Install Bareos FileDaemon on Ubuntu
 
+hash wget 2>/dev/null || { echo >&2 "You need to install wget. Aborting."; exit 1; }
+hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
+
 UBUNTU_RELEASE=$(lsb_release -a 2>/dev/null | grep Release | awk '{print $2}')
 
 echo "Installing Bareos FileDaemon for Ubuntu v${UBUNTU_VERSION} backup client..."
@@ -23,7 +26,7 @@ if ! [ $? -eq 0 ]; then
   exit 1
 fi
 
-if [ -d /etc/.git  ]; then
+if [ -d /etc/.git  ] && hash git 2>/dev/null; then
   # commit /etc changes
   echo "Auto-commit changes to /etc (directory under version control) ..."
   pushd /etc

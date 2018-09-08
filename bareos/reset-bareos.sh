@@ -8,9 +8,9 @@
 # define the use to run database setup scripts as
 SUDO_USER="postgres"
 
-hash bareos-dir 2>/dev/null || { echo >&2 "You need to install bareos-dir. Aborting."; exit 1; }
-hash bareos-fd 2>/dev/null || { echo >&2 "You need to install bareos-fd. Aborting."; exit 1; }
-hash bareos-sd 2>/dev/null || { echo >&2 "You need to install bareos-sd. Aborting."; exit 1; }
+hash bareos-dir 2>/dev/null || { echo >&2 "You need to install bareos-director. Aborting."; exit 1; }
+hash bareos-fd 2>/dev/null || { echo >&2 "You need to install bareos-filedaemon. Aborting."; exit 1; }
+hash bareos-sd 2>/dev/null || { echo >&2 "You need to install bareos-storage. Aborting."; exit 1; }
 
 # stop all daemons
 sudo service bareos-dir stop
