@@ -10,3 +10,6 @@ hash bconsole 2>/dev/null || { echo >&2 "You need to install bareos-bconsole. Ab
 echo ".bvfs_clear_cache yes" | sudo bconsole
 sudo service bareos-dir restart
 echo ".bvfs_update" | sudo bconsole
+
+# perform a database check
+sudo -u bareos bareos-dbcheck -b -f
