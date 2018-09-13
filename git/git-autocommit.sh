@@ -4,6 +4,10 @@
 #
 # Enables auto-commiting changes to a file that is already under Git control
 #
+# Author: Robert W. Baumgartner <rwb@0x19e.net>
+
+hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1; }
+
 FILE="$1"
 MESSAGE="$2"
 
@@ -44,9 +48,10 @@ if hash git 2>/dev/null; then
       # commit pending changes
       git add --all "${FILE}"
       git commit -m "$MESSAGE"
+      exit 0
     fi
   fi
   popd > /dev/null 2>&1
 fi
 
-exit 0
+exit -1
