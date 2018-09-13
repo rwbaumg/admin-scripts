@@ -21,3 +21,5 @@ if ! [[ $LENGTH =~ $re ]] ; then
 fi
 
 tr -dc "$CHARSET" < $RNG_DEV | head -c $LENGTH | xargs -0
+
+exit 0

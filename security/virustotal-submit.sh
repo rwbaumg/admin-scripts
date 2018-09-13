@@ -67,3 +67,5 @@ while true; do
   echo -e -n "$(tput setaf 3).$(tput sgr0)\r"
   sleep 5
 done
+
+exit 0

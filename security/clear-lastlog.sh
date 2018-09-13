@@ -11,3 +11,4 @@ fi
 
 > /var/log/lastlog
 
+exit 0

@@ -26,3 +26,5 @@ echo "COMMANDS BY FREQUENCY OF EXECUTION"
 echo ""
 
 sa | awk '{print $1, $6}' | sort -n | head -n -1 | sort -nr
+
+exit 0
