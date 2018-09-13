@@ -14,9 +14,6 @@ if [ -z "${FILE}" ] || [ -z "${MESSAGE}" ]; then
   usage
 fi
 
-echo "Filename = $FILE"
-echo "Message  = $MESSAGE"
-
 SOURCE="${FILE}"
 #SELF="${BASH_SOURCE[0]}"
 if [ ! -d "$SOURCE" ]; then
@@ -39,9 +36,9 @@ fi
 if hash git 2>/dev/null; then
   pushd "${ROOT}" > /dev/null 2>&1
   if `git rev-parse --is-inside-work-tree > /dev/null 2>&1`; then
-    if [[ "$(git --work-tree=\"${ROOT}\" status --porcelain -- ${FILE}|egrep '^(M| M)')" != "" ]]; then
-      echo git add "${FILE}"
-      echo git commit -m "$MESSAGE"
+    if [[ "$(git status --porcelain -- ${FILE}|egrep '^(M| M)')" != "" ]]; then
+      git add "${FILE}"
+      git commit -m "$MESSAGE"
     fi
   fi
   popd > /dev/null 2>&1
