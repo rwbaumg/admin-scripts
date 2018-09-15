@@ -23,6 +23,7 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
   path=$(echo "$lv" | awk '{ print $2 }')
   attr=$(echo "$lv" | awk '{ print $3 }')
   blkdev=$(readlink -f "${path}")
+  type=$(file -s "${blkdev}")
 
   voltype=${attr:0:1}
   perm=${attr:1:1}
@@ -370,6 +371,9 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
   echo "         Zero: $zero_desc"
   #echo "       Health: $health_desc"
   #echo "         Skip: $skip_desc"
+  echo
+  echo "$type"
+  echo
   echo "EOF"
   echo
 
