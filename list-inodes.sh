@@ -7,10 +7,10 @@ INPUT_PATH="."
 
 if [ -n "$1" ]; then
   INPUT_PATH=$(readlink -m "$@")
-  echo "$TOP_10_MSG: $INPUT_PATH"
+  echo "$TOP_MSG: $INPUT_PATH"
 else
   INPUT_PATH=$(readlink -m "$INPUT_PATH")
-  echo "$TOP_10_MSG"
+  echo "$TOP_MSG"
 fi
 
 find "${INPUT_PATH}" -xdev -printf '%h\n' \
