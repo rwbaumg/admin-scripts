@@ -1,7 +1,8 @@
 #!/bin/bash
 # find directories with a lot of inodes
 
-TOP_10_MSG="top 10 by inodes"
+TOP_COUNT=40
+TOP_MSG="top ${TOP_COUNT} by inodes"
 INPUT_PATH="."
 
 if [ -n "$1" ]; then
@@ -16,4 +17,4 @@ find "${INPUT_PATH}" -xdev -printf '%h\n' \
   | sort \
   | uniq -c \
   | sort -k 1 -n -r \
-  | head -40
+  | head -${TOP_COUNT}
