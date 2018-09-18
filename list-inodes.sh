@@ -12,10 +12,8 @@ else
   echo "$TOP_10_MSG"
 fi
 
-# du --inodes -xS /etc | sort -rh | head -10
-
 find "${INPUT_PATH}" -xdev -printf '%h\n' \
   | sort \
   | uniq -c \
   | sort -k 1 -n -r \
-  | head -10
+  | head -40
