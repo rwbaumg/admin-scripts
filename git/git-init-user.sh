@@ -19,7 +19,7 @@ if [ -e "$HOME/.gitconfig" ]; then
   echo >&2 "WARNING: '$HOME/.gitconfig' already exists and will not be modified."
 else
   echo "Installing .gitconfig ..."
-  cp -v "${ROOT_DIR}/gitconfig.template ${HOME}/.gitconfig"
+  cp -v "${ROOT_DIR}/gitconfig.template" "${HOME}/.gitconfig"
 
   USER_FULLNAME=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1)
   USER_DOMAIN=$(hostname -d)
@@ -32,7 +32,7 @@ if [ -e "$HOME/.gitattributes" ]; then
   echo >&2 "WARNING: '$HOME/.gitattributes' already exists and will not be modified."
 else
   echo "Installing .gitattributes ..."
-  cp -v "${ROOT_DIR}/gitattributes.template ${HOME}/.gitattributes"
+  cp -v "${ROOT_DIR}/gitattributes.template" "${HOME}/.gitattributes"
 fi
 
 # Check for missing diff support
