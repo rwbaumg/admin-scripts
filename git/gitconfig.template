@@ -1,0 +1,77 @@
+# This is Git's per-user configuration file.
+# It must be edited for your developer environment
+#
+# For full extended diff support, the following
+# commands must be in your PATH:
+#   - pandoc
+#   - pdfinfo
+#   - hexdump
+#   - odt2txt
+#   - unzip
+#   - zcat
+#   - bzcat
+#   - xzcat
+#   - tar
+#
+# To install this template, run:
+#
+#   `cp gitconfig.template ~/.gitconfig`
+#   `cp gitattributes.template ~/.gitattributes`
+#
+[user]
+        name = John Q. Dow
+        email = jqd@example.com
+[credential]
+        helper = cache --timeout 120
+[push]
+        default = simple
+[core]
+        attributesFile = ~/.gitattributes
+[alias]
+        wdiff = diff --word-diff=color --unified=1
+        amend = "!f(){ git add . && git commit --amend ${1}; };f"
+        hard-reset = !git reset HEAD --hard && git clean -fd
+        ls = log --oneline
+        ca = commit --all
+        push-om = push origin master
+        pull-om = pull origin master
+        debug  = "!set -x; GIT_TRACE=2 GIT_CURL_VERBOSE=2 GIT_TRACE_PERFORMANCE=2 GIT_TRACE_PACK_ACCESS=2 GIT_TRACE_PACKET=2 GIT_TRACE_PACKFILE=2 GIT_TRACE_SETUP=2 GIT_TRACE_SHALLOW=2 git"
+        lg = log --graph --abbrev-commit --decorate --date=relative --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)' --all
+        lsb = "!git for-each-ref --sort='-authordate' --format='%(authordate)%09%(objectname:short)%09%(refname)' refs/heads | sed -e 's-refs/heads/--'"
+        unstage = reset HEAD --
+        last = log -1 HEAD
+[diff "zip"]
+        textconv = unzip -p
+        binary = true
+[diff "gz"]
+        textconv = zcat
+        binary = true
+[diff "bz2"]
+        textconv = bzcat
+        binary = true
+[diff "xz"]
+        textconv = xzcat
+        binary = true
+[diff "tar"]
+        textconv = tar -O -xf
+        binary = true
+[diff "tar-bz2"]
+        textconv = tar -O -xjf
+        binary = true
+[diff "tar-gz"]
+        textconv = tar -O -xzf
+        binary = true
+[diff "tar-xz"]
+        textconv = tar -O -xJf
+        binary = true
+[diff "odf"]
+        textconv = odt2txt
+[diff "pdf"]
+        textconv = pdfinfo
+[diff "bin"]
+        textconv = hexdump -v -C
+[diff "o_binary"]
+        textconv = hexdump -v -C
+[diff "pandoc"]
+        textconv=pandoc --to=markdown
+        prompt = false

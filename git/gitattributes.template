@@ -1,0 +1,38 @@
+# Git attributes file
+#
+# For full extended diff support, the following
+# commands must be in your PATH:
+#   - pandoc
+#   - pdfinfo
+#   - hexdump
+#   - odt2txt
+#   - unzip
+#   - zcat
+#   - bzcat
+#   - xzcat
+#   - tar
+#
+# To install this template, run:
+#
+#   `cp gitconfig.template ~/.gitconfig`
+#   `cp gitattributes.template ~/.gitattributes`
+#
+
+## Extension diff mappings
+*.tar diff=tar
+*.tar.bz2 diff=tar-bz2
+*.tar.gz diff=tar-gz
+*.tar.xz diff=tar-xz
+*.bz2 diff=bz2
+*.gz diff=gz
+*.zip diff=zip
+*.xz diff=xz
+*.odf diff=odf
+*.odt diff=odf
+*.odp diff=odf
+*.pdf diff=pdf
+*.exe diff=bin
+*.png diff=bin
+*.jpg diff=bin
+*.o diff=bin
+*.o_binary diff=bin
