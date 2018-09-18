@@ -2,6 +2,9 @@
 #
 # Script to find the correct device to play audio from
 #   See speaker-test(1) for more
+
+hash speaker-test 2>/dev/null || { echo >&2 "You need to install alsa-utils. Aborting."; exit 1; }
+
 set -euo pipefail
 
 pcmDevs="$(
