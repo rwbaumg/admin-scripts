@@ -23,7 +23,7 @@ if ! [ $? -eq 0 ]; then
   exit 1
 fi
 declare -a mappings=();
-for part in "${KPARTX_LIST}"; do
+for part in ${KPARTX_LIST}; do
   map="/dev/mapper/${part}"
   mappings=("${mappings[@]}" "${map}")
 done
