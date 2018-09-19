@@ -4,8 +4,6 @@
 #
 MOUNTPOINT="/tmp/lvm"
 
-hash kpartx 2>/dev/null || { echo >&2 "You need to install kpartx. Aborting."; exit 1; }
-
 VOLUME="$1"
 if [ -z "$1" ]; then
    echo >&2 "Usage: $0 <lv-path> [mountpoint]"
@@ -14,6 +12,10 @@ fi
 if [ ! -z "$2" ]; then
   MOUNTPOINT="$2"
 fi
+
+hash kpartx 2>/dev/null || { echo >&2 "You need to install kpartx. Aborting."; exit 1; }
+hash blkid 2>/dev/null || { echo >&2 "You need to install util-linux. Aborting."; exit 1; }
+hash awk 2>/dev/null || { echo >&2 "You need to install awk. Aborting."; exit 1; }
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
@@ -52,15 +54,15 @@ for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
 
   MNT_PATH="${MOUNTPOINT}/${mnt}"
   if [ ! -e "${MNT_PATH}" ]; then
-    echo >&2 "WARNING: The path '${MNT_PATH}' does not exist; skipping..."
+    echo >&2 "WARNING: The path '${MNT_PATH}' does not exist."
+  fi
+
+  umount "${map}" > /dev/null 2>&1
+  if ! [ $? -eq 0 ]; then
+    echo >&2 "ERROR: Failed to unmount ${map}."
   else
-    umount "${MNT_PATH}"
-    if ! [ $? -eq 0 ]; then
-      echo >&2 "ERROR: Failed to unmount ${map}."
-    else
-      rm -rf "${MNT_PATH}"
-      unmounted=("${unmounted[@]}" "${map}")
-    fi
+    rm -rf "${MNT_PATH}"
+    unmounted=("${unmounted[@]}" "${map}")
   fi
 done
 
