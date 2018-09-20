@@ -57,12 +57,12 @@ usage()
      -m, --volume-type <value>    Volume type filter.
      -t, --target-type <value>    Target type filter.
 
-     --device-open                Ignore volumes not marked "Open".
-     --device-closed              Ignore "Open" volumes.
-     --zero-enabled               Ignore volumes using "Zero".
-     --zero-disabled              Ignore volumes using "Zero".
-     --minor-enabled              Ignore volumes with fixed minor.
-     --minor-disabled             Ignore volumes with fixed minor.
+     --device-open                Only list volumes marked "Open".
+     --device-closed              Only list volumes NOT marked "Open".
+     --zero-enabled               Only list volumes with "Zero" enabled.
+     --zero-disabled              Only list volumes with "Zero" disabled.
+     --minor-enabled              Only list volumes using fixed minor.
+     --minor-disabled             Only list volumes WITHOUT fixed minor.
      --ignore-snapshots           Ignore snapshot volumes.
 
      -v, --verbose                Make the script more verbose.
