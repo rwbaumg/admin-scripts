@@ -1,7 +1,12 @@
 #!/bin/bash
+#
+# -=[ 0x19e Networks ]=-
+#
 # Mounts a logical volume containing a whole disk (i.e. multiple partitions)
 # Uses kpartx to manage block device mappings
-
+#
+# Author: Robert W. Baumgartner <rwb@0x19e.net>
+#
 hash kpartx 2>/dev/null || { echo >&2 "You need to install kpartx. Aborting."; exit 1; }
 
 VOLUME="$1"

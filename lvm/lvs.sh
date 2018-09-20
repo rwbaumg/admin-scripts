@@ -9,12 +9,310 @@
 #
 SKIP_OPEN_DEVS="false"
 SKIP_SNAPSHOTS="false"
+ALLOW_FUZZFILT="false"
+
+exit_script()
+{
+    # Default exit code is 1
+    local exit_code=1
+    local re var
+
+    re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+    if echo "$1" | egrep -q "$re"; then
+        exit_code=$1
+        shift
+    fi
+
+    re='[[:alnum:]]'
+    if echo "$@" | egrep -iq "$re"; then
+        if [ $exit_code -eq 0 ]; then
+            echo "INFO: $@"
+        else
+            echo "ERROR: $@" 1>&2
+        fi
+    fi
+
+    # Print 'aborting' string if exit code is not 0
+    [ $exit_code -ne 0 ] && echo "Aborting script..."
+
+    exit $exit_code
+}
+
+usage()
+{
+    # Prints out usage and exit.
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" <<"    EOF"
+    USAGE
+
+    Lists available Logical Volume Manager (LVM) volumes.
+
+    SYNTAX
+            SCRIPT_NAME [OPTIONS]
+
+    OPTIONS
+
+     -p, --perm <value>           Permissions filter.
+     -a, --alloc <value>          Allocation filter.
+     -s, --state <value>          State filter.
+     -m, --volume-type <value>    Volume type filter.
+     -t, --target-type <value>    Target type filter.
+
+     --device-open                Ignore volumes not marked "Open".
+     --device-closed              Ignore "Open" volumes.
+     --zero-enabled               Ignore volumes using "Zero".
+     --zero-disabled              Ignore volumes using "Zero".
+     --minor-enabled              Ignore volumes with fixed minor.
+     --minor-disabled             Ignore volumes with fixed minor.
+     --ignore-snapshots           Ignore snapshot volumes.
+
+     -v, --verbose                Make the script more verbose.
+     -h, --help                   Prints this usage.
+
+    EXAMPLES
+
+     - To list all logical volumes:
+
+        ./SCRIPT_NAME
+
+     - To list all logical volumes not currently active.
+
+        ./SCRIPT_NAME --device-closed
+
+    EOF
+
+    exit_script $@
+}
+
+test_arg()
+{
+    # Used to validate user input
+    local arg="$1"
+    local argv="$2"
+
+    if [ -z "$argv" ]; then
+        if echo "$arg" | egrep -q '^-'; then
+            usage "Null argument supplied for option $arg"
+        fi
+    fi
+
+    if echo "$argv" | egrep -q '^-'; then
+        usage "Argument for option $arg cannot start with '-'"
+    fi
+}
+
+test_string()
+{
+  local arg="$1"
+  local argv="$2"
+
+  test_arg "$arg" "$argv"
+
+  if [ -z "$argv" ]; then
+    argv="$arg"
+  fi
+
+  re='^[A-Za-z\-]+$'
+  if ! [[ $argv =~ $re ]] ; then
+    usage "Argument must be a valid character string."
+  fi
+}
+
+test_char()
+{
+  local arg="$1"
+  local argv="$2"
+
+  test_arg "$arg" "$argv"
+
+  if [ -z "$argv" ]; then
+    argv="$arg"
+  fi
+
+  re='^[A-Za-z\-]+$'
+  if ! [[ $argv =~ $re ]] ; then
+    usage "Argument must be a valid character string."
+  fi
+
+  if [ ${#argv} -ne 1 ]; then
+    usage "Argument must be a single character."
+  fi
+}
+
+VERBOSITY=0
+VERBOPT=""
+check_verbose()
+{
+  if [ $VERBOSITY -gt 1 ]; then
+    VERBOPT="-v"
+  fi
+}
+
+function checkInclude() {
+  local filter="$1"
+  local value="$2"
+  local desc="$3"
+
+  if [ ! -z "${filter}" ]; then
+    if [ ${#filter} -eq 1 ]; then
+      if ! [ "$value" == "${filter}" ]; then
+        echo "false"
+      else
+        echo "true"
+      fi
+    elif [ "${ALLOW_FUZZFILT}" == "true" ]; then
+      match=$(echo "${desc}" | grep -i "${filter}")
+      if [ -z "${match}" ]; then
+        if [ $VERBOSITY -gt 1 ]; then
+          echo >&2 "Value '${value}' filtered by '${filter}'."
+        fi
+        echo "false"
+      else
+        echo "true"
+      fi
+    fi
+  else
+    echo "true"
+  fi
+}
+
+PERM_FILTER=""
+ALLOC_FILTER=""
+STATE_FILTER=""
+VOLTYPE_FILTER=""
+TGTTYPE_FILTER=""
+
+DEVICE_OPEN=""
+ZERO_ENABLED=""
+MINOR_ENABLED=""
+IGNORE_SNAPSHOTS=""
+
+# process arguments
+#[ $# -gt 0 ] || usage
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -p|--perm)
+      test_char "$1" "$2"
+      shift
+      PERM_FILTER="$1"
+      shift
+    ;;
+    -a|--alloc)
+      test_char "$1" "$2"
+      shift
+      ALLOC_FILTER="$1"
+      shift
+    ;;
+    -s|--state)
+      test_char "$1" "$2"
+      shift
+      STATE_FILTER="$1"
+      shift
+    ;;
+    -m|--volume-type)
+      test_char "$1" "$2"
+      shift
+      VOLTYPE_FILTER="$1"
+      shift
+    ;;
+    -t|--target-type)
+      test_char "$1" "$2"
+      shift
+      TGTTYPE_FILTER="$1"
+      shift
+    ;;
+    --device-open)
+      if [ ! -z "${DEVICE_OPEN}" ]; then
+        usage "Conflicting or duplicate option(s) specified."
+      fi
+      DEVICE_OPEN="true"
+      shift
+    ;;
+    --device-closed)
+      if [ ! -z "${DEVICE_OPEN}" ]; then
+        usage "Conflicting or duplicate option(s) specified."
+      fi
+      DEVICE_OPEN="false"
+      shift
+    ;;
+    --zero-enabled)
+      if [ ! -z "${ZERO_ENABLED}" ]; then
+        usage "Conflicting or duplicate option(s) specified."
+      fi
+      ZERO_ENABLED="true"
+      shift
+    ;;
+    --zero-disabled)
+      if [ ! -z "${ZERO_ENABLED}" ]; then
+        usage "Conflicting or duplicate option(s) specified."
+      fi
+      ZERO_DISABLED="false"
+      shift
+    ;;
+    --minor-enabled)
+      if [ ! -z "${MINOR_ENABLED}" ]; then
+        usage "Conflicting or duplicate option(s) specified."
+      fi
+      MINOR_ENABLED="true"
+      shift
+    ;;
+    --minor-disabled)
+      if [ ! -z "${MINOR_ENABLED}" ]; then
+        usage "Conflicting or duplicate option(s) specified."
+      fi
+      MINOR_ENABLED="false"
+      shift
+    ;;
+    --ignore-snapshots)
+      if [ ! -z "${IGNORE_SNAPSHOTS}" ]; then
+        usage "Conflicting or duplicate option(s) specified."
+      fi
+      IGNORE_SNAPSHOTS="true"
+      shift
+    ;;
+    -v|--verbose)
+      ((VERBOSITY++))
+      check_verbose
+      shift
+    ;;
+    -vv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      check_verbose
+      shift
+    ;;
+    -vvv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      check_verbose
+      shift
+    ;;
+    -vvvv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      check_verbose
+      shift
+    ;;
+    -h|--help)
+      usage
+    ;;
+    *)
+      # unknown option
+      usage "Unknown option: ${1}."
+    ;;
+  esac
+done
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
    echo >&2 "This script must be run as root."
    exit 1
 fi
+
+#if [ $VERBOSITY -gt 0 ]; then
+#fi
 
 # Enumerate logical volumes
 i=1
@@ -77,10 +375,16 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
     if [ "$SKIP_SNAPSHOTS" == "true" ]; then
       include="false"
     fi
+    if [ "$IGNORE_SNAPSHOTS" == "true" ]; then
+      include="false"
+    fi
     ;;
     S)
     # Merging snapshot
     type_desc="Merging snapshot"
+    #if [ "$IGNORE_SNAPSHOTS" == "true" ]; then
+    #  include="false"
+    #fi
     #if [ "$SKIP_SNAPSHOTS" == "true" ]; then
     #  include="false"
     #fi
@@ -129,6 +433,10 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
     type_desc="N/A"
     ;;
   esac
+  # Check filter
+  if [ "${include}" == "true" ]; then
+    include=$(checkInclude "${VOLTYPE_FILTER}" "${voltype}" "${type_desc}")
+  fi
 
   # Permissions
   perm_desc=""
@@ -149,6 +457,10 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
     perm_desc="N/A"
     ;;
   esac
+  # Check filter
+  if [ "${include}" == "true" ]; then
+    include=$(checkInclude "${PERM_FILTER}" "${perm}" "${perm_desc}")
+  fi
 
   # Allocation
   alloc_desc=""
@@ -177,15 +489,25 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
     alloc_desc="N/A"
     ;;
   esac
+  # Check filter
+  if [ "${include}" == "true" ]; then
+    include=$(checkInclude "${ALLOC_FILTER}" "${alloc}" "${alloc_desc}")
+  fi
 
   # Minor
   minor_desc=""
   case "$minor" in
     m)
     # Fixed minor
+    if [ "${MINOR_ENABLED}" == "false" ]; then
+      include="false"
+    fi
     minor_desc="Fixed minor"
     ;;
     -)
+    if [ "${MINOR_ENABLED}" == "true" ]; then
+      include="false"
+    fi
     minor_desc="N/A"
     ;;
   esac
@@ -233,6 +555,10 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
     state_desc="N/A"
     ;;
   esac
+  # Check filter
+  if [ "${include}" == "true" ]; then
+    include=$(checkInclude "${STATE_FILTER}" "${state}" "${state_desc}")
+  fi
 
   # Device
   device_desc=""
@@ -243,12 +569,21 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
     if [ "$SKIP_OPEN_DEVS" == "true" ]; then
       include="false"
     fi
+    if [ "${DEVICE_OPEN}" == "false" ]; then
+      include="false"
+    fi
     ;;
     X)
     # Unknown
+    if [ "${DEVICE_OPEN}" == "true" ]; then
+      include="false"
+    fi
     device_desc="Unknown"
     ;;
     -)
+    if [ "${DEVICE_OPEN}" == "true" ]; then
+      include="false"
+    fi
     device_desc="N/A"
     ;;
   esac
@@ -288,15 +623,25 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
     tgttype_desc="N/A"
     ;;
   esac
+  # Check filter
+  if [ "${include}" == "true" ]; then
+    include=$(checkInclude "${TGTTYPE_FILTER}" "${tgttype}" "${tgttype_desc}")
+  fi
 
   # Zero
   zero_desc=""
   case "$zero" in
     z)
     # Zero
+    if [ "${ZERO_ENABLED}" == "false" ]; then
+      include="false"
+    fi
     zero_desc="Newly-allocated data blocks are overwritten with blocks of zeroes before use"
     ;;
     -)
+    if [ "${ZERO_ENABLED}" == "true" ]; then
+      include="false"
+    fi
     zero_desc="N/A"
     ;;
   esac
@@ -343,6 +688,7 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
 
   if [ "$include" == "true" ]; then
 
+  if [ $VERBOSITY -gt 0 ]; then
   echo "Entry $i"
   echo "------------------------------"
   echo "Name: $name"
@@ -350,17 +696,21 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
   echo "Link: $blkdev"
   echo "Attr: $attr"
   echo
-  #echo "  Volume Type: $voltype"
-  #echo "  Permissions: $perm"
-  #echo "   Allocation: $alloc"
-  #echo "        Minor: $minor"
-  #echo "        State: $state"
-  #echo "       Device: $device"
-  #echo "  Target type: $tgttype"
-  #echo "         Zero: $zero"
+  if [ $VERBOSITY -gt 2 ]; then
+  echo "  Volume Type: $voltype"
+  echo "  Permissions: $perm"
+  echo "   Allocation: $alloc"
+  echo "        Minor: $minor"
+  echo "        State: $state"
+  echo "       Device: $device"
+  echo "  Target type: $tgttype"
+  echo "         Zero: $zero"
+  # NOTE: Health & Skip depend on LVS version
   #echo "       Health: $health"
   #echo "         Skip: $skip"
-  #echo
+  echo
+  fi
+  if [ $VERBOSITY -gt 1 ]; then
   echo "  Volume Type: $type_desc"
   echo "  Permissions: $perm_desc"
   echo "   Allocation: $alloc_desc"
@@ -369,13 +719,20 @@ IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
   echo "       Device: $device_desc"
   echo "  Target type: $tgttype_desc"
   echo "         Zero: $zero_desc"
+  # NOTE: Health & Skip depend on LVS version
   #echo "       Health: $health_desc"
   #echo "         Skip: $skip_desc"
   echo
+  fi
+  if [ $VERBOSITY -gt 3 ]; then
   echo "$type"
   echo
+  fi
   echo "EOF"
   echo
+  else
+  echo "${path}"
+  fi
 
   ((i++))
 

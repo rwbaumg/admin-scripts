@@ -1,6 +1,11 @@
 #!/bin/bash
+#
+# -=[ 0x19e Networks ]=-
+#
 # Mounts a logical volume containing a whole disk (i.e. multiple partitions)
 # Uses kpartx to manage block device mappings
+#
+# Author: Robert W. Baumgartner <rwb@0x19e.net>
 #
 MOUNTPOINT="/tmp/lvm"
 
@@ -49,20 +54,19 @@ for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
   dev=$(readlink -e ${map})
   mnt=$(basename ${map})
   if [ ! -b "$dev" ]; then
-    echo >&2 "WARNING: '${map}' does not point to a valid block device."
-  fi
-
-  MNT_PATH="${MOUNTPOINT}/${mnt}"
-  if [ ! -e "${MNT_PATH}" ]; then
-    echo >&2 "WARNING: The path '${MNT_PATH}' does not exist."
-  fi
-
-  umount "${map}" > /dev/null 2>&1
-  if ! [ $? -eq 0 ]; then
-    echo >&2 "ERROR: Failed to unmount ${map}."
+    echo >&2 "ERROR: '${map}' does not point to a valid block device; skipping..."
   else
-    rm -rf "${MNT_PATH}"
-    unmounted=("${unmounted[@]}" "${map}")
+    umount "${map}" > /dev/null 2>&1
+    if ! [ $? -eq 0 ]; then
+      echo >&2 "ERROR: Failed to unmount ${map}."
+    else
+      MNT_PATH="${MOUNTPOINT}/${mnt}"
+      if [ ! -e "${MNT_PATH}" ]; then
+        echo >&2 "WARNING: The path '${MNT_PATH}' does not exist."
+      fi
+      rm -rf "${MNT_PATH}"
+      unmounted=("${unmounted[@]}" "${map}")
+    fi
   fi
 done
 

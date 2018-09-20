@@ -1,6 +1,11 @@
 #!/bin/bash
+#
+# -=[ 0x19e Networks ]=-
+#
 # Mounts a logical volume containing a whole disk (i.e. multiple partitions)
 # Uses kpartx to manage block device mappings
+#
+# Author: Robert W. Baumgartner <rwb@0x19e.net>
 #
 MOUNTPOINT="/tmp/lvm"
 
@@ -96,9 +101,10 @@ for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
     echo >&2 "WARNING: The path '${MNT_PATH}' already exists; skipping..."
   else
     mkdir "${MNT_PATH}"
-    mount "${dev}" "${MNT_PATH}"
+    mount "${dev}" "${MNT_PATH}" > /dev/null 2>&1
     if ! [ $? -eq 0 ]; then
       echo >&2 "ERROR: Failed to mount ${map}."
+      rm -rf "${MNT_PATH}"
     else
       ((TOTAL_MOUNTED++))
       TOTAL_SIZE=$((${TOTAL_SIZE}+${SIZE}))
@@ -112,6 +118,6 @@ for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
   fi
 done
 
-printf "Mounted %i partitions totaling %s in size.\n" ${TOTAL_MOUNTED} $(getSize ${TOTAL_SIZE})
+printf "Mounted %i partition(s) totaling %s in size.\n" ${TOTAL_MOUNTED} $(getSize ${TOTAL_SIZE})
 
 exit 0
