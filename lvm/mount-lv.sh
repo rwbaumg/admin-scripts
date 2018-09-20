@@ -28,7 +28,12 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Validate mountpoint
+# Validate mountpoint and LV path
+# TODO: More complete checking to ensure a valid LV path.
+if [ ! -e "${VOLUME}" ]; then
+  echo >&2 "ERROR: Volume '${VOLUME}' does not exist."
+  exit 1
+fi
 if [ ! -e "${MOUNTPOINT}" ]; then
   echo >&2 "ERROR: Mount directory '${MOUNTPOINT}' does not exist."
   exit 1
