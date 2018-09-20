@@ -115,9 +115,9 @@ for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
       TOTAL_SIZE=$((${TOTAL_SIZE}+${SIZE}))
       mounted=("${mounted[@]}" "${MNT_PATH}")
       if [ -z "${LABEL}" ]; then
-        printf "Mounted %s -> %s (Type: %s, Size: %s)\n" "${mnt}" "${MNT_PATH}" "${FSTYPE}" "$(getSize ${SIZE})"
+        printf "Mounted %s -> %s (Type: %s \t Size: %s)\n" "${mnt}" "${MNT_PATH}" "${FSTYPE}" "$(getSize ${SIZE})"
       else
-        printf "Mounted %s -> %s (Type: %s, Size: %s, Label: %s)\n" "${mnt}" "${MNT_PATH}" "${FSTYPE}" "$(getSize ${SIZE})" "${LABEL}"
+        printf "Mounted %s -> %s (Type: %s \t Size: %s \t Label: %s)\n" "${mnt}" "${MNT_PATH}" "${FSTYPE}" "$(getSize ${SIZE})" "${LABEL}"
       fi
     fi
   fi
