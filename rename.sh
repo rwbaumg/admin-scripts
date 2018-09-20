@@ -146,14 +146,12 @@ fi
 echo "Renaming files matching '*$criteria*' under '$location' ..."
 
 # note: was using $* before argument parsing implementation changed
-find $location -type f -name "*$criteria*" -print0 \
-    | while IFS= read -r -d '' file;
-do
-    src=$file
-    tgt=$(echo $file | sed -e "s/$re_match/$replace/")
-    if [ "$src" != "$tgt" ]; then
-        mv $VERBOSE "$src" "$tgt"
-    fi
+find $location -type f -name "*$criteria*" -print0 | while IFS= read -r -d '' file; do
+  src=$file
+  tgt=$(echo $file | sed -e "s/$re_match/$replace/")
+  if [ "$src" != "$tgt" ]; then
+     mv $VERBOSE "$src" "$tgt"
+  fi
 done
 
 exit_script 0
