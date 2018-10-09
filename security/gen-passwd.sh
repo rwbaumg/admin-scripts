@@ -20,6 +20,8 @@ if ! [[ $LENGTH =~ $re ]] ; then
   LENGTH=$DEFAULT_LENGTH
 fi
 
-tr -dc "$CHARSET" < $RNG_DEV | head -c $LENGTH | xargs -0
+PASSWD=$(head $RNG_DEV | tr -dc "$CHARSET" | head -c $LENGTH)
+
+echo ${PASSWD}
 
 exit 0
