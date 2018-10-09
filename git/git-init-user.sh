@@ -75,6 +75,9 @@ fi
 if ! hash unzip 2>/dev/null; then
   add_missing "unzip"
 fi
+if ! hash exif 2>/dev/null; then
+  add_missing "exif"
+fi
 
 # Print out mappings
 packages=""

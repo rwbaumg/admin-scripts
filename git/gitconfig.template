@@ -12,6 +12,7 @@
 #   - bzcat
 #   - xzcat
 #   - tar
+#   - exif
 #
 # To install this template, run:
 #
@@ -75,3 +76,6 @@
 [diff "pandoc"]
         textconv=pandoc --to=markdown
         prompt = false
+[diff "exif"]
+        textconv = exif
+        cachetextconv = true
