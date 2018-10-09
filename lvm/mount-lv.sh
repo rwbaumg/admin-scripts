@@ -18,6 +18,7 @@ if [ ! -z "$2" ]; then
   MOUNTPOINT="$2"
 fi
 
+hash lvs 2>/dev/null || { echo >&2 "You need to install lvm2. Aborting."; exit 1; }
 hash kpartx 2>/dev/null || { echo >&2 "You need to install kpartx. Aborting."; exit 1; }
 hash blkid 2>/dev/null || { echo >&2 "You need to install util-linux. Aborting."; exit 1; }
 hash awk 2>/dev/null || { echo >&2 "You need to install awk. Aborting."; exit 1; }

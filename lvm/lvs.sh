@@ -11,6 +11,8 @@ SKIP_OPEN_DEVS="false"
 SKIP_SNAPSHOTS="false"
 ALLOW_FUZZFILT="false"
 
+hash lvs 2>/dev/null || { echo >&2 "You need to install lvm2. Aborting."; exit 1; }
+
 exit_script()
 {
     # Default exit code is 1
