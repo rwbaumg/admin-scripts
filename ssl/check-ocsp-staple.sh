@@ -18,10 +18,10 @@ ping_test()
     return
   fi
 
-  # todo: inveistigate fping
-  # fping -c1 -t300 $IP
   local hostname="$1"
 
+  # todo: investigate using fping instead
+  #   fping -c1 -t300 $IP
   if ! ping -c 1 $hostname > /dev/null 2>&1; then
     echo >&2 "$SERVER is not rresponding to ping requests and may be down."
     exit 3

@@ -8,7 +8,7 @@ DEFAULT_SERIAL="01"
 HEX_COUNT=16
 MAX_TRIES=100
 
-# Get a fresh, non-unique, random serial
+# Get a fresh, non-negative, random serial
 COUNT=0
 SERIAL=$(openssl rand -hex ${HEX_COUNT})
 while [ ${COUNT} -lt ${MAX_TRIES} ] && [ $((0x${SERIAL})) -lt 0 ]; do
