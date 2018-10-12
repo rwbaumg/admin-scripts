@@ -6,7 +6,7 @@ AUTH_LOG="/var/log/auth.log"
 # list authentication failures
 FAILED=$(grep -i "failure" ${AUTH_LOG})
 if [ -z "${FAILED}" ]; then
-  echo "No authentication failures in logged in ${AUTH_LOG}."
+  echo "No authentication failures found in logfile: ${AUTH_LOG}"
   exit 0
 fi
 
