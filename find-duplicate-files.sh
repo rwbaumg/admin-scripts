@@ -104,8 +104,12 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+if [ -z "${SEARCH_DIR}" ]; then
+  usage
+fi
+
 if [ $VERBOSITY -gt 0 ]; then
-  echo "Scanning for duplicate files in $SEARCH_DIR ..."
+  echo >&2 "Scanning for duplicate files in $SEARCH_DIR ..."
 fi
 
 find "$SEARCH_DIR" -not -empty -type f -printf "%s\n" \
@@ -117,7 +121,7 @@ find "$SEARCH_DIR" -not -empty -type f -printf "%s\n" \
 | uniq -w32 --all-repeated=separate
 
 if [ $VERBOSITY -gt 0 ]; then
-  echo "Finished."
+  echo >&2 "Finished."
 fi
 
 exit_script 0

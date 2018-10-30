@@ -17,6 +17,8 @@
 *.old
 *.iso
 *.sha1
+*.md5
+*.bin
 *.html
 
 tmp.address
