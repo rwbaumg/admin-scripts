@@ -17,6 +17,7 @@
 *.old
 *.iso
 *.sha1
+*.html
 
 tmp.address
 mac.address

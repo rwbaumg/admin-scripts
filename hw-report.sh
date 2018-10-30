@@ -1,5 +1,8 @@
 #!/bin/bash
 # create a report of available hardware
+# Only the full path to the report is sent to stdout
+# For example, to store it in a variable:
+#  `REPORT_PATH=$(sudo ./hw-report.sh 2>/dev/null)`
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
@@ -7,4 +10,14 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-lshw -html > hardware.html
+OUTPUT="hardware.html"
+
+lshw -html > "${OUTPUT}"
+if ! [ $? -eq 0 ]; then
+  echo >&2 "ERROR: Failed to generate hardware report."
+  exit 1
+fi
+
+echo >&2 "Saved hardware report to $(basename ${OUTPUT})"
+echo "$(readlink -f ${OUTPUT})"
+exit 0
