@@ -40,15 +40,11 @@ usage()
     This script renames a range of files in one or more folders.
 
     SYNTAX
-            SCRIPT_NAME [OPTIONS] ARGUMENTS
-
-    ARGUMENTS
-
-     paths ...             A list of directories containing files
-                           that should be renamed.
+            SCRIPT_NAME [OPTIONS]
 
     OPTIONS
-     -c, --criteria        The staring directory to search from.
+     -l, --location        The staring directory to search from.
+     -c, --criteria        The file name criteria to search for.
      -p, --previous        A regular expression of the string to
                            be replaced in the located file's names.
      -n, --new             The new value to use.
@@ -75,7 +71,7 @@ check_verbose()
 #echo num params=$#
 #saved=("$@")
 
-[ $# -gt 2 ] || usage
+[ $# -gt 0 ] || usage
 
 i=1
 argc=$#
@@ -129,19 +125,20 @@ done
 #  echo "Parameter $i is ${!i}"
 #done
 
+if [ -z "$location" ]; then
+  usage "Must specify a location."
+#  location="."
+fi
+
 if [ -z "$criteria" ]; then
   usage "No criteria was specified."
 fi
 if [ -z "$re_match" ]; then
   usage "No expression for the previous string was supplied."
 fi
-if [ -z "$replace" ]; then
-  usage "Need to specify a string to replace with."
-fi
-
-if [ -z "$location" ]; then
-  location="."
-fi
+#if [ -z "$replace" ]; then
+#  usage "Need to specify a string to replace with."
+#fi
 
 echo "Renaming files matching '*$criteria*' under '$location' ..."
 
