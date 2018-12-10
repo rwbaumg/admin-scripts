@@ -212,6 +212,10 @@ if ! `git -C "$(dirname $0)" rev-parse`; then
   #exit 1
 fi
 
+if [ ! -d ".git" ]; then
+  usage "This script must be run from the top-level of the repository."
+fi
+
 if [ -z "$OLD_NAME" ]; then
   usage "Must specify previous name with --old-name."
 fi
