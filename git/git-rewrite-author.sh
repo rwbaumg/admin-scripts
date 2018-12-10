@@ -1,6 +1,12 @@
 #!/bin/bash
+#
+# [ 0x19e Networks ]
+#
 # Rewrites Git history to correct author information
+#
 # Note that this is considered bad practice for published branches.
+#
+# Author: Robert W. Baumgartner <rwb@0x19e.net>
 # Modified from GitHub script:
 #   https://help.github.com/articles/changing-author-info/
 #
@@ -124,6 +130,19 @@ test_user_arg()
   fi
 }
 
+test_email_arg()
+{
+  # test user argument
+  local arg="$1"
+  local argv="$2"
+
+  test_arg $arg $argv
+
+  if [ -z "$argv" ]; then
+    argv="$arg"
+  fi
+}
+
 VERBOSE=""
 
 check_verbose()
@@ -196,15 +215,15 @@ fi
 if [ -z "$OLD_NAME" ]; then
   usage "Must specify previous name with --old-name."
 fi
-if [ -z "$OLD_EMAIL" ]; then
-  usage "Must specify previou email with --old-email"
-fi
 if [ -z "$CORRECT_NAME" ]; then
   usage "Must specify new/corrected name with --new-name."
 fi
-if [ "$CORRECT_EMAIL" ]; then
-  usage "Must specify new/corrected email with --new-email."
-fi
+#if [ -z "$OLD_EMAIL" ]; then
+#  usage "Must specify previou email with --old-email"
+#fi
+#if [ "$CORRECT_EMAIL" ]; then
+#  usage "Must specify new/corrected email with --new-email."
+#fi
 
 # rewrite author info
 git filter-branch --env-filter '
