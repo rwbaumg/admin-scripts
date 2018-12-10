@@ -1,5 +1,5 @@
 #!/bin/bash
-# Displays a short-log of the current branch
+# Displays a short-log of the current Git branch.
 
 # todo: refactor to properly handle arguments, including path argument
 
