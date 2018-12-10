@@ -4,6 +4,9 @@
 #
 # Rewrites Git history to correct author information
 #
+# To push updates after a rewrite, use:
+#  git push --force --tags origin 'refs/heads/*'
+#
 # Note that this is considered bad practice for published branches.
 #
 # Author: Robert W. Baumgartner <rwb@0x19e.net>
@@ -152,10 +155,10 @@ check_verbose()
   fi
 }
 
-OLD_NAME=""
-OLD_EMAIL=""
-CORRECT_NAME=""
-CORRECT_EMAIL=""
+export OLD_NAME=""
+export OLD_EMAIL=""
+export CORRECT_NAME=""
+export CORRECT_EMAIL=""
 
 # process arguments
 [ $# -gt 0 ] || usage
@@ -164,25 +167,25 @@ while [ $# -gt 0 ]; do
     --old-name)
       test_user_arg "$1" "$2"
       shift
-      OLD_NAME="$1"
+      export OLD_NAME="$1"
       shift
     ;;
     --old-email)
       test_email_arg "$1" "$2"
       shift
-      OLD_EMAIL="$1"
+      export OLD_EMAIL="$1"
       shift
     ;;
     --new-name)
       test_user_arg "$1" "$2"
       shift
-      CORRECT_NAME="$1"
+      export CORRECT_NAME="$1"
       shift
     ;;
     --new-email)
       test_email_arg "$1" "$2"
       shift
-      CORRECT_EMAIL="$1"
+      export CORRECT_EMAIL="$1"
       shift
     ;;
     -v|--verbose)
@@ -258,6 +261,6 @@ git filter-branch --env-filter '
 			export GIT_AUTHOR_EMAIL="$CORRECT_EMAIL"
 		fi
 	fi
-' --tag-name-filter cat -f -- --all --tags
+' --tag-name-filter cat -- --branches --tags
 
 exit 0
