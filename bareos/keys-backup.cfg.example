@@ -7,7 +7,7 @@ DIR_CONFIG_NAME="bareos-dir"
 BACKUP_PATH="/etc/bareos/backup"
 BACKUP_NAME="lto-hwe-keys.gpg"
 
-# Set the full path to a file containing the password to use for asymmetric GnuPG encryption.
+# Set the full path to a file containing the password to use for symmetric GnuPG encryption.
 PASSWORD_FILE="/etc/bareos/backup/.backup-password"
 
 # Configure whether or not a decryption failure encountered when checking a previous backup
