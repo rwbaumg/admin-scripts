@@ -41,6 +41,7 @@
         lsb = "!git for-each-ref --sort='-authordate' --format='%(authordate)%09%(objectname:short)%09%(refname)' refs/heads | sed -e 's-refs/heads/--'"
         unstage = reset HEAD --
         last = log -1 HEAD
+        undo = reset --hard HEAD~1
 [diff "zip"]
         textconv = unzip -p
         binary = true
