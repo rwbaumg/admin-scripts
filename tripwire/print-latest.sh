@@ -18,7 +18,7 @@ if [[ -z "$REPORT" ]]; then
   echo "Fatal: Couldn't find latest report, exiting..." >&2
   exit 1
 else
-  echo "Updating report: $REPORT_DIR/$REPORT"
+  echo "Printing report: $REPORT_DIR/$REPORT"
 fi
 
 twprint -m r --twrfile "$REPORT_DIR/$REPORT"

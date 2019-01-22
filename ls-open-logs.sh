@@ -2,7 +2,7 @@
 # list open log files
 
 sudo lsof \
-    | grep "\.log$" \
+    | grep -P "(\.log|/log/)" \
     | awk '{printf("%s\t%s\n",$2,$NF);}' \
     | sort -u
 
