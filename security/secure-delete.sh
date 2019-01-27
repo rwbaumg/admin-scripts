@@ -1,6 +1,8 @@
 #!/bin/bash
 # securely deletes a file
 
+hash shred 2>/dev/null || { echo >&2 "You need to install coreutils. Aborting."; exit 1; }
+
 if [ ! $# -gt 0 ]; then
   echo >&2 "Usage: $0 <file> ..."
   exit 1

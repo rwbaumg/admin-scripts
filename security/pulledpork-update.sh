@@ -14,10 +14,10 @@ PULLEDPORK_PLSCRIPT="/usr/local/bin/pulledpork.pl"
 PULLEDPORK_CONFFILE="/etc/pulledpork/pulledpork.conf"
 SURICATA_RULES_FILE="/etc/suricata/suricata.rules"
 
-# update required root (unless specially configured)
-# if you want to install this script as another user,
+# updates require root (unless specially configured)
+# if you want to run this script as another user,
 # you will need to ensure proper permissions for the
-# download folder, output file, etc.
+# download folder, output file(s) etc.
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" >&2
    exit 1
