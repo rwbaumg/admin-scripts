@@ -6,7 +6,7 @@ hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exi
 
 UBUNTU_RELEASE=$(lsb_release -a 2>/dev/null | grep Release | awk '{print $2}')
 
-echo "Installing Bareos FileDaemon for Ubuntu v${UBUNTU_VERSION} backup client..."
+echo "Installing Bareos FileDaemon for Ubuntu v${UBUNTU_RELEASE} backup client..."
 
 PKG_LST="/etc/apt/sources.list.d/bareos.list"
 PKG_SRC="deb http://download.bareos.org/bareos/release/latest/xUbuntu_${UBUNTU_RELEASE}/ ./"
