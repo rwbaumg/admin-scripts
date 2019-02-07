@@ -44,7 +44,7 @@ fi
 
 # install the actual package
 echo "Running installation ..."
-sudo apt-get install bareos-filedaemon
+sudo apt-get install bareos-filedaemon -y
 if ! [ $? -eq 0 ]; then
   exit 1
 fi
