@@ -12,9 +12,15 @@
 #   `x11vnc -storepasswd`
 
 hash x11vnc 2>/dev/null || { echo >&2 "You need to install x11vnc. Aborting."; exit 1; }
+#hash netstat 2>/dev/null || { echo >&2 "You need to install net-tools. Aborting."; exit 1; }
 
 # . $(dirname $0)/helpers/log4bash.sh
 # /run/user/122/gdm/Xauthority
+
+HAS_NETCAT="false"
+if `hash netstat 2>/dev/null`; then
+  HAS_NETCAT="true"
+fi
 
 DEBUG=0
 CURRENT_UID=$(id -u $USER)
@@ -90,8 +96,12 @@ fi
 sleep 2
 
 # get the port number
-PORT=$(netstat -4 -an --tcp --program 2> /dev/null | grep "$VNC_PID" | awk '{print $4}' | awk -F":" '{print $2}')
-# PORT=$(lsof -nPi | grep "IPv4" | grep "$VNC_PID" | awk '{print $9}' | awk -F":" '{print $2}')
+PORT=""
+if [ "${HAS_NETCAT}" == "true" ]; then
+  PORT=$(netstat -4 -an --tcp --program 2> /dev/null | grep "$VNC_PID" | awk '{print $4}' | awk -F":" '{print $2}')
+else
+  PORT=$(lsof -nPi | grep "IPv4" | grep "$VNC_PID" | awk '{print $9}' | awk -F":" '{print $2}')
+fi
 
 # DEBUG: log all ports visible at this point in the script
 if [[ "$DEBUG" == 1 ]]; then
