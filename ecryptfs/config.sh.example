@@ -1,0 +1,26 @@
+## eCrypt volume settings
+
+# Resolve root directory path
+SOURCE="${BASH_SOURCE[0]}"
+if [ -h "$SOURCE" ]; then
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+  export ROOT_DIR="$( cd -P $DIR && pwd )"
+else
+  export ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+fi
+
+KEYFILE="${ROOT_DIR}/keyfile"
+DEVNAME="crypt1"
+STORAGE="${ROOT_DIR}/container"
+MNTPATH="${ROOT_DIR}/device"
+SIZE_MB="10240"
+DEV_RND="/dev/urandom"
+
+CIPHER="aes-xts-plain64"
+KEY_SIZE="512"
+HASH_ALG="sha512"
+ITER_TIME="2000"
+
+# [ EOF ] #
