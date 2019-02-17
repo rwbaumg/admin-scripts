@@ -35,5 +35,8 @@
 *.exe diff=bin
 *.png diff=bin
 *.jpg diff=bin
+*.dll diff=bin
+*.elf diff=bin
+*,ko diff=bin
 *.o diff=bin
 *.o_binary diff=bin
