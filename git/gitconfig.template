@@ -42,6 +42,8 @@
         unstage = reset HEAD --
         last = log -1 HEAD
         undo = reset --hard HEAD~1
+        get-patch = format-patch --stdout -1
+        lgb = !git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'
 [diff "zip"]
         textconv = unzip -p
         binary = true
