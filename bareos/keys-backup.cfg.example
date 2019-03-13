@@ -1,14 +1,31 @@
-# LTO HWE Backup Configuration
+## LTO HWE Backup Configuration
 
-# The name of the director to backup keys for.
+# Configure the director to backup keys for.
 DIR_CONFIG_NAME="bareos-dir"
+DIR_CONFIG_PATH="/etc/bareos/bareos-sd.d/director"
 
 # Configure the backup name and path.
 BACKUP_PATH="/etc/bareos/backup"
 BACKUP_NAME="lto-hwe-keys.gpg"
 
+# Configure the full path to the backup script.
+# Script output is captured to create the backup file.
+BACKUP_SCRIPT="/etc/bareos/scripts/hwe-backup.sh"
+
+# Configure the GnuPG encryption mode to use for backups.
+# One of PASSWORD_FILE or PUBKEY_FILE must be a valid path depending on the selection.
+#
+# Available options:
+#   GPG_ENCRYPT_MODE="password"
+#   GPG_ENCRYPT_MODE="publicKey"
+#
+GPG_ENCRYPT_MODE="password"
+
 # Set the full path to a file containing the password to use for symmetric GnuPG encryption.
 PASSWORD_FILE="/etc/bareos/backup/.backup-password"
+
+# Set the full path to a file containing the GnuPG public-key to use for asymmetric encryption.
+PUBKEY_FILE="/etc/bareos/backup/recipient.pub"
 
 # Configure whether or not a decryption failure encountered when checking a previous backup
 # for changes should be considered a critical failure. If this value is set to 'true' (the
@@ -26,6 +43,8 @@ ETCKEEPER_AUTOCOMMIT=false
 
 # Configure e-mail settings.
 MAIL_ENABLE=true
+MAIL_ALWAYS=false
+MAIL_HOST="localhost"
 MAIL_FROM="(Bareos) <bareos@localhost>"
 MAIL_TO="root@localhost"
 MAIL_SUBJECT="LTO HWE Backup $DIR_CONFIG_NAME-$TIMESTAMP"
