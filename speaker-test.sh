@@ -3,6 +3,7 @@
 # Script to find the correct device to play audio from
 #   See speaker-test(1) for more
 
+hash grep 2>/dev/null || { echo >&2 "You need to install grep. Aborting."; exit 1; }
 hash speaker-test 2>/dev/null || { echo >&2 "You need to install alsa-utils. Aborting."; exit 1; }
 
 set -euo pipefail
@@ -32,7 +33,7 @@ for pcmDevice in ${pcmDevs[@]};do
   currentlyTesting="$pcmDevice"
 
   printf 'TESTING device "%s"\n' "$pcmDevice"
-  speaker-test --channels 2 --device $pcmDevice &&
+  speaker-test --channels 2 --device $pcmDevice -t wav &&
     printf '\nFAILED testing device "%s"\n\n' "$pcmDevice" ||
     printf '\nFINSHED testing device "%s"\n\n' "$pcmDevice"
 done
