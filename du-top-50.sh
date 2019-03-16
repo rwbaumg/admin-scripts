@@ -54,9 +54,13 @@ if [ "$INPUT_PATH" != "/" ]; then
   INPUT_PATH=${INPUT_PATH}"/"
 fi
 
-OUTPUT=$(du -hsx "${INPUT_PATH}"* 2>/dev/null \
+pushd "${INPUT_PATH}" > /dev/null 2>&1
+
+OUTPUT=$(du -schx .[!.]* * 2>/dev/null \
            | sort -rh \
            | head -50)
+
+popd > /dev/null 2>&1
 
 stop_spinner
 
