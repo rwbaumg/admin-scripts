@@ -36,8 +36,8 @@ if [ ! -e "${VOLUME}" ]; then
   exit 1
 fi
 if [ ! -e "${MOUNTPOINT}" ]; then
-  echo >&2 "ERROR: Mount directory '${MOUNTPOINT}' does not exist."
-  exit 1
+  mkdir -v -p "${MOUNTPOINT}"
+  chmod 700 "${MOUNTPOINT}"
 fi
 
 function getSize() {
