@@ -7,7 +7,7 @@
 #
 # Author: Robert W. Baumgartner <rwb@0x19e.net>
 #
-MOUNTPOINT="/tmp/lvm"
+MOUNTPOINT="/media/lvm"
 
 VOLUME="$1"
 if [ -z "$1" ]; then
