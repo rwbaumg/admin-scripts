@@ -172,9 +172,11 @@ install_key_from_url()
     exit 1
   fi
 
-  KEY_FP=$(echo "${KEY_RW}" | gpg --with-fingerprint --keyid-format SHORT | grep pub | awk '{ print $2 }')
-  KEY_ID=$(echo "${KEY_RW}" | gpg --with-fingerprint --keyid-format SHORT | grep pub | cut -d' ' -f 5-)
-  if apt-key list | grep pub | grep "${KEY_FP}"  > /dev/null 2>&1; then
+  KEY_FP=$(echo "${KEY_RW}" | gpg --with-fingerprint --keyid-format SHORT 2>/dev/null | grep -P '^pub' | head -n1 | awk '{ print $2 }' | awk '{$1=$1};1')
+  KEY_ID=$(echo "${KEY_RW}" | gpg --with-fingerprint --keyid-format SHORT 2>/dev/null | grep -P '^uid' | head -n1 | cut -d' ' -f 3- | awk '{$1=$1};1')
+
+  KEY_LIST=$(apt-key list --keyid-format SHORT 2>/dev/null)
+  if echo "${KEY_LIST}" | grep "${KEY_FP}"  > /dev/null 2>&1; then
     echo "Signing key '${KEY_ID}' (${KEY_FP}) is already installed."
     return
   fi
