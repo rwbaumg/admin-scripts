@@ -29,10 +29,14 @@ SRC_PKG="xUbuntu_${UBUNTU_RELEASE}"
 SRC_URL="download.bareos.org/bareos/release/latest/${SRC_PKG}"
 
 # Configure package source installation
-PKG_LST="/etc/apt/sources.list.d/bareos.list"
+APT_DIR="/etc/apt/sources.list.d"
+PKG_LST="${APT_DIR}/bareos.list"
 
 # Configure apt-get arguments
 APT_ARG="--verbose-versions --yes"
+
+# Uncomment to run script when the package is already installed
+#FORCE_INSTALL="true"
 
 function check_installed()
 {
@@ -172,17 +176,27 @@ install_key_from_url()
     exit 1
   fi
 
-  KEY_FP=$(echo "${KEY_RW}" | gpg --with-fingerprint --keyid-format SHORT 2>/dev/null | grep -P '^pub' | head -n1 | awk '{ print $2 }' | awk '{$1=$1};1')
-  KEY_ID=$(echo "${KEY_RW}" | gpg --with-fingerprint --keyid-format SHORT 2>/dev/null | grep -P '^uid' | head -n1 | cut -d' ' -f 3- | awk '{$1=$1};1')
+  GPG_RW=$(echo "${KEY_RW}" | gpg --with-fingerprint --keyid-format SHORT 2>/dev/null | grep -P '^pub' | head -n1)
+  KEY_ID=$(echo "${GPG_RW}" | cut -d' ' -f5- | awk '{$1=$1};1')
+
+  KEY_TP=$(echo "${GPG_RW}" | awk '{ print $2 }' | awk '{$1=$1};1')
+  KEY_SZ=$(echo "${KEY_TP}" | cut -d/ -f1)
+  KEY_FP=$(echo "${KEY_TP}" | cut -d/ -f2)
 
   KEY_LIST=$(apt-key list --keyid-format SHORT 2>/dev/null)
-  if echo "${KEY_LIST}" | grep "${KEY_FP}"  > /dev/null 2>&1; then
-    echo "Signing key '${KEY_ID}' (${KEY_FP}) is already installed."
+  if echo "${KEY_LIST}" | grep "${KEY_FP}" > /dev/null 2>&1; then
+    echo "Found signing key  : ${KEY_ID}"
+    echo "Key fingerprint    : ${KEY_FP}"
+    echo "Key size and type  : ${KEY_SZ}"
     return
   fi
 
   # add the release key
   echo "Retrieve signing key from ${KEY_URL} ..."
+  echo "Key identifier     : ${KEY_ID}"
+  echo "Key fingerprint    : ${KEY_FP}"
+  echo "Key size and type  : ${KEY_SZ}"
+
   echo "${KEY_RW}" | sudo apt-key add -
   if ! [ $? -eq 0 ]; then
     exit 1
@@ -212,14 +226,31 @@ check_protocol "${HTPROTO}"
 check_url      "${PKG_URL}"
 check_url      "${KEY_URL}"
 
+# check if the package is already installed
+if [ "${FORCE_INSTALL}" != "true" ] && check_installed "${PKGNAME}"; then
+  echo "The package '${PKGNAME}' is already installed on the current system."
+  exit 0
+fi
+
 echo "Installing Bareos FileDaemon backup client for Ubuntu ${UBUNTU_RELEASE} ..."
 
 # install signing key
 install_key_from_url "${KEY_URL}"
 
-# add the package source
-echo "Configuring package source in list file ${PKG_LIST} ..."
-if [ ! -e "${PKG_LST}" ] || ! grep -qF "${PKG_SRC}" "${PKG_LST}"; then
+# print some details about source configuration
+echo "Configuration file : ${PKG_LST}"
+echo "Package repository : ${PKG_URL}"
+
+# add the package source if not already configured
+CUR_CFG=$(grep -RF "${PKG_SRC}" "${APT_DIR}/" 2>/dev/null | grep -v '\#' | head -n1 | cut -d: -f1)
+if [ ! -z "${CUR_CFG}" ] && [ ! -e "${CUR_CFG}" ]; then
+  echo >&2 "ERROR: Something went wrong while looking for source configuration."
+  exit 1
+fi
+
+# add source if no existing configuration was found
+if [ -z "${CUR_CFG}" ]; then
+  echo "Configure missing package source ..."
   echo "${DEB_TXT}" | sudo tee -a "${PKG_LST}"
   if ! [ $? -eq 0 ]; then
     exit 1
@@ -237,7 +268,7 @@ fi
 check_etckeeper
 
 # install the actual package
-echo "Running installation ..."
+echo "Installing package '${PKGNAME}' ..."
 sudo apt-get ${APT_ARG} install ${PKGNAME}
 if ! [ $? -eq 0 ]; then
   echo >&2 "ERROR: Failed to install Bareos client."
