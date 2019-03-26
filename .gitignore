@@ -1,5 +1,7 @@
 # ignored files and folders
 
+tmp/
+
 *.bak
 *.tmp
 *.csv
