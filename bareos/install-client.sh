@@ -16,6 +16,9 @@ hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exi
 hash tee 2>/dev/null || { echo >&2 "You need to install tee. Aborting."; exit 1; }
 hash lsb_release 2>/dev/null || { echo >&2 "You need to install lsb-release. Aborting."; exit 1; }
 
+# Set script default verbosity
+VERBOSITY=0
+
 # Get distro release version
 UBUNTU_RELEASE=$(lsb_release -a 2>/dev/null | grep Release | awk '{print $2}')
 
@@ -26,7 +29,7 @@ PKGNAME="bareos-filedaemon"
 HTPROTO="http"
 KEYNAME="Release.key"
 SRC_PKG="xUbuntu_${UBUNTU_RELEASE}"
-SRC_URL="download.bareos.org/bareos/release/latest/${SRC_PKG}"
+SRC_URL="download.bareos.org/bareos/release/latest"
 
 # Configure package source installation
 APT_DIR="/etc/apt/sources.list.d"
@@ -34,6 +37,9 @@ PKG_LST="${APT_DIR}/bareos.list"
 
 # Configure apt-get arguments
 APT_ARG="--verbose-versions --yes"
+
+# Uncomment to enable /etc source control Git handling
+ETCKEEPER_COMMIT="true"
 
 # Uncomment to run script when the package is already installed
 #FORCE_INSTALL="true"
@@ -147,6 +153,11 @@ check_etckeeper()
       # check /etc/apt for modifications
       # if there are changes, commit them
       if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/apt|egrep '^(M| M)')" != "" ]]; then
+        if [ "${ETCKEEPER_COMMIT}" != "true" ]; then
+          echo >&2 "WARNING: Uncommitted changes under version control: /etc/apt"
+          echo >&2 "WARNING: You may want to enable automatic handling with --enable-etckeeper"
+          return
+        fi
         echo "Auto-commit changes to /etc/apt (directory under version control) ..."
         pushd /etc > /dev/null 2>&1
         sudo git add --all /etc/apt
@@ -186,16 +197,21 @@ install_key_from_url()
   KEY_LIST=$(apt-key list --keyid-format SHORT 2>/dev/null)
   if echo "${KEY_LIST}" | grep "${KEY_FP}" > /dev/null 2>&1; then
     echo "Found signing key  : ${KEY_ID}"
+    if [ $VERBOSITY -gt 0 ]; then
     echo "Key fingerprint    : ${KEY_FP}"
     echo "Key size and type  : ${KEY_SZ}"
+    fi
     return
   fi
 
   # add the release key
   echo "Retrieve signing key from ${KEY_URL} ..."
+
+  if [ $VERBOSITY -gt 0 ]; then
   echo "Key identifier     : ${KEY_ID}"
   echo "Key fingerprint    : ${KEY_FP}"
   echo "Key size and type  : ${KEY_SZ}"
+  fi
 
   echo "${KEY_RW}" | sudo apt-key add -
   if ! [ $? -eq 0 ]; then
@@ -203,10 +219,177 @@ install_key_from_url()
   fi
 }
 
-# Configure some variables
-PKG_SRC="${SRC_URL}/"
-PKG_KEY="${SRC_URL}/${KEYNAME}"
+exit_script()
+{
+    # Default exit code is 1
+    local exit_code=1
+    local re var
 
+    re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+    if echo "$1" | egrep -q "$re"; then
+        exit_code=$1
+        shift
+    fi
+
+    re='[[:alnum:]]'
+    if echo "$@" | egrep -iq "$re"; then
+        if [ $exit_code -eq 0 ]; then
+            echo "INFO: $@"
+        else
+            echo "ERROR: $@" 1>&2
+        fi
+    fi
+
+    # Print 'aborting' string if exit code is not 0
+    [ $exit_code -ne 0 ] && echo "Aborting script..."
+
+    exit $exit_code
+}
+
+usage()
+{
+    # Prints out usage and exit.
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" <<"    EOF"
+    USAGE
+
+    Installs the Bareos Filedaemon client daemon on the current host.
+
+    SYNTAX
+            SCRIPT_NAME [OPTIONS]
+
+    OPTIONS
+     -p, --protocol <http>       The hypertext protocol to use. Either http or https.
+     -r, --release <full-name>   The full name of the platform release to pull packages for.
+
+     --no-etckeeper              Do not commit VCS changes under /etc (eg. etckeeper)
+
+     -v, --verbose               Make the script more verbose.
+     -h, --help                  Prints this usage.
+
+    EOF
+
+    exit_script $@
+}
+
+test_arg()
+{
+    # Used to validate user input
+    local arg="$1"
+    local argv="$2"
+
+    if [ -z "$argv" ]; then
+        if echo "$arg" | egrep -q '^-'; then
+            usage "Null argument supplied for option $arg"
+        fi
+    fi
+
+    if echo "$argv" | egrep -q '^-'; then
+        usage "Argument for option $arg cannot start with '-'"
+    fi
+}
+
+test_proto_arg()
+{
+  local arg="$1"
+  local argv="$2"
+
+  test_arg "$arg" "$argv"
+
+  if [ -z "$argv" ]; then
+    argv="$arg"
+  fi
+
+  if ! is_valid_protocol "$argv"; then
+    usage "Invalid protocol specified: '$argv' (must be http or https)"
+  fi
+}
+
+VERBOPT=""
+check_verbose()
+{
+  if [ $VERBOSITY -gt 1 ]; then
+    VERBOPT="-v"
+  fi
+}
+
+# process arguments
+[ $# -gt 0 ] || usage
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -r|--release)
+      test_arg "$1" "$2"
+      shift
+      export SRC_PKG="$1"
+      shift
+    ;;
+    -p|--protocol)
+      test_proto_arg "$1" "$2"
+      shift
+      export HTPROTO="$1"
+      shift
+    ;;
+    -k|--key-name)
+      test_arg "$1" "$2"
+      shift
+      export KEYNAME="$1"
+      shift
+    ;;
+    -f|--force)
+      export FORCE_INSTALL="true"
+      shift
+    ;;
+    --no-etckeeper)
+      export ETCKEEPER_COMMIT="false"
+      shift
+    ;;
+    -v|--verbose)
+      ((VERBOSITY++))
+      check_verbose
+      shift
+    ;;
+    -vv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      check_verbose
+      shift
+    ;;
+    -h|--help)
+      usage
+    ;;
+    *)
+      # unknown option
+      usage "Unknown option: ${1}."
+    ;;
+  esac
+done
+
+# check base repository url
+if [ -z "${SRC_URL}" ]; then
+  usage "Missing public-key filename."
+fi
+# check platform release name
+if [ -z "${SRC_PKG}" ]; then
+  usage "Missing release identifier."
+fi
+# check key filename
+if [ -z "${KEYNAME}" ]; then
+  usage "Missing public-key filename."
+fi
+
+# Configure some variables
+PKG_SRC="${SRC_URL}/${SRC_PKG}"
+PKG_KEY="${SRC_URL}/${SRC_PKG}/${KEYNAME}"
+
+# check repository url
+if [ -z "${PKG_SRC}" ]; then
+  usage "Missing package repository base URL."
+fi
+# check public-key url
+if [ -z "${PKG_KEY}" ]; then
+  usage "Missing public-key URL."
+fi
+
+# Configure full variables
 PKG_URL="${HTPROTO}://${PKG_SRC}"
 KEY_URL="${HTPROTO}://${PKG_KEY}"
 DEB_TXT="deb ${PKG_URL} ./"
@@ -237,9 +420,11 @@ echo "Installing Bareos FileDaemon backup client for Ubuntu ${UBUNTU_RELEASE} ..
 # install signing key
 install_key_from_url "${KEY_URL}"
 
+if [ $VERBOSITY -gt 0 ]; then
 # print some details about source configuration
 echo "Configuration file : ${PKG_LST}"
 echo "Package repository : ${PKG_URL}"
+fi
 
 # add the package source if not already configured
 CUR_CFG=$(grep -RF "${PKG_SRC}" "${APT_DIR}/" 2>/dev/null | grep -v '\#' | head -n1 | cut -d: -f1)
@@ -268,7 +453,7 @@ fi
 check_etckeeper
 
 # install the actual package
-echo "Installing package '${PKGNAME}' ..."
+echo "Installing package : ${PKGNAME} ..."
 sudo apt-get ${APT_ARG} install ${PKGNAME}
 if ! [ $? -eq 0 ]; then
   echo >&2 "ERROR: Failed to install Bareos client."
