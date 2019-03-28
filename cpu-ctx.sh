@@ -4,6 +4,28 @@
 MAX_LINES=50
 SECONDS=0
 
+check_core_id()
+{
+  local core="$1"
+  if [ -z "${core}" ]; then
+    echo >&2 "ERROR: CPU core number cannot be null."
+    exit 1
+  fi
+
+  re='^[0-9]+$'
+  if ! [[ $core =~ $re ]]; then
+    echo >&2 "ERROR: '${core}' is not a valid number."
+    exit 1
+  fi
+
+  core=$((${core}-1))
+
+  if [ ! -e "/sys/bus/cpu/devices/cpu${core}" ]; then
+    echo >&2 "ERROR: '$((${core}+1))' is not a valid CPU core number."
+    exit 1
+  fi
+}
+
 function get_ctx_total()
 {
   if [ ! -e "/proc/stat" ]; then
@@ -52,6 +74,10 @@ function show_all()
 
   return 0
 }
+
+if [ ! -z "$1" ]; then
+  check_core_id "$1"
+fi
 
 echo "==================================="
 echo "CPU Context Switching (top ${MAX_LINES} PIDs)"
