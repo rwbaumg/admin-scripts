@@ -2,6 +2,7 @@
 
 tmp/
 
+*.swp
 *.bak
 *.tmp
 *.csv

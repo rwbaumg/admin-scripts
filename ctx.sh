@@ -1,33 +1,84 @@
 #!/bin/bash
-# Script to examine CPU context switching
+# Script to examine per-process CPU context switching
 
-#if [[ $# -eq 0 ]]
-#then
-#   echo "Usage:"
-#   echo "$0 <core>"
-#   exit 1
-#fi
+MAX_LINES=50
+SECONDS=0
 
-#if [[ -z $2 ]]
-#then
-#   watch -d -n .2 $0 $1 nw
-#fi
+function get_ctx_total()
+{
+  if [ ! -e "/proc/stat" ]; then
+    echo >&2 "ERROR: Failed to read file /proc/stat"
+    return 1
+  fi
 
-if [[ ! -z "$1" ]]; then
-# filter based on core number
-ps -Leo lastcpu:1,tid,comm \
-  | grep "^$1 " \
-  | awk '{printf $3": ";system("cut -d\" \" -f3 /proc/"$2"/task/"$2"/schedstat 2>/dev/null")}' \
-  | sort -k 2nr \
-  | column -t \
-  | head -n 60
-else
-# look at all cpu cores
-ps -Leo lastcpu:1,tid,comm \
-  | awk '{printf $3": ";system("cut -d\" \" -f3 /proc/"$2"/task/"$2"/schedstat 2>/dev/null")}' \
-  | sort -k 2nr \
-  | column -t \
-  | head -n 60
+  ctxt=$(grep ctxt /proc/stat | awk '{ print $2 }')
+  if [ -z "${ctxt}" ]; then
+    echo >&2 "ERROR: Failed to read 'ctxt' parameter from /proc/stat"
+    return 1
+  fi
+
+  echo "${ctxt}"
+  return 0
+}
+
+function show_core()
+{
+  if [ -z "$1" ]; then
+    echo >&2 "ERROR: No core number specified."
+    return 1
+  fi
+
+  # filter based on core number
+  ps -Leo psr,pid,comm | tail -n +2 | sort -k 2nr | uniq | grep -v -P '\s(grep|ps|uniq|sort|tail|head|column|awk)$' \
+    | grep -P "^([\s]+)?$1\s" \
+    | awk '{printf $2"\t"$3"\t";system("cut -d\" \" -f3 /proc/"$2"/task/"$2"/schedstat 2>/dev/null")}' \
+    | sort -k 3nr \
+    | column -t \
+    | head -n -1 \
+    | head -n ${MAX_LINES}
+
+  return 0
+}
+
+function show_all()
+{
+  # look at all cpu cores
+  ps -Leo pid,comm | tail -n +2 | sort -k 1nr | uniq | grep -v -P '\s(grep|ps|uniq|sort|tail|head|column|awk)$' \
+    | awk '{printf $1"\t"$2"\t"; system("cut -d\" \" -f3 /proc/"$1"/task/"$1"/schedstat 2>/dev/null")}' \
+    | sort -k 3nr \
+    | column -t \
+    | head -n -1 \
+    | head -n ${MAX_LINES}
+
+  return 0
+}
+
+echo "==================================="
+echo "CPU Context Switching (top ${MAX_LINES} PIDs)"
+echo "==================================="
+echo
+
+total=$(get_ctx_total)
+if [ ! -z "$total" ]; then
+  echo -e "Total CTX count:\t$total"
 fi
+if [ ! -z "$1" ]; then
+  echo -e "Selected CPU core:\t$1"
+fi
+
+echo
+printf "PID    COMM\t\tCTX\n"
+echo "-----------------------------------"
+if [ ! -z "$1" ]; then
+  show_core "$1"
+else
+  show_all
+fi
+echo "-----------------------------------"
+
+ELAPSED_STRING=$(date -u -d @${SECONDS} +%T)
+
+echo "Elapsed time: ${ELAPSED_STRING}"
+echo
 
 exit 0
