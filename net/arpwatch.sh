@@ -27,6 +27,6 @@ fi
 #done
 
 # Get list of IP addresses in arpwatch database
-cat ${ARP_DB} | awk -F'\t' '{printf "%s \t %s \t %s\n", $2, $1, $4}' | sort -t . -k 3,3n -k 4,4n | uniq
+cat ${ARP_DB} | awk -F'\t' '{printf "%-18s %-20s %s\n", $2, $1, $4}' | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq
 
 exit $?
