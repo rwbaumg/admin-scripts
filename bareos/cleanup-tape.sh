@@ -5,6 +5,9 @@
 #
 # Robert W. Baumgartner <rwb@0x19e.net>
 
+hash mtx 2>/dev/null || { echo >&2 "You need to install mtx. Aborting."; exit 1; }
+hash mt 2>/dev/null || { echo >&2 "You need to install mt-st. Aborting."; exit 1; }
+
 if [[ -z "$1" ]]; then
   echo "Usage: $0 <slot-number>"
   exit 1

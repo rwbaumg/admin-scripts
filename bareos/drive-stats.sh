@@ -1,6 +1,9 @@
 #!/bin/bash
 # Prints a variety of statistics for the specified tape drive
 
+hash tapestat 2>/dev/null || { echo >&2 "You need to install sysstat. Aborting."; exit 1; }
+hash smartctl 2>/dev/null || { echo >&2 "You need to install smartmontools. Aborting."; exit 1; }
+
 DRIVE="/dev/sg0"
 if [ ! -z "$1" ]; then
   DRIVE="$1"

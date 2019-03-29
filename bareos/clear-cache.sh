@@ -13,3 +13,5 @@ echo ".bvfs_update" | sudo bconsole
 
 # perform a database check
 sudo -u bareos bareos-dbcheck -b -f
+
+exit $?

@@ -8,5 +8,7 @@
 hash bareos-fd 2>/dev/null || { echo >&2 "You need to install bareos-filedaemon. Aborting."; exit 1; }
 
 sudo service bareos-fd stop
-sudo rm /var/lib/bareos/*
+sudo rm -v /var/lib/bareos/*
 sudo service bareos-fd start
+
+exit $?
