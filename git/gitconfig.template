@@ -24,6 +24,10 @@
         email = jqd@example.com
 [credential]
         helper = cache --timeout 120
+[http]
+        sslBackend = openssl
+        # sslCAinfo = /bin/ca-certificates.crt
+        # sslVerify = false
 [push]
         default = simple
 [core]
@@ -31,6 +35,7 @@
 [alias]
         wdiff = diff --word-diff=color --unified=1
         amend = "!f(){ git add . && git commit --amend ${1}; };f"
+        r10 = rebase -i HEAD~10
         hard-reset = !git reset HEAD --hard && git clean -fd
         ls = log --oneline
         ca = commit --all
@@ -43,7 +48,8 @@
         last = log -1 HEAD
         undo = reset --hard HEAD~1
         contrib = shortlog -s -n
-        log --shortstat --author="Vorname Nachname" | grep -E "fil(e|es) changed" | awk '{files+=$1; inserted+=$4; deleted+=$6; delta+=$4-$6; ratio=deleted/inserted} END {printf "Commit stats:\n- Files changed (total)..  %s\n- Lines added (total)....  %s\n- Lines deleted (total)..  %s\n- Total lines (delta)....  %s\n- Add./Del. ratio (1:n)..  1 : %s\n", files, inserted, deleted, delta, ratio }' -
+        archive = !"f() { top=$(rev-parse --show-toplevel); cd $top; tar cvf $top.tar $top ; }; f"
+        churn = !git log --all --find-copies --find-renames --name-only --format='format:' "$@" | sort | grep -v '^$' | uniq -c | sort | awk 'BEGIN {print "count\tfile"} {print $1 "\t" $2}' | sort -g
         get-patch = format-patch --stdout -1
         lgb = !git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'
 [diff "zip"]
