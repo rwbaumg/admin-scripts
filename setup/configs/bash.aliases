@@ -1,0 +1,172 @@
+################
+#
+# Bash aliases
+#
+
+# A couple of default aliases.
+#alias h='history'
+#alias j="jobs -l"
+#alias pu="pushd"
+#alias po="popd"
+
+# some more ls aliases
+#alias ll='ls -alF'
+#alias la='ls -A'
+#alias l='ls -CF'
+#alias ls='ls -F'
+
+alias dir='ls -ba'
+alias ss="ps -aux"
+alias dot='ls .[a-zA-Z0-9_]*'
+alias news="xterm -g 80x45 -e trn -e -S1 -N &"
+
+################
+#
+# Custom aliases
+#
+
+# TODO: Add your custom aliases here
+
+####[ END ]####
+
+###############
+##
+### Functions
+##
+###############
+
+#
+# Csh compatability:
+#
+alias unsetenv=unset
+function setenv () {
+  export $1="$2"
+}
+
+# Function which adds an alias to the current shell and to
+# the ~/.bash_aliases file.
+add-alias ()
+{
+  local name=$1 value="$2"
+  echo alias $name=\'$value\' >>~/.bash_aliases
+  eval alias $name=\'$value\'
+  alias $name
+}
+
+# "repeat" command.  Like:
+#
+#       repeat 10 echo foo
+repeat ()
+{
+  local count="$1" i;
+  shift;
+  for i in $(_seq 1 "$count"); do
+    eval "$@";
+  done
+}
+
+# Subfunction needed by `repeat'.
+_seq ()
+{
+  local lower upper output;
+  lower=$1 upper=$2;
+
+  if [ $lower -ge $upper ]; then return; fi
+    while [ $lower -lt $upper ]; do
+      echo -n "$lower "
+      lower=$(($lower + 1))
+    done
+  echo "$lower"
+}
+
+psgrep()
+{
+  ps -aux | grep $1 | grep -v grep
+}
+
+#
+# This is a little like `zap' from Kernighan and Pike
+#
+pskill()
+{
+  local pid
+
+  pid=$(ps -ax | grep $1 | grep -v grep | awk '{ print $1 }')
+  echo -n "killing $1 (process $pid)..."
+  kill -9 $pid
+  echo "slaughtered."
+}
+
+term()
+{
+  TERM=$1
+  export TERM
+  tset
+}
+
+xtitle ()
+{
+  echo -n -e "\033]0;$*\007"
+}
+
+cd()
+{
+  builtin cd "$@" && xtitle $HOST: $PWD
+}
+
+bold()
+{
+  tput smso
+}
+
+unbold()
+{
+  tput rmso
+}
+
+rot13()
+{
+  if [ $# = 0 ] ; then
+    tr "[a-m][n-z][A-M][N-Z]" "[n-z][a-m][N-Z][A-M]"
+  else
+    tr "[a-m][n-z][A-M][N-Z]" "[n-z][a-m][N-Z][A-M]" < $1
+  fi
+}
+
+watch()
+{
+  if [ $# -ne 1 ] ; then
+    tail -f nohup.out
+  else
+    tail -f $1
+  fi
+}
+
+#
+#  Remote login passing all 8 bits (so meta key will work)
+#
+rl()
+{
+  rlogin $* -8
+}
+
+function setenv()
+{
+  if [ $# -ne 2 ] ; then
+    echo "setenv: Too few arguments"
+  else
+    export $1="$2"
+  fi
+}
+
+function chmog()
+{
+  if [ $# -ne 4 ] ; then
+    echo "usage: chmog mode owner group file"
+    return 1
+  else
+    chmod $1 $4
+    chown $2 $4
+    chgrp $3 $4
+  fi
+}

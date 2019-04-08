@@ -1,0 +1,6 @@
+# SSH User Authentication Log (rsyslog configuration)
+# Install to: /etc/rsyslog.d/sshdusers.conf
+
+:msg, regex, "Found matching .* key:"  -/var/log/sshdusers.log
+:msg, regex, "Accepted publickey for"  -/var/log/sshdusers.log
+:msg, regex, "Accepted password for"   -/var/log/sshdusers.log

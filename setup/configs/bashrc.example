@@ -1,0 +1,234 @@
+# 0x19e Networks Custom ~/.bashrc example
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
+
+# This is an alternate interactivity check
+# Whether you use this, the above or both
+# is for you to decide.
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+        color_prompt=yes
+    else
+        color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# (Optional) Configure prompt string
+#PS2='> '
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# colored GCC warnings and errors
+export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+
+# Add an "alert" alias for long running commands.  Use like so:
+#   sleep 10; alert
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# make multi-line commands single-line
+shopt -s cmdhist
+
+# set history file.
+# note that ~/.bash_history may be truncated by external forces.
+# HISTFILE="$HOME/.bash_history"
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+# for unlimited history use the below
+#   HISTSIZE= HISTFILESIZE=
+#   HISTSIZE=-1 HISTFILESIZE=-1
+# for extended history, something like the below
+#   HISTFILESIZE=20000
+#   HISTSIZE=10000
+
+# make history unlimited
+HISTFILESIZE=
+HISTSIZE=
+
+# set the time format for history entries
+# HISTTIMEFORMAT="[%F %T] "
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# make writing history (almost) immediate
+#   -a appends current session history to disk.
+#   -c clears the history for the current shell without affecting storage file
+#   -r reads the history file into the current shell.
+PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
+
+###########################################################
+
+# Determine method used for SSH authentication
+# Relies on a logfile containing login entries for remote users
+
+SSH_USERS_LOGFILE="/var/log/sshdusers.log"
+SSH_AUTHORIZED_KEYS="$HOME/.ssh/authorized_keys"
+
+if [ ! -z "$SSH_CONNECTION" ]; then
+  # capture then modify umask
+  old_umask=$(umask)
+  umask 077
+
+  # capture then modify pwd
+  old_pwd=$(pwd)
+  ssh_tempdir=$(mktemp -d /tmp/ssh-id-XXXXXXX)
+  cd $ssh_tempdir || exit 1
+
+  # get the current key's fingerprint from the SSH user logfile
+  current_fp=$(
+    sed -ne "/sshd.\($(($(ps ho ppid $PPID)))\|$PPID\).:.*\(Accepted publickey\|matching .SA key\)/{s/^.* //g;h};\${x;p}" $SSH_USERS_LOGFILE
+  )
+
+  if [[ ! -z "$current_fp" ]]; then
+    for ((ssh_i=1;ssh_i<=$(wc -l < $SSH_AUTHORIZED_KEYS);ssh_i++)); do
+      ssh_line="$(sed -ne ${ssh_i}p < $SSH_AUTHORIZED_KEYS)"
+      if [[ ! $ssh_line =~ ^# ]] && [[ ! -z "$ssh_line" ]]; then
+        # write the current key to a temporary file
+        echo "$ssh_line" > tempKey
+        # extract the public key fingerprint
+        line_fp=($(ssh-keygen -l -f tempKey | awk '{ print $2 }'))
+        if [ "$line_fp" == "$current_fp" ]; then
+          # store the identified key and break
+          export SSH_CLIENT_KEY=$(echo $ssh_line | cut -d" " -f3)
+          break
+        fi
+      fi
+    done
+  fi
+
+  # restore previous state
+  cd $old_pwd
+  rm -fR $ssh_tempdir
+  umask $old_umask
+
+  # ensure variables are unset
+  unset line_fp ssh_line ssh_i current_fp ssh_tempdir old_umask old_pwd
+  unset SSH_USERS_LOGFILE
+  unset SSH_AUTHORIZED_KEYS
+fi
+
+###########################################################
+
+# NOTE: Only enable ONE of the below groups:
+
+#####################################################################################
+### The --clear option make sure Intruder cannot use your existing SSH-Agents keys
+### i.e. Only allow cron jobs to use password less login
+#####################################################################################
+# /usr/bin/keychain --clear $HOME/.ssh/id_rsa
+# source $HOME/.keychain/$HOSTNAME-sh
+
+###########################################################################
+# allow $USER to use keys. Only enter once and it will remain enabled till
+# you delete it or reboot the server
+###########################################################################
+# /usr/bin/keychain $HOME/.ssh/id_rsa
+# source $HOME/.keychain/$HOSTNAME-sh
+
+# configure gpg ssh authentication
+# export SSH_AUTH_SOCK=$(gpgconf --list-dirs | grep agent-socket | awk -F: '{ print $2 ".ssh" }')
+# gpgconf --launch gpg-agent
+
+echo -e "Welcome" | figlet -f ascii9
+
+# If SSH_CLIENT_KEY is set, public-key authentication is being used
+# Otherwise, password authentication (or possibly something else) is being used
+if [ ! -z "$SSH_CLIENT_KEY" ]; then
+  echo "Connected with public key: $SSH_CLIENT_KEY"
+fi
+
+# find path to OpenSC library
+export OPENSC=$(readlink -f `dpkg -L opensc-pkcs11 | grep \/opensc-pkcs11.so\$` | uniq | head -n1)
