@@ -41,6 +41,9 @@ APT_ARG="--verbose-versions --yes"
 # Uncomment to enable /etc source control Git handling
 ETCKEEPER_COMMIT="true"
 
+# Update the signing key regardless of whether or not its installed
+UPDATE_KEY="false"
+
 # Uncomment to run script when the package is already installed
 #FORCE_INSTALL="true"
 
@@ -147,6 +150,11 @@ check_protocol()
 
 check_etckeeper()
 {
+  if [[ $EUID -ne 0 ]]; then
+    echo >&2 "WARNING: Must run as root to commit /etc changes."
+    return
+  fi
+
   # git handling for etckeeper (check if /etc/.git exists)
   if [ -d /etc/.git  ] && hash git 2>/dev/null; then
     if `git -C "/etc" rev-parse > /dev/null 2>&1`; then
@@ -258,11 +266,13 @@ usage()
             SCRIPT_NAME [OPTIONS]
 
     OPTIONS
-     -p, --protocol <http>       The hypertext protocol to use. Either http or https.
-     -r, --release <full-name>   The full name of the platform release to pull packages for.
+     -p, --protocol <http>       The protocol to use. Either http or https.
+     -r, --release <full-name>   The full name of the platform release.
 
-     --no-etckeeper              Do not commit VCS changes under /etc (eg. etckeeper)
+     --update-key                Update the GnuPG signing key and exit.
+     --no-etckeeper              Do not commit VCS changes under /etc
 
+     -f, --force                 Force re-installation.
      -v, --verbose               Make the script more verbose.
      -h, --help                  Prints this usage.
 
@@ -313,7 +323,7 @@ check_verbose()
 }
 
 # process arguments
-[ $# -gt 0 ] || usage
+#[ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
   case "$1" in
     -r|--release)
@@ -336,6 +346,10 @@ while [ $# -gt 0 ]; do
     ;;
     -f|--force)
       export FORCE_INSTALL="true"
+      shift
+    ;;
+    --update-key)
+      export UPDATE_KEY="true"
       shift
     ;;
     --no-etckeeper)
@@ -411,14 +425,27 @@ check_url      "${KEY_URL}"
 
 # check if the package is already installed
 if [ "${FORCE_INSTALL}" != "true" ] && check_installed "${PKGNAME}"; then
-  echo "The package '${PKGNAME}' is already installed on the current system."
-  exit 0
+  if [ "${UPDATE_KEY}" == "true" ]; then
+    # install signing key and exit
+    install_key_from_url "${KEY_URL}"
+    check_etckeeper
+    exit_script 0
+  fi
+
+  usage "The package '${PKGNAME}' is already installed."
 fi
 
 echo "Installing Bareos FileDaemon backup client for Ubuntu ${UBUNTU_RELEASE} ..."
 
 # install signing key
 install_key_from_url "${KEY_URL}"
+
+if [ "${UPDATE_KEY}" == "true" ]; then
+  # check if /etc is under version control
+  check_etckeeper
+
+  exit $?
+fi
 
 if [ $VERBOSITY -gt 0 ]; then
 # print some details about source configuration
