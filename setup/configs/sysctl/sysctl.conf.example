@@ -1,0 +1,240 @@
+#
+# ...,~-=:[0x19e Networks]:=-~,...
+#
+# /etc/sysctl.conf - Configuration file for setting system variables
+# See /etc/sysctl.d/ for additional system variables.
+# See sysctl.conf (5) for information.
+#
+
+# Configure the system domain name
+kernel.domainname = 0x19e.net
+
+# Configure low-level messages.
+#   Values:
+#     "0" → Emergency messages, system is about to crash or is unstable pr_emerg
+#     "1" → Something bad happened and action must be taken immediately pr_alert
+#     "2" → A critical condition occurred like a serious hardware/software failure pr_crit
+#     "3" → An error condition, often used by drivers to indicate difficulties with the hardware pr_err
+#     "4" → A warning, meaning nothing serious by itself but might indicate problems pr_warning
+#     "5" → Nothing serious, but notably nevertheless. Often used to report security events. pr_notice
+#     "6" → Informational message e.g. startup information at driver initialization pr_info
+#     "7" → Debug messages pr_debug, pr_devel if DEBUG is defined
+#     KERN_DEFAULT "d" The default kernel loglevel
+#     KERN_CONT "" "continued" line of log printout (only done after a line that had no enclosing)
+#
+# The settings consists of four log-levels, the meanings of which are shown below:
+#      $ cat /proc/sys/kernel/printk
+#        7       4       1       7
+#        current default minimum boot-time-default
+#
+# For example, uncomment the following to stop low-level messages on console:
+#kernel.printk = 3 4 1 3
+#
+kernel.printk = 3 4 1 7
+
+# Configure printk ratelimits
+#kernel.printk_ratelimit_burst = 10
+#kernel.printk_ratelimit = 5
+kernel.printk_ratelimit = 30
+kernel.printk_ratelimit_burst = 200
+
+kernel.pid_max = 65536
+
+# Sets the time before the kernel considers migrating a proccess to another core
+#kernel.sched_migration_cost_ns = 5000000
+
+# kernel.check_deadlocks = 1
+kernel.panic_on_oops = 0
+
+# configure shared memory
+kernel.shmmni = 4096
+kernel.shmall = 2097152
+
+# Maximum size of a single shared memory segment in bytes
+#kernel.shmmax = 33554432
+#kernel.shmmax = 268435456
+#kernel.shmmax = 536870912
+kernel.shmmax = 1073741824
+
+# Set maximum amount of memory allocated to shm to 256MB
+#kernel.shmmax = 268435456
+#kernel.shmall = 268435456
+
+# Do not use core.PID for dump naming (use core_pattern instead)
+kernel.core_uses_pid = 0
+
+# Configure pattern for core dumps.
+# The following values can be used as part of the pattern:
+#   %%  a single % character
+#   %c  core file size soft resource limit of crashing process (since
+#       Linux 2.6.24)
+#   %d  dump mode—same as value returned by prctl(2) PR_GET_DUMPABLE
+#       (since Linux 3.7)
+#   %e  executable filename (without path prefix)
+#   %E  pathname of executable, with slashes ('/') replaced by
+#       exclamation marks ('!') (since Linux 3.0).
+#   %g  (numeric) real GID of dumped process
+#   %h  hostname (same as nodename returned by uname(2))
+#   %i  TID of thread that triggered core dump, as seen in the PID
+#       namespace in which the thread resides (since Linux 3.18)
+#   %I  TID of thread that triggered core dump, as seen in the
+#       initial PID namespace (since Linux 3.18)
+#   %p  PID of dumped process, as seen in the PID namespace in which
+#       the process resides
+#   %P  PID of dumped process, as seen in the initial PID namespace
+#       (since Linux 3.12)
+#   %s  number of signal causing dump
+#   %t  time of dump, expressed as seconds since the Epoch,
+#       1970-01-01 00:00:00 +0000 (UTC)
+#   %u  (numeric) real UID of dumped process
+#
+# NOTE: The location specified by kernel.core_pattern MUST exist,
+#       otherwise no dumps will be saved.
+#
+kernel.core_pattern = /var/crash/core-%e-%p-%E
+#
+# With systemd-coredump installed systemd can be given control over
+# where dumps are stored:
+#
+#kernel.core_pattern = |/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %e
+
+# make sure core dumps are always written
+fs.suid_dumpable = 2
+
+# max open files
+fs.file-max = 65536
+
+# increase the number of possible inotify(7) watches
+#fs.inotify.max_user_watches = 65536
+fs.inotify.max_user_watches = 100000
+
+# semaphores: semmsl, semmns, semopm, semmni
+#kernel.sem = 250 32000 100 128
+
+# Controls the maximum size of a message, in bytes
+#kernel.msgmnb = 65535
+
+# Controls the default maxmimum size of a mesage queue
+#kernel.msgmax = 65535
+
+# Discourage Linux from swapping out idle processes to disk (default is 60)
+vm.swappiness = 20
+
+# optimize for high-memory
+vm.zone_reclaim_mode = 0
+#vm.dirty_ratio = 2
+#vm.dirty_background_ratio = 1
+vm.dirty_ratio = 40
+vm.dirty_background_ratio = 10
+#vm.dirty_writeback_centisecs = 500
+#vm.dirty_expire_centiseconds = 3000
+
+# Keep at least 64MB of free RAM space available
+vm.min_free_kbytes = 65535
+
+# specifies the minimum virtual address that a process is allowed to mmap
+#vm.mmap_min_addr = 4096
+
+# 50% overcommitment of available memory
+#vm.overcommit_ratio = 50
+#vm.overcommit_memory = 0
+
+# Uncomment the next line to enable packet forwarding for IPv4
+net.ipv4.ip_forward=1
+
+# Uncomment the next line to enable packet forwarding for IPv6
+#  Enabling this option disables Stateless Address Autoconfiguration
+#  based on Router Advertisements for this host
+#net.ipv6.conf.all.forwarding=1
+
+# allow directed pings
+net.ipv4.icmp_echo_ignore_all = 0
+
+# disable IPv6
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+
+# increase adapter option memory
+net.core.optmem_max = 65536
+
+# allow testing with buffers up to 128MB
+net.core.rmem_max = 134217728
+net.core.wmem_max = 134217728
+
+# increase Linux autotuning TCP buffer limit to 64MB
+net.ipv4.tcp_rmem = 4096 87380 134217728
+net.ipv4.tcp_wmem = 4096 65536 134217728
+# note: try 134217728 or 67108864 for max size
+#net.ipv4.tcp_rmem = 4096 87380 67108864
+#net.ipv4.tcp_wmem = 4096 65536 67108864
+
+# recommended default congestion control is htcp
+net.ipv4.tcp_congestion_control=cubic
+#net.ipv4.tcp_congestion_control=htcp
+#net.ipv4.tcp_congestion_control=bic
+#net.ipv4.tcp_congestion_control=reno
+
+net.ipv4.udp_rmem_min = 8192
+net.ipv4.udp_wmem_min = 8192
+
+net.ipv4.tcp_keepalive_time = 60
+net.ipv4.tcp_keepalive_intvl = 10
+net.ipv4.tcp_keepalive_probes = 6
+
+net.ipv4.tcp_max_syn_backlog = 30000
+net.ipv4.tcp_max_tw_buckets = 2000000
+net.ipv4.tcp_tw_reuse = 1
+
+#net.core.somaxconn = 1024
+#net.ipv4.tcp_rfc1337 = 1
+
+# recommended for hosts with jumbo frames enabled
+net.ipv4.tcp_mtu_probing=1
+
+# don't cache ssthresh from previous connection
+#net.ipv4.tcp_no_metrics_save = 1
+
+# Ensure connections use these values
+# net.ipv4.route.flush=1
+
+# TCP Selective Acknowledgments (default: 1)
+#net.ipv4.tcp_sack = 0
+net.ipv4.tcp_sack = 1
+
+# claim resources sooner
+net.ipv4.tcp_fin_timeout=15
+
+# Increase backlog (default: 1000)
+# Check /proc/net/softnet_stat to see if this is needed
+net.core.netdev_max_backlog = 300000
+net.core.netdev_budget = 50000
+
+# TCP Window Scaling
+net.ipv4.tcp_window_scaling = 1
+
+# recommended for CentOS7/Debian8 hosts
+net.core.default_qdisc = fq
+
+# Ensure timestamps are used
+# Should be set to 0 for VMs in most cases (does not work with GRO on in dom0)
+net.ipv4.tcp_timestamps = 1
+
+# libvirt: control whether bridged virtual adapters are sent to iptables
+# see https://wiki.libvirt.org/page/Net.bridge.bridge-nf-call_and_sysctl.conf
+net.bridge.bridge-nf-call-ip6tables = 0
+net.bridge.bridge-nf-call-iptables = 0
+net.bridge.bridge-nf-call-arptables = 0
+
+# Accept redirects on all interfaces
+# TODO: Disable as soon as network architecture is fixed!
+net.ipv4.conf.default.accept_redirects = 1
+net.ipv4.conf.default.secure_redirects = 1
+net.ipv4.conf.all.accept_redirects = 1
+net.ipv4.conf.all.secure_redirects = 1
+
+# Configure bridge interface to ensure correct settings
+# TODO: Test to see if this is needed after changing default
+net.ipv4.conf.xenbr0.accept_redirects = 1
+net.ipv4.conf.xenbr0.secure_redirects = 1
+net.ipv4.conf.xenbr0.send_redirects = 0

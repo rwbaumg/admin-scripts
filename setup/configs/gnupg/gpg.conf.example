@@ -1,0 +1,49 @@
+auto-key-locate cert pka ldap keyserver
+keyserver hkps://hkps.pool.sks-keyservers.net
+keyserver hkp://keys.gnupg.net
+keyserver-options auto-key-retrieve
+keyserver-options honor-keyserver-url=yes
+
+armor
+use-agent
+utf8-strings
+fixed-list-mode
+charset utf-8
+no-comments
+no-emit-version
+keyid-format 0xlong
+with-fingerprint
+verify-options show-uid-validity show-policy-urls show-notations show-keyserver-urls 
+list-options show-uid-validity
+require-cross-certification
+max-cert-depth 5
+
+cert-digest-algo SHA512
+s2k-cipher-algo AES256
+s2k-digest-algo SHA512
+
+# note: for desktop installs only
+# photo-viewer "display -title 'KeyID 0x%k'"
+
+# Normal security
+default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
+personal-cipher-preferences AES256 AES192 AES CAST5
+personal-digest-preferences SHA512 SHA384 SHA256
+
+# Enhanced security
+# default-preference-list SHA512 SHA384 SHA256 AES256 AES192 ZLIB BZIP2 ZIP Uncompressed
+# personal-digest-preferences SHA512 SHA384 SHA256
+# personal-cipher-preferences AES256 AES192
+
+# Highest security
+# default-preference-list SHA512 SHA384 AES256 ZLIB BZIP2 ZIP Uncompressed
+# personal-digest-preferences SHA512 SHA384
+# personal-cipher-preferences AES256
+
+# NOTE: The minimum default is:
+# gpg> setpref uncompressed
+# Set preference list to:
+#      Cipher: 3DES
+#      Digest: SHA1
+#      Compression: Uncompressed
+#      Features: MDC, Keyserver no-modify

@@ -1,0 +1,63 @@
+# Turn on Source Address Verification in all interfaces to
+# prevent some spoofing attacks.
+net.ipv4.conf.default.rp_filter=1
+net.ipv4.conf.all.rp_filter=1
+
+# Turn on SYN-flood protections.  Starting with 2.6.26, there is no loss
+# of TCP functionality/features under normal conditions.  When flood
+# protections kick in under high unanswered-SYN load, the system
+# should remain more stable, with a trade off of some loss of TCP
+# functionality/features (e.g. TCP Window scaling).
+# See http://lwn.net/Articles/277146/
+# Note: This may impact IPv6 TCP sessions too
+net.ipv4.tcp_syncookies=1
+
+##### Custom #######
+
+# Ignore ICMP broadcast requests
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+
+# Do not accept IP source route packets (we are not a router)
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv6.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv6.conf.default.accept_source_route = 0
+
+# Do not send ICMP redirects (we are not a router)
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+
+# Configure IPv4 redirect options
+#net.ipv4.route.redirect_load = 5
+#net.ipv4.route.redirect_number = 9
+#net.ipv4.route.redirect_silence = 5120
+
+# Force IGMP version 2
+net.ipv4.conf.all.force_igmp_version = 2
+
+# Ignore directed pings
+net.ipv4.icmp_echo_ignore_all = 1
+
+# Block SYN attacks
+net.ipv4.tcp_max_syn_backlog = 2048
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_syn_retries = 5
+
+# Log Martians
+net.ipv4.conf.default.log_martians = 0
+net.ipv4.conf.all.log_martians = 0
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+# Do not accept ICMP redirects (prevent MITM attacks)
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+# _or_
+# Accept ICMP redirects only for gateways listed in our default
+# gateway list (enabled by default)
+#net.ipv4.conf.default.secure_redirects = 1
+#net.ipv4.conf.all.secure_redirects = 1
+
+# Ignore Directed pings
+net.ipv4.icmp_echo_ignore_all = 1
