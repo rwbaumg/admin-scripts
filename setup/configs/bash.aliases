@@ -18,15 +18,16 @@
 
 alias dir='ls -ba'
 alias ss="ps -aux"
-alias dot='ls .[a-zA-Z0-9_]*'
-alias news="xterm -g 80x45 -e trn -e -S1 -N &"
+alias dot='ls -1 | grep -P '^\.'
+alias timestamp='date "+%Y%m%dT%H%M%S"'
 
 ################
 #
 # Custom aliases
 #
 
-# TODO: Add your custom aliases here
+# USENET news
+#alias news="xterm -g 80x45 -e trn -e -S1 -N &"
 
 # List all TODO/FIXME comments
 alias tasks='grep --exclude-dir=.git --exclude-dir=.svn -rEI "TODO|FIXME" . 2>/dev/null'
@@ -39,6 +40,24 @@ alias ds='dig +noauthority +noadditional +noqr +nostats +noidentify +nocmd +noqu
 
 # Make the "tree" command pretty and useful by default
 alias tree="tree -CAFa -I 'CVS|*.*.package|.svn|.git' --dirsfirst"
+
+# Alias for getting OpenPGP keys for Launchpad PPAs on Ubuntu
+alias launchpadkey="sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys"
+
+# An alias to re-run last command with sudo. Similar to "sudo !!"
+alias please='sudo $(fc -ln -1)'
+
+# Open a manpage in the default (graphical) web browser
+alias bman='man --html=x-www-browser'
+
+# print all network interfaces' names and IPv4 addresses
+alias ips='ip a | awk '\''/inet /&&!/ lo/{print $NF,$2}'\'' | column -t'
+
+# fun screensaver
+alias screensaver='for ((;;)); do echo -ne "\033[$((1+RANDOM%LINES));$((1+RANDOM%COLUMNS))H\033[$((RANDOM%2));3$((RANDOM%8))m$((RANDOM%10))"; sleep 0.1 ; done'
+
+# ROT13
+alias rot13="tr '[A-Za-z]' '[N-ZA-Mn-za-m]'"
 
 ####[ END ]####
 
