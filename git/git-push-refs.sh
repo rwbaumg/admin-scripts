@@ -242,9 +242,9 @@ for remote_ref in $GIT_REFS; do
 
   if [ "${ALL_REMOTES}" == "true" ]; then
     for r in `git remote | sort -r`; do
-      if [ $VERBOSITY -gt 0 ]; then
-        echo "Pushing branches to ${r} ..."
-      fi
+      #if [ $VERBOSITY -gt 0 ]; then
+        echo "Pushing branches to remote '${r}' ..."
+      #fi
       if [ $VERBOSITY -gt 1 ]; then
         echo "Pushing $remote_name -> $r ..."
       fi
@@ -253,7 +253,7 @@ for remote_ref in $GIT_REFS; do
     done
   else
     if [ $VERBOSITY -gt 0 ]; then
-      echo "Pushing branches to ${TARGET_REMOTE} ..."
+      echo "Pushing branches to remote '${TARGET_REMOTE}' ..."
     fi
     if [ $VERBOSITY -gt 1 ]; then
       echo "Pushing $remote_name -> $TARGET_REMOTE ..."
@@ -312,15 +312,15 @@ if [ "$SKIP_TAGS" != "true" ] && git show-ref --tags > /dev/null 2>&1; then
 
   if [ "${ALL_REMOTES}" == "true" ]; then
     for r in `git remote | sort -r`; do
-      if [ $VERBOSITY -gt 0 ]; then
-        echo "Pushing tags to $r ..."
-      fi
+      #if [ $VERBOSITY -gt 0 ]; then
+        echo "Pushing tags to remote '$r' ..."
+      #fi
 
       git push $GIT_EXTRA_ARGS $GIT_PRUNE $r +refs/tags/*:refs/tags/*
     done
   else
     if [ $VERBOSITY -gt 0 ]; then
-      echo "Pushing tags to $TARGET_REMOTE ..."
+      echo "Pushing tags to remote '$TARGET_REMOTE' ..."
     fi
 
     git push $GIT_EXTRA_ARGS $GIT_PRUNE $TARGET_REMOTE +refs/tags/*:refs/tags/*
@@ -337,7 +337,7 @@ if [ -n "$GIT_PRUNE" ]; then
   if [ "${ALL_REMOTES}" == "true" ]; then
     for r in `git remote | sort -r`; do
       if [ $VERBOSITY -gt 0 ]; then
-        echo "Pruning $r ..."
+        echo "Pruning remote '$r' ..."
       fi
 
       # prune remote refs
@@ -345,7 +345,7 @@ if [ -n "$GIT_PRUNE" ]; then
     done
   else
     if [ $VERBOSITY -gt 0 ]; then
-      echo "Pruning $TARGET_REMOTE ..."
+      echo "Pruning remote '$TARGET_REMOTE' ..."
     fi
 
     # prune remote refs
