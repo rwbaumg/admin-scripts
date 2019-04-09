@@ -1,7 +1,7 @@
 #!/bin/bash
 # Runs an executable using the CWD for shared libraries
 
-if [ -z "$@" ]; then
+if [[ -z "$@" ]]; then
   echo >&2 "Usage: $0 <command>"
   exit 1
 fi
