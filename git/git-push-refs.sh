@@ -60,9 +60,6 @@ usage()
      -o, --origin <value>   The name of the remote to push refs from (default: origin).
      -r, --remote <value>   The name of the remote to push refs to.
      -i, --ignore <value>   Ignore the specified branch reference (HEAD is always ignored).
-     -f, --force            Pass the --force flag to the Git command to bypass reference checks.
-
-     -v, --verbose          Make the script more verbose.
 
      --all-remotes          Push to all remotes.
      --no-tags              Don't process Git tag references (only branches)
@@ -70,6 +67,9 @@ usage()
      --convert-svn-tags     Convert SVN tags to Git tags before pushing to the specified remote.
      --prune                Deletes all stale remote-tracking branches under the remote.
 
+     -f, --force            Pass the --force flag to the Git command to bypass reference checks.
+
+     -v, --verbose          Make the script more verbose.
      -h, --help             Prints this usage.
     EOF
 
