@@ -104,6 +104,7 @@ usage()
 
      -v, --verbose                 Make the script more verbose. This option can be specified multiple times.
      -h, --help                    Prints this usage.
+
     EOF
 
     exit_script $@
