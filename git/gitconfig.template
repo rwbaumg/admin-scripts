@@ -36,6 +36,7 @@
         wdiff = diff --word-diff=color --unified=1
         amend = "!f(){ git add . && git commit --amend ${1}; };f"
         r10 = rebase -i HEAD~10
+        rm-add = add -u
         hard-reset = !git reset HEAD --hard && git clean -fd
         ls = log --oneline
         ca = commit --all

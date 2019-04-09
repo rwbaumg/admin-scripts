@@ -64,6 +64,7 @@ usage()
 
      -v, --verbose          Make the script more verbose.
 
+     --all-remotes          Push to all remotes.
      --no-tags              Don't process Git tag references (only branches)
      --dry-run              Do everything except actually send the updates.
      --convert-svn-tags     Convert SVN tags to Git tags before pushing to the specified remote.
@@ -99,6 +100,7 @@ GIT_FORCE=""
 GIT_PRUNE=""
 SKIP_TAGS="false"
 CONVERT_SVN_TAGS="false"
+ALL_REMOTES="false"
 
 check_verbose()
 {
@@ -121,6 +123,10 @@ while [ $# -gt 0 ]; do
       test_arg "$1" "$2"
       shift
       TARGET_REMOTE="$1"
+      shift
+    ;;
+    --all-remotes)
+      ALL_REMOTES="true"
       shift
     ;;
     -v|--verbose)
@@ -170,8 +176,11 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ -z "$TARGET_REMOTE" ]; then
+if [ -z "$TARGET_REMOTE" ] && [ "${ALL_REMOTES}" != "true" ]; then
   usage "No remote specified for target."
+fi
+if [ ! -z "$TARGET_REMOTE" ] && [ "${ALL_REMOTES}" == "true" ]; then
+  usage "Conflicting remote options specified."
 fi
 if [ -z "$SOURCE_REMOTE" ]; then
   usage "No remote specified for source."
@@ -234,11 +243,21 @@ fi
 for remote_ref in $GIT_REFS; do
   remote_name=$(echo $remote_ref | sed -e "s/$SOURCE_REMOTE\///")
 
-  if [ $VERBOSITY -gt 1 ]; then
-    echo "Pushing $remote_name -> $TARGET_REMOTE ..."
-  fi
+  if [ "${ALL_REMOTES}" == "true" ]; then
+    for r in `git remote | sort -r`; do
+      if [ $VERBOSITY -gt 1 ]; then
+        echo "Pushing $remote_name -> $r ..."
+      fi
 
-  git push $GIT_EXTRA_ARGS $TARGET_REMOTE $remote_ref:refs/heads/$remote_name
+      git push $GIT_EXTRA_ARGS $r $remote_ref:refs/heads/$remote_name
+    done
+  else
+    if [ $VERBOSITY -gt 1 ]; then
+      echo "Pushing $remote_name -> $TARGET_REMOTE ..."
+    fi
+
+    git push $GIT_EXTRA_ARGS $TARGET_REMOTE $remote_ref:refs/heads/$remote_name
+  fi
 done
 
 if [ "$CONVERT_SVN_TAGS" = "true" ] && ! [ -d .git/svn  ]; then
@@ -285,12 +304,25 @@ fi
 
 # push tags
 if [ "$SKIP_TAGS" != "true" ] && git show-ref --tags > /dev/null 2>&1; then
-  if [ $VERBOSITY -gt 0 ]; then
-    echo "Pushing tags to $TARGET_REMOTE ..."
-  fi
 
   # push all (tags without any filtering)
-  git push $GIT_EXTRA_ARGS $GIT_PRUNE $TARGET_REMOTE +refs/tags/*:refs/tags/*
+
+  if [ "${ALL_REMOTES}" == "true" ]; then
+    for r in `git remote | sort -r`; do
+      if [ $VERBOSITY -gt 0 ]; then
+        echo "Pushing tags to $r ..."
+      fi
+
+      git push $GIT_EXTRA_ARGS $GIT_PRUNE $r +refs/tags/*:refs/tags/*
+    done
+  else
+    if [ $VERBOSITY -gt 0 ]; then
+      echo "Pushing tags to $TARGET_REMOTE ..."
+    fi
+
+    git push $GIT_EXTRA_ARGS $GIT_PRUNE $TARGET_REMOTE +refs/tags/*:refs/tags/*
+  fi
+
 
   # todo: could filter through tags if we wanted to...
 else
