@@ -237,14 +237,14 @@ if [ $VERBOSITY -gt 1 ]; then
 fi
 
 # push all branches (excluding filtered)
-if [ $VERBOSITY -gt 0 ]; then
-  echo "Pushing branches to $TARGET_REMOTE ..."
-fi
 for remote_ref in $GIT_REFS; do
   remote_name=$(echo $remote_ref | sed -e "s/$SOURCE_REMOTE\///")
 
   if [ "${ALL_REMOTES}" == "true" ]; then
     for r in `git remote | sort -r`; do
+      if [ $VERBOSITY -gt 0 ]; then
+        echo "Pushing branches to ${r} ..."
+      fi
       if [ $VERBOSITY -gt 1 ]; then
         echo "Pushing $remote_name -> $r ..."
       fi
@@ -252,6 +252,9 @@ for remote_ref in $GIT_REFS; do
       git push $GIT_EXTRA_ARGS $r $remote_ref:refs/heads/$remote_name
     done
   else
+    if [ $VERBOSITY -gt 0 ]; then
+      echo "Pushing branches to ${TARGET_REMOTE} ..."
+    fi
     if [ $VERBOSITY -gt 1 ]; then
       echo "Pushing $remote_name -> $TARGET_REMOTE ..."
     fi
@@ -323,7 +326,6 @@ if [ "$SKIP_TAGS" != "true" ] && git show-ref --tags > /dev/null 2>&1; then
     git push $GIT_EXTRA_ARGS $GIT_PRUNE $TARGET_REMOTE +refs/tags/*:refs/tags/*
   fi
 
-
   # todo: could filter through tags if we wanted to...
 else
   if [ $VERBOSITY -gt 0 ]; then
@@ -331,17 +333,28 @@ else
   fi
 fi
 
-if [ $VERBOSITY -gt 0 ]; then
-  echo "Finished pushing references to $TARGET_REMOTE."
+if [ -n "$GIT_PRUNE" ]; then
+  if [ "${ALL_REMOTES}" == "true" ]; then
+    for r in `git remote | sort -r`; do
+      if [ $VERBOSITY -gt 0 ]; then
+        echo "Pruning $r ..."
+      fi
+
+      # prune remote refs
+      git remote prune $r $GIT_DRY_RUN
+    done
+  else
+    if [ $VERBOSITY -gt 0 ]; then
+      echo "Pruning $TARGET_REMOTE ..."
+    fi
+
+    # prune remote refs
+    git remote prune $TARGET_REMOTE $GIT_DRY_RUN
+  fi
 fi
 
-if [ -n "$GIT_PRUNE" ]; then
-  if [ $VERBOSITY -gt 0 ]; then
-    echo "Pruning $TARGET_REMOTE ..."
-  fi
-
-  # prune remote refs
-  git remote prune $TARGET_REMOTE $GIT_DRY_RUN
+if [ $VERBOSITY -gt 0 ]; then
+  echo "Finished."
 fi
 
 exit_script 0
