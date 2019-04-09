@@ -1,6 +1,7 @@
 ################
 #
 # Bash aliases
+# Install to ~/.bash_aliases
 #
 
 # A couple of default aliases.
@@ -26,6 +27,18 @@ alias news="xterm -g 80x45 -e trn -e -S1 -N &"
 #
 
 # TODO: Add your custom aliases here
+
+# List all TODO/FIXME comments
+alias tasks='grep --exclude-dir=.git --exclude-dir=.svn -rEI "TODO|FIXME" . 2>/dev/null'
+
+# create a tgz of the current directory, excluding VCS folders
+alias tarcwd='( ( D=`basename $(builtin pwd)`; F=$(date +$HOME/`sed "s,[/ ],.,g" <<< ${D/${HOME}/}`-%F.tgz); tar --ignore-failed-read --transform "s,^${D%/*},`date +${D%/*}.%F`,S" --exclude-vcs -czPf "$F" "$D" &>/dev/null ) & )
+
+# simple dig alias
+alias ds='dig +noauthority +noadditional +noqr +nostats +noidentify +nocmd +noquestion +nocomments'
+
+# Make the "tree" command pretty and useful by default
+alias tree="tree -CAFa -I 'CVS|*.*.package|.svn|.git' --dirsfirst"
 
 ####[ END ]####
 
