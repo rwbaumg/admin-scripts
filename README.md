@@ -11,7 +11,7 @@ and are authored by me, for my own personal use.
 Most of these scripts are the result of my never-ending desire to make my
 life as easy as possible; still, I do take pride in my code. As such, please
 make sure you include proper attribution if you decide to use any of these
-in any projects or production environments.
+in a project or production environment.
 
 Note that these scripts were never really intended to be public, so do not
 expect any warranties of any kind. Some of these scripts can be extremely
