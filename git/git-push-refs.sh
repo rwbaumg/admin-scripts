@@ -93,6 +93,11 @@ test_arg()
     fi
 }
 
+function get_remotes()
+{
+  git remote | sort -r | uniq
+}
+
 VERBOSITY=0
 GIT_VERBOSE=""
 GIT_DRY_RUN=""
@@ -193,7 +198,11 @@ EXCLUDE_REFS_KEY=$(echo ${EXCLUDE_REFS[@]}|tr " " "|")
 # print options
 if [ $VERBOSITY -gt 1 ]; then
   echo ORIGIN REMOTE = "${SOURCE_REMOTE}"
+  if [ ! -z "${TARGET_REMOTE}" ]; then
   echo TARGET REMOTE = "${TARGET_REMOTE}"
+  else
+  echo TARGET REMOTE = "[auto]"
+  fi
   echo EXCLUDED REFS = "${EXCLUDE_REFS_KEY}"
   echo GIT ARGUMENTS = "${GIT_EXTRA_ARGS}"
 fi
@@ -230,10 +239,18 @@ GIT_SVN_TAGS=$(git branch -r | grep "^(..)?$SOURCE_REMOTE\/tags\/[a-zA-Z0-9\._-]
 
 # print processed refs
 if [ $VERBOSITY -gt 1 ]; then
-  echo "INFO: The following branches were found in $SOURCE_REMOTE: $(echo ${GIT_REFS[@]}|tr " " "|")"
+  if  [ ! -z "${GIT_REFS[@]}" ]; then
+    echo "INFO: The following branches were found in $SOURCE_REMOTE: $(echo ${GIT_REFS[@]}|tr " " "|")"
+  else
+    echo "INFO: No branches were found in $SOURCE_REMOTE"
+  fi
 fi
 if [ $VERBOSITY -gt 1 ]; then
-  echo "INFO: The following SVN tags were found in $SOURCE_REMOTE: $(echo ${GIT_SVN_TAGS[@]}|tr " " "|")"
+  if  [ ! -z "${GIT_SVN_TAGS[@]}" ]; then
+    echo "INFO: The following SVN tags were found in $SOURCE_REMOTE: $(echo ${GIT_SVN_TAGS[@]}|tr " " "|")"
+  else
+    echo "INFO: No SVN tags were found in $SOURCE_REMOTE"
+  fi
 fi
 
 # push all branches (excluding filtered)
@@ -241,9 +258,9 @@ for remote_ref in $GIT_REFS; do
   remote_name=$(echo $remote_ref | sed -e "s/$SOURCE_REMOTE\///")
 
   if [ "${ALL_REMOTES}" == "true" ]; then
-    for r in `git remote | sort -r`; do
+    for r in `get_remotes`; do
       #if [ $VERBOSITY -gt 0 ]; then
-        echo "Pushing branches to remote '${r}' ..."
+        echo "Pushing branches to remote '${r}' (ref: $remote_name) ..."
       #fi
       if [ $VERBOSITY -gt 1 ]; then
         echo "Pushing $remote_name -> $r ..."
@@ -311,7 +328,7 @@ if [ "$SKIP_TAGS" != "true" ] && git show-ref --tags > /dev/null 2>&1; then
   # push all (tags without any filtering)
 
   if [ "${ALL_REMOTES}" == "true" ]; then
-    for r in `git remote | sort -r`; do
+    for r in `get_remotes`; do
       #if [ $VERBOSITY -gt 0 ]; then
         echo "Pushing tags to remote '$r' ..."
       #fi
@@ -335,7 +352,7 @@ fi
 
 if [ -n "$GIT_PRUNE" ]; then
   if [ "${ALL_REMOTES}" == "true" ]; then
-    for r in `git remote | sort -r`; do
+    for r in `get_remotes`; do
       if [ $VERBOSITY -gt 0 ]; then
         echo "Pruning remote '$r' ..."
       fi
