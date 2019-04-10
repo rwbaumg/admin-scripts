@@ -5,21 +5,21 @@
 #
 
 # A couple of default aliases.
-#alias h='history'
-#alias j="jobs -l"
-#alias pu="pushd"
-#alias po="popd"
-
-# some more ls aliases
-#alias ll='ls -alF'
-#alias la='ls -A'
-#alias l='ls -CF'
-#alias ls='ls -F'
+alias h='history'
+alias j="jobs -l"
+alias pu="pushd"
+alias po="popd"
 
 alias dir='ls -ba'
 alias ss="ps -aux"
 alias dot="ls -a1 | grep -P '^\.'"
 alias timestamp='date "+%Y%m%dT%H%M%S"'
+
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias ls='ls -F'
 
 ################
 #
@@ -79,7 +79,7 @@ function setenv () {
 
 # Function which adds an alias to the current shell and to
 # the ~/.bash_aliases file.
-add-alias ()
+function add-alias()
 {
   local name=$1 value="$2"
   echo alias $name=\'$value\' >>~/.bash_aliases
@@ -88,7 +88,7 @@ add-alias ()
 }
 
 # create a tgz of the current directory, excluding VCS folders
-tarcwd()
+function tarcwd()
 {
   D=`basename $(builtin pwd)`
   F=$(date +$HOME/`sed "s,[/ ],.,g" <<< ${D/${HOME}/}`-%F.tgz)
@@ -98,7 +98,7 @@ tarcwd()
 # "repeat" command.  Like:
 #
 #       repeat 10 echo foo
-repeat ()
+function repeat()
 {
   local count="$1" i;
   shift;
@@ -108,7 +108,7 @@ repeat ()
 }
 
 # Subfunction needed by `repeat'.
-_seq ()
+function _seq ()
 {
   local lower upper output;
   lower=$1 upper=$2;
@@ -121,7 +121,7 @@ _seq ()
   echo "$lower"
 }
 
-psgrep()
+function psg()
 {
   ps -aux | grep $1 | grep -v grep
 }
@@ -129,7 +129,7 @@ psgrep()
 #
 # This is a little like `zap' from Kernighan and Pike
 #
-pskill()
+function pskill()
 {
   local pid
 
@@ -139,43 +139,43 @@ pskill()
   echo "slaughtered."
 }
 
-term()
+function term()
 {
   TERM=$1
   export TERM
   tset
 }
 
-xtitle ()
+function xtitle()
 {
   echo -n -e "\033]0;$*\007"
 }
 
-cd()
+function cd()
 {
   builtin cd "$@" && xtitle $HOST: $PWD
 }
 
-bold()
+function bold()
 {
   tput smso
 }
 
-unbold()
+function unbold()
 {
   tput rmso
 }
 
-rot13()
+function rot13()
 {
   if [ $# = 0 ] ; then
     tr "[a-m][n-z][A-M][N-Z]" "[n-z][a-m][N-Z][A-M]"
   else
-    tr "[a-m][n-z][A-M][N-Z]" "[n-z][a-m][N-Z][A-M]" < $1
+    echo "$@" | tr "[a-m][n-z][A-M][N-Z]" "[n-z][a-m][N-Z][A-M]"
   fi
 }
 
-watch()
+function follow()
 {
   if [ $# -ne 1 ] ; then
     tail -f nohup.out
@@ -187,7 +187,7 @@ watch()
 #
 #  Remote login passing all 8 bits (so meta key will work)
 #
-rl()
+function rl()
 {
   rlogin $* -8
 }
