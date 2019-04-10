@@ -60,6 +60,7 @@ usage()
 
      -v, --verbose          Make the script more verbose.
      -h, --help             Prints this usage.
+
     EOF
 
     exit_script $@
