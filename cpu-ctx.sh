@@ -51,7 +51,7 @@ function show_core()
   fi
 
   # filter based on core number
-  ps -Leo psr,pid,comm | tail -n +2 | sort -k 2nr | uniq | grep -v -P '\s(grep|ps|uniq|sort|tail|head|column|awk)$' \
+  ps -xao psr,pid,comm | tail -n +2 | sort -k 2nr | uniq | grep -v -P '\s(grep|ps|uniq|sort|tail|head|column|awk)$' \
     | grep -P "^([\s]+)?$1\s" \
     | awk '{printf $2"\t"$3"\t";system("cut -d\" \" -f3 /proc/"$2"/task/"$2"/schedstat 2>/dev/null")}' \
     | sort -k 3nr \
@@ -65,7 +65,7 @@ function show_core()
 function show_all()
 {
   # look at all cpu cores
-  ps -Leo pid,comm | tail -n +2 | sort -k 1nr | uniq | grep -v -P '\s(grep|ps|uniq|sort|tail|head|column|awk)$' \
+  ps -xao pid,comm | tail -n +2 | sort -k 1nr | uniq | grep -v -P '\s(grep|ps|uniq|sort|tail|head|column|awk)$' \
     | awk '{printf $1"\t"$2"\t"; system("cut -d\" \" -f3 /proc/"$1"/task/"$1"/schedstat 2>/dev/null")}' \
     | sort -k 3nr \
     | column -t \
