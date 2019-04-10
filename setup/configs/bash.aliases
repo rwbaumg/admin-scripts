@@ -177,7 +177,7 @@ function rot13()
 function follow()
 {
   if [ $# -ne 1 ] ; then
-    tail -f nohup.out
+    echo >&2 "usage: follow <file>"
   else
     tail -f $1
   fi
