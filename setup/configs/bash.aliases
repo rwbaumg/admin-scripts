@@ -33,7 +33,8 @@ alias timestamp='date "+%Y%m%dT%H%M%S"'
 alias tasks='grep --exclude-dir=.git --exclude-dir=.svn -rEI "TODO|FIXME" . 2>/dev/null'
 
 # create a tgz of the current directory, excluding VCS folders
-alias tarcwd='( ( D=`basename $(builtin pwd)`; F=$(date +$HOME/`sed "s,[/ ],.,g" <<< ${D/${HOME}/}`-%F.tgz); tar --ignore-failed-read --transform "s,^${D%/*},`date +${D%/*}.%F`,S" --exclude-vcs -czPf "$F" "$D" &>/dev/null ) & )'
+# alternative one-liner; disable the function below if enabled
+# alias tarcwd='( ( D=`basename $(builtin pwd)`; F=$(date +$HOME/`sed "s,[/ ],.,g" <<< ${D/${HOME}/}`-%F.tgz); tar --ignore-failed-read --transform "s,^${D%/*},`date +${D%/*}.%F`,S" --exclude-vcs -czPf "$F" "$D" &>/dev/null ) & )'
 
 # simple dig alias
 alias ds='dig +noauthority +noadditional +noqr +nostats +noidentify +nocmd +noquestion +nocomments'
@@ -56,8 +57,9 @@ alias ips='ip a | awk '\''/inet /&&!/ lo/{print $NF,$2}'\'' | column -t'
 # fun screensaver
 alias screensaver='for ((;;)); do echo -ne "\033[$((1+RANDOM%LINES));$((1+RANDOM%COLUMNS))H\033[$((RANDOM%2));3$((RANDOM%8))m$((RANDOM%10))"; sleep 0.1 ; done'
 
-# ROT13
-#alias rot13="tr '[A-Za-z]' '[N-ZA-Mn-za-m]'"
+# ROT13 alternative
+# Make sure to disable the rot13 function below if you enable this
+# alias rot13="tr '[A-Za-z]' '[N-ZA-Mn-za-m]'"
 
 ####[ END ]####
 
@@ -83,6 +85,14 @@ add-alias ()
   echo alias $name=\'$value\' >>~/.bash_aliases
   eval alias $name=\'$value\'
   alias $name
+}
+
+# create a tgz of the current directory, excluding VCS folders
+tarcwd()
+{
+  D=`basename $(builtin pwd)`
+  F=$(date +$HOME/`sed "s,[/ ],.,g" <<< ${D/${HOME}/}`-%F.tgz)
+  (tar --ignore-failed-read --transform "s,^${D%/*},`date +${D%/*}.%F`,S" --exclude-vcs -czPf "$F" "$D" &>/dev/null && echo "Finished archiving $D -> $F") &
 }
 
 # "repeat" command.  Like:
