@@ -5,7 +5,7 @@ A collection of useful Bash scripts covering a range of common administrative
 tasks. Some of these scripts are collected from other sources, in which case
 the header of the file will contain the author and other relavent information.
 In the case where a script has no header, it's because I'm lazy and didn't
-bother to put one if every file (comments don't really do anything useful)
+bother to put one in every file (comments don't really do anything useful)
 and are authored by me, for my own personal use.
 
 Most of these scripts are the result of my never-ending desire to make my
