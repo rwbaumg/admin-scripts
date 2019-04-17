@@ -1,5 +1,9 @@
 # admin-scripts
 
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](http://badges.mit-license.org)
+[![CodeFactor](https://www.codefactor.io/repository/github/rwbaumg/admin-scripts/badge)](https://www.codefactor.io/repository/github/rwbaumg/admin-scripts)
+[![Donate with Bitcoin](https://en.cryptobadges.io/badge/micro/14JFg2GrXM4b45G68s53zEh4sqptHEmRfY)](https://en.cryptobadges.io/donate/14JFg2GrXM4b45G68s53zEh4sqptHEmRfY)
+
 ## Description
 A collection of useful Bash scripts covering a range of common administrative
 tasks. Some of these scripts are collected from other sources, in which case
