@@ -157,7 +157,7 @@ PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 SSH_USERS_LOGFILE="/var/log/sshdusers.log"
 SSH_AUTHORIZED_KEYS="$HOME/.ssh/authorized_keys"
 
-if [ ! -z "$SSH_CONNECTION" ]; then
+if [ -e "${SSH_USERS_LOGFILE}" ] && [ ! -z "$SSH_CONNECTION" ]; then
   # capture then modify umask
   old_umask=$(umask)
   umask 077
@@ -222,7 +222,9 @@ fi
 # export SSH_AUTH_SOCK=$(gpgconf --list-dirs | grep agent-socket | awk -F: '{ print $2 ".ssh" }')
 # gpgconf --launch gpg-agent
 
-echo -e "Welcome" | figlet -f ascii9
+if hash figlet 2>/dev/null; then
+  echo -e "Welcome" | figlet # -f ascii9
+fi
 
 # If SSH_CLIENT_KEY is set, public-key authentication is being used
 # Otherwise, password authentication (or possibly something else) is being used
@@ -231,4 +233,10 @@ if [ ! -z "$SSH_CLIENT_KEY" ]; then
 fi
 
 # find path to OpenSC library
-export OPENSC=$(readlink -f `dpkg -L opensc-pkcs11 | grep \/opensc-pkcs11.so\$` | uniq | head -n1)
+# export OPENSC=$(readlink -f `dpkg -L opensc-pkcs11 | grep \/opensc-pkcs11.so\$` | uniq | head -n1)
+
+# create user directories at first login
+if [ -f ${HOME}/.first-login ] ; then
+  ${HOME}/.first-login
+  rm -f ${HOME}/.first-login
+fi
