@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](http://badges.mit-license.org)
 [![CodeFactor](https://www.codefactor.io/repository/github/rwbaumg/admin-scripts/badge)](https://www.codefactor.io/repository/github/rwbaumg/admin-scripts)
 [![Donate with Bitcoin](https://en.cryptobadges.io/badge/micro/14JFg2GrXM4b45G68s53zEh4sqptHEmRfY)](https://en.cryptobadges.io/donate/14JFg2GrXM4b45G68s53zEh4sqptHEmRfY)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Frwbaumg%2Fadmin-scripts.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Frwbaumg%2Fadmin-scripts?ref=badge_shield)
 
 ## Description
 A collection of useful Bash scripts covering a range of common administrative
@@ -31,3 +32,6 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 - **[MIT license](http://opensource.org/licenses/mit-license.php)**
 - Unpublished Copyright 2019 © Robert W. Baumgartner. All rights reserved.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Frwbaumg%2Fadmin-scripts.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Frwbaumg%2Fadmin-scripts?ref=badge_large)
