@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](http://badges.mit-license.org)
 [![CodeFactor](https://www.codefactor.io/repository/github/rwbaumg/admin-scripts/badge)](https://www.codefactor.io/repository/github/rwbaumg/admin-scripts)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Frwbaumg%2Fadmin-scripts.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Frwbaumg%2Fadmin-scripts?ref=badge_shield)
 [![Donate with Bitcoin](https://en.cryptobadges.io/badge/micro/14JFg2GrXM4b45G68s53zEh4sqptHEmRfY)](https://en.cryptobadges.io/donate/14JFg2GrXM4b45G68s53zEh4sqptHEmRfY)
 
 ## Description
