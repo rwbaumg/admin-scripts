@@ -56,8 +56,8 @@ fi
 
 pushd "${INPUT_PATH}" > /dev/null 2>&1
 
-OUTPUT=$(du -schx .[!.]* * 2>/dev/null \
-           | sort -rh \
+OUTPUT=$((du -shx ./.[^.]* 2>/dev/null ; du -shx ./[^.]* 2>/dev/null) \
+           | LC_ALL=C sort -k2 | sort -rh \
            | head -10)
 
 popd > /dev/null 2>&1
