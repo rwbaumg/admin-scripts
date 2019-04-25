@@ -5,6 +5,10 @@ TOP_20_MSG="top 20 by size"
 INPUT_PATH="."
 
 if [ -n "$1" ]; then
+  if [ ! -d "$@" ]; then
+    echo >&2 "usage: $0 [directory]"
+    exit 1
+  fi
   INPUT_PATH=$(readlink -m "$@")
   echo "$TOP_20_MSG: $INPUT_PATH"
 else
