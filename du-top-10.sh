@@ -54,13 +54,14 @@ stop_spinner()
 
 start_spinner "Calculating directory sizes ..."
 
+INPUT_PATH_ESCAPED=""
 if [ "$INPUT_PATH" != "/" ]; then
   INPUT_PATH=${INPUT_PATH}"/"
+  INPUT_PATH_ESCAPED=$(realpath "${INPUT_PATH}" | sed -e 's/\//\\\//g' -e 's/\./\\\./g')
 fi
 
 pushd "${INPUT_PATH}" > /dev/null 2>&1
 
-INPUT_PATH_ESCAPED=$(echo "$(pwd)" | sed -e 's/\//\\\//g' -e 's/\./\\\./g')
 OUTPUT=$((du -shx ./.[^.]* 2>/dev/null ; du -shx ./[^.]* 2>/dev/null) \
            | sed "s/\.\//${INPUT_PATH_ESCAPED}\//g" \
            | LC_ALL=C sort -k2 | sort -rh \
