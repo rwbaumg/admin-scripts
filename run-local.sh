@@ -7,8 +7,8 @@ if [[ -z "$@" ]]; then
 fi
 
 CWD=$(pwd)
-echo "LD_LIBRARY_PATH=${PWD}"
+echo "LD_LIBRARY_PATH=${CWD}"
 
-LD_LIBRARY_PATH=${PWD} $@
+LD_LIBRARY_PATH=${CWD} $@
 
 exit $?
