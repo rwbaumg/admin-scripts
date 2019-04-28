@@ -235,8 +235,8 @@ fi
 
 # prepare ref list
 BRANCH_REGEX='(?!tags)([a-zA-Z0-9\/\._-]+)$'
-GIT_REFS=$(git branch -r | grep -P "^(..)?$SOURCE_REMOTE\/$BRANCH_REGEX" | sed -e 's/^..//' | grep -Ewv "$EXCLUDE_REFS_KEY")
-GIT_SVN_TAGS=$(git branch -r | grep "^(..)?$SOURCE_REMOTE\/tags\/[a-zA-Z0-9\._-]*$" | sed -e 's/^..//' | sed -e 's/^..tags\///')
+GIT_REFS=$(git branch -r | grep -P "\s$SOURCE_REMOTE\/$BRANCH_REGEX" | sed -e 's/^..//' | grep -Ewv "$EXCLUDE_REFS_KEY")
+GIT_SVN_TAGS=$(git branch -r | grep "\s$SOURCE_REMOTE\/tags\/[a-zA-Z0-9\._-]*$" | sed -e 's/^..//' | sed -e 's/^..tags\///')
 
 # print processed refs
 if [ $VERBOSITY -gt 1 ]; then
