@@ -2,8 +2,13 @@
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](http://badges.mit-license.org)
 [![CodeFactor](https://www.codefactor.io/repository/github/rwbaumg/admin-scripts/badge)](https://www.codefactor.io/repository/github/rwbaumg/admin-scripts)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6a90171058e74801a0baf909d4888bbc)](https://www.codacy.com/app/rwbaumg/admin-scripts?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rwbaumg/admin-scripts&amp;utm_campaign=Badge_Grade)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Frwbaumg%2Fadmin-scripts.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Frwbaumg%2Fadmin-scripts?ref=badge_shield)
+[![GitHub issues](https://img.shields.io/github/issues-raw/rwbaumg/admin-scripts.svg?label=open%20issues&logo=github&style=flat)](https://github.com/rwbaumg/admin-scripts/issues)
 [![Donate with Bitcoin](https://en.cryptobadges.io/badge/micro/14JFg2GrXM4b45G68s53zEh4sqptHEmRfY)](https://en.cryptobadges.io/donate/14JFg2GrXM4b45G68s53zEh4sqptHEmRfY)
+[![GitHub followers](https://img.shields.io/github/followers/rwbaumg.svg?label=follow%20%40rwbaumg&logo=github&style=flat)](https://github.com/rwbaumg)
+[![Twitter Follow](https://img.shields.io/twitter/follow/rwbaumg.svg?color=blue&logo=twitter&style=flat)](https://twitter.com/intent/follow?screen_name=rwbaumg)
+[![Keybase PGP](https://img.shields.io/keybase/pgp/rbaumg.svg?color=blue&label=pgp&style=flat)](https://keybase.io/rbaumg)
 
 ## Description
 A collection of useful Bash scripts covering a range of common administrative
