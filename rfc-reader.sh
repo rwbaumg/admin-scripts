@@ -68,7 +68,7 @@ case "${OPTION}" in
     [ ${NUM} -ne 0 -o ${NUM} -eq 0 2>/dev/null ] ||
       { version; descrip; usage; exit 1; }
     # prepend zeros to make id number <####>
-    FN=`printf "%04d" ${NUM} | xargs`
+    FN=$(printf "%04d" ${NUM} | xargs)
   ;;
   *) version; descrip; usage; exit 1 ;;
 esac
@@ -87,7 +87,7 @@ esac
 LOGD()
 {
   local LOGFILE=/tmp/$0
-  printf "%-14s %-8s %-5s %-4s %-4s\n" `date "+%Y%m%d_%H%M"` \
+  printf "%-14s %-8s %-5s %-4s %-4s\n" $(date "+%Y%m%d_%H%M") \
     "[${1}]" "${2}" "${3}" "${4}" >> ${LOGFILE}
 }
 

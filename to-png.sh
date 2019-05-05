@@ -135,7 +135,7 @@ if [ ! "$FORCE" = "true" ]; then
   test_path_arg "$OUTPUT"
 fi
 
-INPUT=`cat`
+INPUT=$(cat)
 
 echo -e "$INPUT" | convert label:@- $OUTPUT
 

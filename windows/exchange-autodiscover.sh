@@ -5,7 +5,7 @@
 
 function print_usage()
 {
- echo "Usage: `basename $0` [options]"
+ echo "Usage: $(basename $0) [options]"
  echo "Options:"
  echo "  -e  Autodiscover Endpoint URL"
  echo "  -a  SMTP address of account to perform autodiscover"
@@ -15,7 +15,7 @@ function print_usage()
 
 function parse_args()
 {
- args=`getopt u:e:a: $*`
+ args=$(getopt u:e:a: $*)
  if [ $? != 0 ]; then
   print_usage
  fi

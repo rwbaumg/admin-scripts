@@ -26,8 +26,8 @@ SESSIONS=$(w -hs | awk -v tty="$(cat /sys/class/tty/tty0/active)" '$2 == tty && 
 # Process each session
 IFS=$'\n'
 for SESSION in ${SESSIONS}; do
-  USER=`echo ${SESSION} | awk '{print $1}'`
-  DISP=`echo ${SESSION} | awk '{print $2}'`
+  USER=$(echo ${SESSION} | awk '{print $1}')
+  DISP=$(echo ${SESSION} | awk '{print $2}')
 
   echo "Sending message to ${USER} on display ${DISP} ..."
   export DISPLAY=${DISP}; export $(egrep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u ${USER} gnome-session)/environ);

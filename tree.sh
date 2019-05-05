@@ -40,7 +40,7 @@ ls -R | grep ":$" |   \
    sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
 
 # check if no folders
-if [ `ls -F -1 | grep "/" | wc -l` = 0 ]; then
+if [ $(ls -F -1 | grep "/" | wc -l) = 0 ]; then
   echo "   -> no sub-directories"
 fi
 

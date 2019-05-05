@@ -89,9 +89,9 @@ function add-alias()
 # create a tgz of the current directory, excluding VCS folders
 function tarcwd()
 {
-  D=`basename $(builtin pwd)`
-  F=$(date +$HOME/`sed "s,[/ ],.,g" <<< ${D/${HOME}/}`-%F.tgz)
-  (tar --ignore-failed-read --transform "s,^${D%/*},`date +${D%/*}.%F`,S" --exclude-vcs -czPf "$F" "$D" &>/dev/null && echo "Finished archiving $D -> $F") &
+  D=$(basename $(builtin pwd))
+  F=$(date +$HOME/$(sed "s,[/ ],.,g" <<< ${D/${HOME}/})-%F.tgz)
+  (tar --ignore-failed-read --transform "s,^${D%/*},$(date +${D%/*}.%F),S" --exclude-vcs -czPf "$F" "$D" &>/dev/null && echo "Finished archiving $D -> $F") &
 }
 
 # "repeat" command.  Like:

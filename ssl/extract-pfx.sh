@@ -132,7 +132,7 @@ list_bundles()
   fi
 
   i=0
-  IFS=$'\n'; for line in `find ./ -type f -name "*.pfx"`; do
+  IFS=$'\n'; for line in $(find ./ -type f -name "*.pfx"); do
     PFX_FILE="$line"
     PFX_REL_PATH=$(realpath --relative-to=$(realpath .) ${PFX_FILE})
 
@@ -261,7 +261,7 @@ echo "Extracting certificate and private-key from PKCS#12 file './${PFX_REL_PATH
 if [ $VERBOSITY -gt 0 ]; then
   echo "Extracting certificate ..."
 fi
-if ! `openssl pkcs12 -in "${PFX_FILE}" -nokeys -out "${CRT_OUTPUT}"`; then
+if ! $(openssl pkcs12 -in "${PFX_FILE}" -nokeys -out "${CRT_OUTPUT}"); then
   exit_script 2
 fi
 
@@ -269,7 +269,7 @@ fi
 if [ $VERBOSITY -gt 0 ]; then
   echo "Extracting private-key ..."
 fi
-if ! `openssl pkcs12 -in "${PFX_FILE}" -nocerts ${PKEY_OPTS} -out "${KEY_OUTPUT}"`; then
+if ! $(openssl pkcs12 -in "${PFX_FILE}" -nocerts ${PKEY_OPTS} -out "${KEY_OUTPUT}"); then
   exit_script 2
 fi
 

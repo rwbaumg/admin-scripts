@@ -22,7 +22,7 @@ function formatSize() {
     size=0
   fi
 
-  if `hash bc 2>/dev/null`; then
+  if $(hash bc 2>/dev/null); then
     if [ $size -ge 1048576 ]; then
       # size=$(echo $((size/1048576)))gb
       size=$(echo "scale=2;$size/1048576"| bc)gB
@@ -53,7 +53,7 @@ printf "$COL_RESET"
 
 MEM_TOTAL=0
 SWAP_TOTAL=0
-for file in `ls /proc/*/status | sort -V`; do
+for file in $(ls /proc/*/status | sort -V); do
   if [ -e "$file" ]; then
     NAME=$(awk '/^Name/{$1=""; print $0} END { print ""}' $file)
     PID=$(awk '/^Pid/{printf $2} END { print ""}' $file)

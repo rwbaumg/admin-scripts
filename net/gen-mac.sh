@@ -90,7 +90,7 @@ test_prefix()
   fi
 
   re="^([0-9a-f][0-9a-f])$"
-  if ! `echo "$1" | egrep -q "$re"`; then
+  if ! $(echo "$1" | egrep -q "$re"); then
     usage "Invalid prefix: $arg"
   fi
 

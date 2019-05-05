@@ -38,7 +38,7 @@ if [ "$(dirname $0)" = "$GIT_DIR" ]; then
   exit 1
 fi
 
-if ! `git -C "$GIT_DIR" rev-parse`; then
+if ! $(git -C "$GIT_DIR" rev-parse); then
   echo >&2 "Directory does not appear to be a valid Git repository: $DIR"
   exit 1
 fi

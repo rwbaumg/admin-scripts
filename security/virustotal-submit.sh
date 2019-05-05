@@ -46,7 +46,7 @@ echo "$(tput setaf 3)Waiting for report...$(tput sgr0)"
 # wait for the report to finish
 # TODO: set abort timeout?
 while true; do
-  response=`curl -X POST 'https://www.virustotal.com/vtapi/v2/file/report' --form apikey=$API_KEY --form resource=$vt_hash 2>/dev/null`
+  response=$(curl -X POST 'https://www.virustotal.com/vtapi/v2/file/report' --form apikey=$API_KEY --form resource=$vt_hash 2>/dev/null)
 
   if [ $(echo -n "$response"|grep -o '"response_code": 1'| wc -l) -eq 1 ]; then
     # scan finished; display report

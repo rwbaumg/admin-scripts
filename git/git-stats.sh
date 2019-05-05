@@ -18,7 +18,7 @@
 
 hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1; }
 
-if ! `git -C . rev-parse`; then
+if ! $(git -C . rev-parse); then
   echo >&2 "Directory does not appear to be a valid Git repository."
   exit 1
 fi

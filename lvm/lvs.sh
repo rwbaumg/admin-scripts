@@ -318,7 +318,7 @@ fi
 
 # Enumerate logical volumes
 i=1
-IFS=$'\n'; for lv in `lvs -o lv_name,lv_path,lv_attr | tail -n+2`; do
+IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
   name=$(echo "$lv" | awk '{ print $1 }')
   path=$(echo "$lv" | awk '{ print $2 }')
   attr=$(echo "$lv" | awk '{ print $3 }')

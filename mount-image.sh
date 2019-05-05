@@ -49,7 +49,7 @@ if [ ! -d "$MOUNT_POINT" ]; then
 fi
 
 # check if mountpoint is in use
-if `mountpoint -q "$MOUNT_POINT" > /dev/null`; then
+if $(mountpoint -q "$MOUNT_POINT" > /dev/null); then
   echo >&2 "'$MOUNT_POINT' is already in use; aborting."
   exit 1
 fi

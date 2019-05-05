@@ -22,7 +22,7 @@ pushd()
 
 popd()
 {
-  if [ `dirs -p -v | wc -l` -gt 1 ]; then
+  if [ $(dirs -p -v | wc -l) -gt 1 ]; then
     command popd "$@" > /dev/null
   fi
 }
@@ -253,7 +253,7 @@ fi
 
 pushd $GIT_DIR
 
-if [ `git rev-parse --is-bare-repository` = "false" ]; then
+if [ $(git rev-parse --is-bare-repository) = "false" ]; then
   usage "Specified directory is not a bare Git repository: $GIT_DIR"
 fi
 

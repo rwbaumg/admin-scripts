@@ -120,7 +120,7 @@ if [ $VERBOSITY -gt 0 ]; then
 fi
 
 found=0
-for cert in `find "$SEARCH_DIR" -not -empty -type f -name "*.crt" -o -name "*.pem"`; do
+for cert in $(find "$SEARCH_DIR" -not -empty -type f -name "*.crt" -o -name "*.pem"); do
   if [ $VERBOSITY -gt 0 ]; then
     echo >&2 "Checking certificate: $cert"
   fi

@@ -259,7 +259,7 @@ for remote_ref in $GIT_REFS; do
   remote_name=$(echo $remote_ref | sed -e "s/$SOURCE_REMOTE\///")
 
   if [ "${ALL_REMOTES}" == "true" ]; then
-    for r in `get_remotes`; do
+    for r in $(get_remotes); do
       #if [ $VERBOSITY -gt 0 ]; then
         echo "Pushing branches to remote '${r}' (ref: $remote_name) ..."
       #fi
@@ -329,7 +329,7 @@ if [ "$SKIP_TAGS" != "true" ] && git show-ref --tags > /dev/null 2>&1; then
   # push all (tags without any filtering)
 
   if [ "${ALL_REMOTES}" == "true" ]; then
-    for r in `get_remotes`; do
+    for r in $(get_remotes); do
       #if [ $VERBOSITY -gt 0 ]; then
         echo "Pushing tags to remote '$r' ..."
       #fi
@@ -353,7 +353,7 @@ fi
 
 if [ -n "$GIT_PRUNE" ]; then
   if [ "${ALL_REMOTES}" == "true" ]; then
-    for r in `get_remotes`; do
+    for r in $(get_remotes); do
       if [ $VERBOSITY -gt 0 ]; then
         echo "Pruning remote '$r' ..."
       fi

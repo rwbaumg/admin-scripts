@@ -157,7 +157,7 @@ check_etckeeper()
 
   # git handling for etckeeper (check if /etc/.git exists)
   if [ -d /etc/.git  ] && hash git 2>/dev/null; then
-    if `git -C "/etc" rev-parse > /dev/null 2>&1`; then
+    if $(git -C "/etc" rev-parse > /dev/null 2>&1); then
       # check /etc/apt for modifications
       # if there are changes, commit them
       if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/apt|egrep '^(M| M)')" != "" ]]; then

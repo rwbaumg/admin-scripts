@@ -163,7 +163,7 @@ test_number()
 }
 
 # Check permission
-if ! `bconsole -t > /dev/null 2>&1;`; then
+if ! $(bconsole -t > /dev/null 2>&1); then
   usage "User $USER does not have permission to initialize storage elements."
 fi
 

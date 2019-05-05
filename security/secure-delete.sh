@@ -54,7 +54,7 @@ function shred_folder()
   echo "Searching directory '$1' ..."
 
   # find . -type f -print0 | xargs -0 shred_file
-  for f in `find "$1" -type f`; do
+  for f in $(find "$1" -type f); do
     shred_file "$f"
   done
 }

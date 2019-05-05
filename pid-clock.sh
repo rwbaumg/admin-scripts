@@ -15,14 +15,14 @@ if [ $# -gt 0 ]; then
 fi
 
 # check if pid is running
-if ! `ps -p $PID > /dev/null`; then
+if ! $(ps -p $PID > /dev/null); then
   echo "The specified PID is not valid."
   exit 1
 fi
 
 i=1;
 SP='\|/-';
-while `ps -p $PID > /dev/null`; do
+while $(ps -p $PID > /dev/null); do
 	PROC_TIME=$(ps -p $PID -o etime= | awk '{ print $1 }');
 	printf "\b\r[${SP:i++%${#SP}:1}] PID $PID is running ($PROC_TIME)";
 	sleep 1;

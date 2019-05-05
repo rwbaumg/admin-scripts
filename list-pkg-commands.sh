@@ -11,12 +11,12 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-if ! `dpkg -s $1 > /dev/null 2>&1`; then
+if ! $(dpkg -s $1 > /dev/null 2>&1); then
   echo >&2 "Package '$1' is not installed."
   exit 1
 fi
 
-if ! `dpkg -L $1 | grep  --quiet -P "$BIN_REGEX"`; then
+if ! $(dpkg -L $1 | grep  --quiet -P "$BIN_REGEX"); then
   echo >&2 "Package '$1' does not appear to install any commands."
   exit 1
 fi
@@ -40,7 +40,7 @@ printf '=%.0s' {1..60}
 printf '\n'
 printf "$COL_RESET"
 
-for d in `dpkg -L $1 | grep -P "$BIN_REGEX" | sort`; do \
+for d in $(dpkg -L $1 | grep -P "$BIN_REGEX" | sort); do \
   man_header=$(man -P cat $(basename $d) 2>/dev/null | grep NAME -A1 | head -2 | tail -n1 )
   man_synopsis=$(man -P cat $(basename $d) 2>/dev/null | grep SYNOPSIS -A1 | head -2 | tail -1)
 

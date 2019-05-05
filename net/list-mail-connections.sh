@@ -11,7 +11,7 @@ printf "%-16s %s\n" "IP Address" "Hostname"
 printf '=%.0s' {1..50}
 printf '\n'
 
-for ip in `grep -P 'DPT\=(25|587)' /var/log/syslog | grep -P '(dropped)' | grep -Po "(?<=SRC=)$IP_REGEX(?=\b)" | sort -n | uniq | sort -n`; do
+for ip in $(grep -P 'DPT\=(25|587)' /var/log/syslog | grep -P '(dropped)' | grep -Po "(?<=SRC=)$IP_REGEX(?=\b)" | sort -n | uniq | sort -n); do
   name=$(nslookup $ip | awk '/name = / { print $4 }')
   printf "%-16s %s\n" $ip $name
 done

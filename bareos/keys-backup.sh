@@ -207,7 +207,7 @@ if [ ! -z "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
 
   # git handling for etckeeper (check if /etc/.git exists)
   if [ "${ETCKEEPER_AUTOCOMMIT}" == "true" ] && hash git 2>/dev/null; then
-    if `git -C "/etc" rev-parse > /dev/null 2>&1`; then
+    if $(git -C "/etc" rev-parse > /dev/null 2>&1); then
       if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- ${FILE1}|egrep '^(M| M)')" != "" ]]; then
         pushd /etc > /dev/null 2>&1
         git add "${FILE1}"

@@ -12,7 +12,7 @@ auth_key=""
 log_file=""
 record_name=""
 zone_name=""
-config_file=`dirname $0`/cf.cfg
+config_file=$(dirname $0)/cf.cfg
 
 if [ -e "$config_file" ]; then
   source "$config_file"

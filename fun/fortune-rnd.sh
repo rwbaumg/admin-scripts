@@ -9,11 +9,11 @@ then
   COWPATH='/usr/share/cowsay/cows/'
 fi
 
-cow_file_length=`ls -1 $COWPATH | wc -l`
+cow_file_length=$(ls -1 $COWPATH | wc -l)
 
 # initialize the random seed with the process id of this script
 RANDOM=$$
 let "random_line = $RANDOM % $cow_file_length + 1"
-cow=`ls -1 $COWPATH | head -n $random_line | tail -n 1`
+cow=$(ls -1 $COWPATH | head -n $random_line | tail -n 1)
 
 fortune | cowsay -n -f $cow

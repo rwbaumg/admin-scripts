@@ -2,7 +2,7 @@
 # writes a custom message in /etc/issue
 # rwb[at]0x19e[dot]net
 
-ipaddress=`ifconfig | grep inet | awk 'NR==1 {print $2}' | awk 'BEGIN { FS=":" } { print $2 }'`
+ipaddress=$(ifconfig | grep inet | awk 'NR==1 {print $2}' | awk 'BEGIN { FS=":" } { print $2 }')
 
 banner='\n \l'
 echo "$banner" > /etc/issue

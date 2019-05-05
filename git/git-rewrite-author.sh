@@ -23,7 +23,7 @@ pushd()
 
 popd()
 {
-  if [ `dirs -p -v | wc -l` -gt 1 ]; then
+  if [ $(dirs -p -v | wc -l) -gt 1 ]; then
     command popd "$@" > /dev/null
   fi
 }
@@ -209,7 +209,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if ! `git -C "$(dirname $0)" rev-parse`; then
+if ! $(git -C "$(dirname $0)" rev-parse); then
   usage "Directory does not appear to be a valid Git repository: $DIR"
   #echo >&2 "Directory does not appear to be a valid Git repository: $DIR"
   #exit 1

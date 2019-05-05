@@ -21,7 +21,7 @@ echo -e "command \t : $CMD_ARGS"
 
 # check to make sure the specified schroot actually exists
 CHROOT_EXISTS=""
-for ch in `$SCHROOT_BIN -l -a|grep "chroot"|awk -F: '{print $2}'`; do
+for ch in $($SCHROOT_BIN -l -a|grep "chroot"|awk -F: '{print $2}'); do
   if [[ $ch == "$SCHROOT_NAME"* ]]; then
     CHROOT_EXISTS="y"
   fi
@@ -33,7 +33,7 @@ fi
 
 # Get the schroot session (or create a new one)
 SESSION=""
-for sn in `$SCHROOT_BIN -l -a|grep "session:"|awk -F: '{print $2}'`; do
+for sn in $($SCHROOT_BIN -l -a|grep "session:"|awk -F: '{print $2}'); do
   if [[ $sn == "$SCHROOT_NAME"* ]]; then
     SESSION=$sn
   fi

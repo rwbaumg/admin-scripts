@@ -21,7 +21,7 @@ pushd()
 
 popd()
 {
-  if [ `dirs -p -v | wc -l` -gt 1 ]; then
+  if [ $(dirs -p -v | wc -l) -gt 1 ]; then
     command popd "$@" > /dev/null
   fi
 }

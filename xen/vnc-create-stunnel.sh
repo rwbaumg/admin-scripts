@@ -65,7 +65,7 @@ CONF_FILE="/tmp/stunnel_$VNC_PORT.conf"
 
 # check if $pidfile exists
 if [ -e $PID_FILE ]; then
-  pid=`cat $PID_FILE`
+  pid=$(cat $PID_FILE)
   # check if pid is running
   if ( kill -0 $pid > /dev/null 2>&1; ); then
     echo "stunnel already running on pid $pid"

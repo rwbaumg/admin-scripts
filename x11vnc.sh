@@ -18,7 +18,7 @@ hash x11vnc 2>/dev/null || { echo >&2 "You need to install x11vnc. Aborting."; e
 # /run/user/122/gdm/Xauthority
 
 HAS_NETCAT="false"
-if `hash netstat 2>/dev/null`; then
+if $(hash netstat 2>/dev/null); then
   HAS_NETCAT="true"
 fi
 
