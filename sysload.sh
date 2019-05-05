@@ -5,9 +5,9 @@ hash iostat 2>/dev/null || { echo >&2 "You need to install sysstat. Aborting."; 
 
 iostat -m
 
-free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
-df -h | awk '$NF=="/"{printf "Disk Usage: %d/%dGB (%s)\n", $3,$2,$5}'
-top -bn1 | grep load | awk '{printf "CPU Load: %.2f\n", $(NF-2)}'
+free -m | awk 'NR==2{printf "Memory Usage:\t%s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
+df -h | awk '$NF=="/"{printf "Disk Usage:\t%d/%dGB (%s)\n", $3,$2,$5}'
+top -bn1 | grep load | awk '{printf "CPU Load:\t%.2f\n", $(NF-2)}'
 
 echo -e "\nProcess memory usage:"
 ps axo rss,comm,pid | awk '{ proc_list[$2]++; proc_list[$2 "," 1] += $1; } END { for (proc in proc_list) { printf("%d\t%s\n", proc_list[proc "," 1],proc); }}' | sort -n | tail -n 10
