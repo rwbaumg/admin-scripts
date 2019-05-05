@@ -61,7 +61,11 @@ usage()
     Edit a configuration settings across multiple files in a directory using grep.
 
     SYNTAX
-            SCRIPT_NAME [OPTIONS]
+            SCRIPT_NAME [OPTIONS] ARGUMENTS
+
+    ARGUMENTS
+
+      path                  The location to search within.
 
     OPTIONS
 

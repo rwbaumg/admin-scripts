@@ -18,15 +18,14 @@ if ! [[ $JOB_ID =~ $re ]] ; then
   exit 1
 fi
 
-bconsole <<END_OF_DATA 2>&1 >/dev/null
+if ! OUTPUT=$(bconsole << END_OF_DATA
 @output /dev/null
 @output
 use catalog=${CATALOG}
 .bvfs_update jobid=${JOB_ID}
 quit
 END_OF_DATA
-
-if ! [ $? -eq 0 ]; then
+); then
   echo >&2 "ERROR: Failed to run post-job commands for job ${JOB_ID}."
   exit 1
 fi

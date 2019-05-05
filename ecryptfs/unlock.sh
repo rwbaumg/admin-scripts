@@ -26,36 +26,28 @@ fi
 
 if [ ! -e "${KEYFILE}" ]; then
   echo >&2 "NOTICE: Key file '${KEYFILE}' is missing; using password instead."
-  sudo cryptsetup --verbose \
-                  --type plain \
-                  --cipher ${CIPHER} \
-                  --key-size ${KEY_SIZE} \
-                  --hash ${HASH_ALG} \
-                  --iter-time ${ITER_TIME} \
-                  open "${STORAGE}" ${DEVNAME}
-
-  if ! [ $? -eq 0 ]; then
+  if ! sudo cryptsetup --verbose \
+                       --type plain \
+                       --cipher ${CIPHER} \
+                       --key-size ${KEY_SIZE} \
+                       --hash ${HASH_ALG} \
+                       --iter-time ${ITER_TIME} \
+                       open "${STORAGE}" ${DEVNAME}; then
     echo >&2 "ERROR: Failed to unlock container '${STORAGE}'."
     exit 1
   fi
 else
   echo >&2 "NOTICE: Using key file '${KEYFILE}'."
-  sudo cryptsetup --verbose \
-                  --type plain \
-                  --key-file ${KEYFILE} \
-                  --cipher ${CIPHER} \
-                  --key-size ${KEY_SIZE} \
-                  --iter-time ${ITER_TIME} \
-                  open "${STORAGE}" ${DEVNAME}
-  if ! [ $? -eq 0 ]; then
+  if ! sudo cryptsetup --verbose \
+                       --type plain \
+                       --key-file ${KEYFILE} \
+                       --cipher ${CIPHER} \
+                       --key-size ${KEY_SIZE} \
+                       --iter-time ${ITER_TIME} \
+                       open "${STORAGE}" ${DEVNAME}; then
     echo >&2 "ERROR: Failed to unlock container '${STORAGE}'."
     exit 1
   fi
-fi
-
-if ! [ $? -eq 0 ]; then
-  echo >&2 "ERROR: Failed to unlock container '${STORAGE}'."
-  exit 1
 fi
 
 if [ ! -e "/dev/mapper/${DEVNAME}" ]; then
@@ -63,14 +55,12 @@ if [ ! -e "/dev/mapper/${DEVNAME}" ]; then
   exit 1
 fi
 
-sudo chmod 700 "${MNTPATH}"
-if ! [ $? -eq 0 ]; then
+if ! sudo chmod 700 "${MNTPATH}"; then
   echo >&2 "ERROR: Failed to set permissions for mount point '${MNTPATH}'."
   exit 1
 fi
 
-sudo mount /dev/mapper/${DEVNAME} "${MNTPATH}"
-if ! [ $? -eq 0 ]; then
+if ! sudo mount /dev/mapper/${DEVNAME} "${MNTPATH}"; then
   echo >&2 "ERROR: Failed to mount '/dev/mapper/${DEVNAME}'."
   exit 1
 fi

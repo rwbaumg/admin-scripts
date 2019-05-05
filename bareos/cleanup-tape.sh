@@ -66,8 +66,7 @@ if [ "${DRIVE_STATUS}" != "Empty" ] && [  "${TAPE_IN_DRIVE}" != "0" ]; then
   if [ "${TAPE_IN_DRIVE}" != "${SLOT_NUMBER}" ]; then
     # unload the current tape
     echo "Unloading tape ${TAPE_IN_DRIVE} ..."
-    ${CHANGER_SCRIPT} ${AUTOCHANGER} unload ${TAPE_IN_DRIVE} ${TAPE_DRIVE} ${DRIVE_INDEX}
-    if ! [ $? -eq 0 ]; then
+    if ! ${CHANGER_SCRIPT} ${AUTOCHANGER} unload ${TAPE_IN_DRIVE} ${TAPE_DRIVE} ${DRIVE_INDEX}; then
       echo >&2 "ERROR: Failed to unload tape ${TAPE_IN_DRIVE} from drive ${DRIVE_INDEX} (${TAPE_DRIVE})."
       exit 1
     fi
@@ -77,8 +76,7 @@ fi
 TAPE_IN_DRIVE=$(${CHANGER_SCRIPT} ${AUTOCHANGER} loaded 0 ${TAPE_DRIVE} ${DRIVE_INDEX})
 if [ "${TAPE_IN_DRIVE}" != "${SLOT_NUMBER}" ]; then
   echo "Loading tape ${SLOT_NUMBER} to drive ${DRIVE_INDEX} (${TAPE_DRIVE}) ..."
-  ${CHANGER_SCRIPT} ${AUTOCHANGER} load ${SLOT_NUMBER} ${TAPE_DRIVE} ${DRIVE_INDEX}
-  if ! [ $? -eq 0 ]; then
+  if ! ${CHANGER_SCRIPT} ${AUTOCHANGER} load ${SLOT_NUMBER} ${TAPE_DRIVE} ${DRIVE_INDEX}; then
     echo >&2 "ERROR: Failed to load tape ${SLOT_NUMBER} to drive ${DRIVE_INDEX} (${TAPE_DRIVE})."
     exit 1
   fi

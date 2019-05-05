@@ -124,8 +124,7 @@ FILE1="${BACKUP_PATH}/${BACKUP_NAME}"
 CURRENT=""
 DECRYPT_FAILED="false"
 if [ "${GPG_ENCRYPT_MODE}" == "password" ] && [ -e "${FILE1}" ]; then
-  CURRENT=$(echo "${GPG_PASSWORD}" | gpg --batch --no-options --passphrase-file="${PASSWORD_FILE}" --homedir="${GNUPGHOME}" --armor --decrypt "${FILE1}" 2>/dev/null)
-  if ! [ $? -eq 0 ]; then
+  if ! CURRENT=$(echo "${GPG_PASSWORD}" | gpg --batch --no-options --passphrase-file="${PASSWORD_FILE}" --homedir="${GNUPGHOME}" --armor --decrypt "${FILE1}" 2>/dev/null); then
     if [ "${DECRYPT_IS_CRITICAL}" != "false" ]; then
       panic "Failed to decrypt previous backup."
     else
@@ -137,8 +136,7 @@ else
 fi
 
 # Generate a new backup
-NEW=$(${BACKUP_SCRIPT} ${DIR_CONFIG_NAME})
-if ! [ $? -eq 0 ]; then
+if ! NEW=$(${BACKUP_SCRIPT} ${DIR_CONFIG_NAME}); then
   panic "Script '${BACKUP_SCRIPT}' returned a non-zero exit code; backup aborted."
 fi
 
@@ -157,29 +155,26 @@ if [ ! -z "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
   fi
 
   if [ "${GPG_ENCRYPT_MODE}" == "password" ]; then
-    echo "${NEW}" | gpg --batch \
-                        --no-options \
-                        --no-emit-version \
-                        --no-comments \
-                        --passphrase-file="${PASSWORD_FILE}" \
-                        --homedir="${GNUPGHOME}" \
-                        --symmetric \
-                        --force-mdc \
-                        --armor \
-                        --s2k-cipher-algo aes256 \
-                        --s2k-digest-algo sha512 \
-                        --s2k-mode 3 \
-                        --s2k-count 65000000 \
-                        --output "${FILE1}" > /dev/null 2>&1
-
-    if ! [ $? -eq 0 ]; then
+    if ! $(echo "${NEW}" | gpg --batch \
+                               --no-options \
+                               --no-emit-version \
+                               --no-comments \
+                               --passphrase-file="${PASSWORD_FILE}" \
+                               --homedir="${GNUPGHOME}" \
+                               --symmetric \
+                               --force-mdc \
+                               --armor \
+                               --s2k-cipher-algo aes256 \
+                               --s2k-digest-algo sha512 \
+                               --s2k-mode 3 \
+                               --s2k-count 65000000 \
+                               --output "${FILE1}" > /dev/null 2>&1); then
       panic "Backup password encryption failed; update aborted."
     fi
 
     BACKUP_CHANGED="true"
   elif [ "${GPG_ENCRYPT_MODE}" == "publicKey" ]; then
-    KEY_ID=$(gpg --homedir "${GNUPGHOME}" --keyid-format 0xlong --import "${PUBKEY_FILE}" 2>&1 | grep -Po '(?<=gpg\:\skey\s)[a-zA-Z0-9]+(?=\:\spublic)')
-    if ! [ $? -eq 0 ]; then
+    if ! KEY_ID=$(gpg --homedir "${GNUPGHOME}" --keyid-format 0xlong --import "${PUBKEY_FILE}" 2>&1 | grep -Po '(?<=gpg\:\skey\s)[a-zA-Z0-9]+(?=\:\spublic)'); then
       echo >&2 "ERROR: Failed to import public key."
       exit 1
     fi
@@ -190,20 +185,18 @@ if [ ! -z "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
       echo "Using GnuPG public-key with ID ${KEY_ID} for backup encryption."
     fi
 
-    echo "${NEW}" | gpg --batch \
-                        --encrypt \
-                        --trust-model always \
-                        --no-options \
-                        --no-emit-version \
-                        --no-comments \
-                        --digest-algo sha512 \
-                        --cipher-algo aes256 \
-                        --homedir="${GNUPGHOME}" \
-                        --armor \
-                        --recipient ${KEY_ID} \
-                        --output "${FILE1}" > /dev/null 2>&1
-
-    if ! [ $? -eq 0 ]; then
+    if ! $(echo "${NEW}" | gpg --batch \
+                               --encrypt \
+                               --trust-model always \
+                               --no-options \
+                               --no-emit-version \
+                               --no-comments \
+                               --digest-algo sha512 \
+                               --cipher-algo aes256 \
+                               --homedir="${GNUPGHOME}" \
+                               --armor \
+                               --recipient ${KEY_ID} \
+                               --output "${FILE1}" > /dev/null 2>&1); then
       panic "Backup public-key encryption failed; update aborted."
     fi
 
@@ -238,14 +231,21 @@ fi
 
 if [ "${MAIL_ENABLE}" == "true" ] && [ "${SHOULD_SEND_MAIL}" == "true" ]; then
   # Send the updated backup file via bsmtp
+  sendFailed=0
   if [ ! -z "${MAIL_HEADER}" ]; then
-    printf "${MAIL_HEADER}\n\n$(cat ${FILE1})\n\n${MAIL_FOOTER}\n" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"
+    if ! $(printf "${MAIL_HEADER}\n\n$(cat ${FILE1})\n\n${MAIL_FOOTER}\n" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"); then
+      sendFailed=1
+    fi
   elif [ ! -z "${MAIL_FOOTER}" ]; then
-    printf "%s\n\n" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"
+    if ! $(printf "%s\n\n" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"); then
+      sendFailed=1
+    fi
   else
-    cat "${FILE1}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"
+    if ! $(cat "${FILE1}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"); then
+      sendFailed=1
+    fi
   fi
-  if ! [ $? -eq 0 ]; then
+  if ! [ $sendFailed -eq 0 ]; then
     panic "Failed to e-mail hardware encryption keys backup file to ${MAIL_TO}"
   fi
   echo "Sent hardware encryption keys backup via e-mail to ${MAIL_TO}"

@@ -221,8 +221,7 @@ install_key_from_url()
   echo "Key size and type  : ${KEY_SZ}"
   fi
 
-  echo "${KEY_RW}" | sudo apt-key add -
-  if ! [ $? -eq 0 ]; then
+  if ! echo "${KEY_RW}" | sudo apt-key add -; then
     exit 1
   fi
 }
@@ -443,7 +442,6 @@ install_key_from_url "${KEY_URL}"
 if [ "${UPDATE_KEY}" == "true" ]; then
   # check if /etc is under version control
   check_etckeeper
-
   exit $?
 fi
 
@@ -463,15 +461,13 @@ fi
 # add source if no existing configuration was found
 if [ -z "${CUR_CFG}" ]; then
   echo "Configure missing package source ..."
-  echo "${DEB_TXT}" | sudo tee -a "${PKG_LST}"
-  if ! [ $? -eq 0 ]; then
+  if ! echo "${DEB_TXT}" | sudo tee -a "${PKG_LST}"; then
     exit 1
   fi
 
   # update the package cache
   echo "Updating package list ..."
-  sudo apt-get update > /dev/null 2>&1
-  if ! [ $? -eq 0 ]; then
+  if ! sudo apt-get update > /dev/null 2>&1; then
     exit 1
   fi
 fi
@@ -481,14 +477,10 @@ check_etckeeper
 
 # install the actual package
 echo "Installing package : ${PKGNAME} ..."
-sudo apt-get ${APT_ARG} install ${PKGNAME}
-if ! [ $? -eq 0 ]; then
+if ! sudo apt-get ${APT_ARG} install ${PKGNAME}; then
   echo >&2 "ERROR: Failed to install Bareos client."
   exit 1
 fi
 
-if [ $? -eq 0 ]; then
-  echo "Bareos FileDaemon (${PKGNAME}) installation successful."
-fi
-
-exit $?
+echo "Bareos FileDaemon (${PKGNAME}) installation successful."
+exit_script 0

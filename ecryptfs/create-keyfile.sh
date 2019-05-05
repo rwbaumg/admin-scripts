@@ -15,8 +15,7 @@ if [ -e "${KEYFILE}" ]; then
 fi
 
 echo "Creating new key file..."
-dd bs=512 count=8 if=/dev/random of="${KEYFILE}" iflag=fullblock
-if ! [ $? -eq 0 ]; then
+if ! dd bs=512 count=8 if=/dev/random of="${KEYFILE}" iflag=fullblock; then
   echo >&2 "ERROR: Failed to create key file '${KEYFILE}'."
   exit 1
 fi

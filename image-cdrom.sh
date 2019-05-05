@@ -12,8 +12,7 @@ if [[ $EUID -eq 0 ]]; then
 fi
 
 # check if a disk is inserted
-blkid $DRIVE > /dev/null 2>&1;
-if [ $? -ne 0 ]; then
+if ! $(blkid $DRIVE > /dev/null 2>&1); then
   echo >&2 "ERROR: No disk found on $DRIVE"
   exit 1
 fi

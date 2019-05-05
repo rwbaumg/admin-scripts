@@ -14,14 +14,12 @@ if [ ! -c "${DRIVE}" ]; then
   exit 1
 fi
 
-STATUS=$(tapestat ${DRIVE})
-if ! [ $? -eq 0 ]; then
+if ! STATUS=$(tapestat ${DRIVE}); then
   echo >&2 "ERROR: Failed to read tape status from ${DRIVE}."
   exit 1
 fi
 
-REPORT=$(smartctl -i -H -l error ${DRIVE})
-if ! [ $? -eq 0 ]; then
+if ! REPORT=$(smartctl -i -H -l error ${DRIVE}); then
   echo >&2 "ERROR: Failed to read S.M.A.R.T. status from ${DRIVE}."
   exit 1
 fi

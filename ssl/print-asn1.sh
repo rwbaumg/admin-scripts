@@ -4,8 +4,7 @@
 hash openssl 2>/dev/null || { echo >&2 "You need to install openssl. Aborting." exit 1; }
 
 # Load configuration
-source `dirname $0`/config.sh
-if ! [ $? -eq 0 ]; then
+if ! source $(dirname $0)/config.sh; then
   echo >&2 "ERROR: Failed to load configuration file."
   exit 1
 fi
@@ -23,6 +22,8 @@ if [ ! -e "${CERT}" ]; then
   exit 1
 fi
 
-openssl asn1parse -in "${CERT}"
+if ! openssl asn1parse -in "${CERT}"; then
+  exit 1
+fi
 
-exit $?
+exit 0

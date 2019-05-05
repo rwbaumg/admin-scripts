@@ -12,8 +12,7 @@
 
 OUTPUT="hardware.html"
 
-RAW=$(sudo lshw -html)
-if ! [ $? -eq 0 ]; then
+if ! RAW=$(sudo lshw -html); then
   echo >&2 "ERROR: Failed to generate hardware report."
   exit 1
 fi

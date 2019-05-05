@@ -24,8 +24,7 @@ if [ ! -z "$2" ]; then
   fi
 fi
 
-OUTPUT=$(openssl asn1parse -genstr OID:${OID})
-if ! [ $? -eq 0 ]; then
+if ! OUTPUT=$(openssl asn1parse -genstr OID:${OID}); then
   echo >&2 "ERROR: Failed to parse Object identifier '${OID}'."
   exit 1
 fi

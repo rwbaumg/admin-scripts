@@ -94,8 +94,7 @@ echo "Found ${#missing[@]} missing package(s)."
 # See if apt-get is available
 if hash apt-get 2>/dev/null; then
   echo "Attempting to install via apt-get ..."
-  sudo apt-get install $packages
-  if ! [ $? -eq 0 ]; then
+  if ! sudo apt-get install $packages; then
     echo >&2 "ERROR: Failed to install missing packages."
     exit 1
   fi

@@ -18,8 +18,7 @@ fi
 
 hash smartctl 2>/dev/null || { echo >&2 "You need to install smartmontools. Aborting."; exit 1; }
 
-OUTPUT=$(smartctl -H ${DRIVE})
-if ! [ $? -eq 0 ]; then
+if ! OUTPUT=$(smartctl -H ${DRIVE}); then
   echo >&2 "ERROR: Failed to read S.M.A.R.T. status from ${DRIVE}."
   exit 1
 fi

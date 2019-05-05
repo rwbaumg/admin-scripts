@@ -175,8 +175,7 @@ if [ $VERBOSITY -gt 0 ]; then
   MOUNT_EXTRA_ARGS="-v"
 fi
 
-mount ${MOUNT_EXTRA_ARGS} -t tmpfs tmpfs ${MOUNTPOINT} -o size=${SIZE_MB}m
-if ! [ $? -eq 0 ]; then
+if ! mount ${MOUNT_EXTRA_ARGS} -t tmpfs tmpfs ${MOUNTPOINT} -o size=${SIZE_MB}m; then
   exit_script 1 "Failed to mount tmpfs storage."
 fi
 

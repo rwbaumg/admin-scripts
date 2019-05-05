@@ -44,8 +44,7 @@ fi
 STATS_COMMAND="${CWD}/drive-stats.sh ${DRIVE}"
 
 # Get statistics
-STATS="$(${STATS_COMMAND})"
-if ! [ $? -eq 0 ]; then
+if ! STATS="$(${STATS_COMMAND})"; then
   echo >&2 "ERROR: Failed to run stats command '${STATS_COMMAND}'."
   exit 1
 fi
@@ -55,8 +54,7 @@ if [ -z "${STATS}" ]; then
 fi
 
 # Send the message
-echo "${STATS}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"
-if ! [ $? -eq 0 ]; then
+if ! echo "${STATS}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
   echo >&2 "ERROR: Failed to e-mail statistics to ${MAIL_TO}."
   exit 1
 fi

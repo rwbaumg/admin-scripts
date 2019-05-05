@@ -6,7 +6,7 @@ STATS_DAYS=14
 
 hash bconsole 2>/dev/null || { echo >&2 "You need to install bareos-bconsole. Aborting."; exit 1; }
 
-bconsole <<END_OF_DATA 2>&1 >/dev/null
+if ! OUTPUT=$(bconsole << END_OF_DATA
 @output /dev/null
 @output
 use catalog=${CATALOG}
@@ -15,8 +15,7 @@ prune stats yes
 .bvfs_update
 quit
 END_OF_DATA
-
-if ! [ $? -eq 0 ]; then
+); then
   echo >&2 "ERROR: Failed running post-backup maintenence for catalog ${CATALOG}."
   exit 1
 fi

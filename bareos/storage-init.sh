@@ -27,8 +27,7 @@ function InitTape()
     exit 1
   fi
 
-  ${MTX_SCRIPT} ${DEV_CHNGR} load ${tape_num} ${DEV_DRIVE} ${DRIVE_IDX}
-  if ! [ $? -eq 0 ]; then
+  if ! ${MTX_SCRIPT} ${DEV_CHNGR} load ${tape_num} ${DEV_DRIVE} ${DRIVE_IDX}; then
     echo >&2 "ERROR: Failed to load tape ${tape_num} to drive ${DRIVE_IDX} (${DEV_DRIVE})."
     exit 1
   fi
@@ -37,14 +36,12 @@ function InitTape()
     echo "Writing EOF to start of tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE})..."
   fi
 
-  mt -f ${DEV_DRIVE} rewind
-  if ! [ $? -eq 0 ]; then
+  if ! mt -f ${DEV_DRIVE} rewind; then
     echo >&2 "ERROR: Rewind tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE}) failed."
     exit 1
   fi
 
-  mt -f ${DEV_DRIVE} weof
-  if ! [ $? -eq 0 ]; then
+  if ! mt -f ${DEV_DRIVE} weof; then
     echo >&2 "ERROR: Writing EOF to start of tape ${tape_num} failed on drive ${DRIVE_IDX} (${DEV_DRIVE})."
     exit 1
   fi
@@ -53,14 +50,12 @@ function InitTape()
     echo "Writing label for pool '${POOL}' to tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE})..."
   fi
 
-  echo "label barcodes pool=${POOL} drive=${DRIVE_IDX} slot=${tape_num} ${ENCRYPT} yes" | bconsole
-  if ! [ $? -eq 0 ]; then
+  if ! $(echo "label barcodes pool=${POOL} drive=${DRIVE_IDX} slot=${tape_num} ${ENCRYPT} yes" | bconsole); then
     echo >&2 "ERROR: Failed to label tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE})."
     exit 1
   fi
 
-  ${MTX_SCRIPT} ${DEV_CHNGR} unload ${tape_num} ${DEV_DRIVE} ${DRIVE_IDX}
-  if ! [ $? -eq 0 ]; then
+  if ! ${MTX_SCRIPT} ${DEV_CHNGR} unload ${tape_num} ${DEV_DRIVE} ${DRIVE_IDX}; then
     echo >&2 "ERROR: Failed to unload tape ${tape_num} from drive ${DRIVE_IDX} (${DEV_DRIVE})."
     exit 1
   fi

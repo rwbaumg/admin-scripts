@@ -15,18 +15,16 @@ if [ ! -e "${STORAGE}" ]; then
   exit 1
 fi
 
-cryptsetup --verbose \
-           --type plain \
-           --align-payload=1 \
-           --use-urandom \
-           --verify-passphrase \
-           --cipher ${CIPHER} \
-           --key-size ${KEY_SIZE} \
-           --hash ${HASH_ALG} \
-           --iter-time ${ITER_TIME} \
-           luksFormat ${STORAGE}
-
-if ! [ $? -eq 0 ]; then
+if ! cryptsetup --verbose \
+                --type plain \
+                --align-payload=1 \
+                --use-urandom \
+                --verify-passphrase \
+                --cipher ${CIPHER} \
+                --key-size ${KEY_SIZE} \
+                --hash ${HASH_ALG} \
+                --iter-time ${ITER_TIME} \
+                luksFormat ${STORAGE}; then
   echo >&2 "ERROR: Failed to format LUKS container file '${STORAGE}'."
   exit 1
 fi
