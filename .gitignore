@@ -24,6 +24,8 @@ tmp/
 *.bin
 *.html
 
+perf.data
+
 tmp.address
 mac.address
 mac.manufacturer
