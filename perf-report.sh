@@ -4,6 +4,7 @@
 REC_SECONDS=4
 USE_SPINNER=0
 
+hash perf 2>/dev/null || { echo >&2 "The perf command is missing; you need to install linux-tools-common. Aborting."; exit 1; }
 hash sudo 2>/dev/null || { echo >&2 "You need to install sudo. Aborting."; exit 1; }
 
 if [[ ${USE_SPINNER} -eq 1 ]] && [ ! -e "$(dirname $0)/helpers/spinner.sh" ]; then
