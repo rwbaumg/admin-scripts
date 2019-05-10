@@ -115,7 +115,7 @@ test_path_arg()
     argv="$arg"
   fi
 
-  if [ ! -d "$argv" ]; then
+  if [ ! -e "$argv" ]; then
     usage "Specified directory does not exist: $argv"
   fi
 }
@@ -193,7 +193,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-GREP_CTX_OPTS="-P"
+GREP_CTX_OPTS="-r -P"
 if [ -z "${TARGET_STRING}" ]; then
   usage "Must specify a target string to search for."
 fi
