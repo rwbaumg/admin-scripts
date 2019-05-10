@@ -11,13 +11,13 @@ exit_script()
   local re var
 
   re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
-  if echo "$1" | grep -q "$re"; then
+  if echo "$1" | grep -qP "$re"; then
     exit_code=$1
     shift
   fi
 
   re='[[:alnum:]]'
-  if echo "$@" | grep -iq "$re"; then
+  if echo "$@" | grep -iqP "$re"; then
     if [ $exit_code -eq 0 ]; then
       echo "INFO: $@"
     else

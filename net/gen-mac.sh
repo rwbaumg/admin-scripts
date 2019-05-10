@@ -9,13 +9,13 @@ exit_script()
   local re var
 
   re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
-  if echo "$1" | grep -q "$re"; then
+  if echo "$1" | grep -qP "$re"; then
     exit_code=$1
     shift
   fi
 
   re='[[:alnum:]]'
-  if echo "$@" | grep -iq "$re"; then
+  if echo "$@" | grep -iqP "$re"; then
     if [ $exit_code -eq 0 ]; then
       echo "INFO: $@"
     else
@@ -69,12 +69,12 @@ test_arg()
   local argv="$2"
 
   if [ -z "$argv" ]; then
-    if echo "$arg" | grep -q '^-'; then
+    if echo "$arg" | grep -qP '^-'; then
       usage "Null argument supplied for option $arg"
     fi
   fi
 
-  if echo "$argv" | grep -q '^-'; then
+  if echo "$argv" | grep -qP '^-'; then
     usage "Argument for option $arg cannot start with '-'"
   fi
 }
@@ -89,8 +89,8 @@ test_prefix()
     usage "Prefix cannot be null."
   fi
 
-  re="^([0-9a-f][0-9a-f])$"
-  if ! $(echo "$1" | grep -q "$re"); then
+  re='^([0-9a-f][0-9a-f])$'
+  if ! $(echo "$1" | grep -q -P "$re"); then
     usage "Invalid prefix: $arg"
   fi
 
@@ -160,7 +160,7 @@ test_prefix "$PREFIX"
 
 if [ "$RNDSEED" = "true" ]; then
   # SEED=$(uuidgen)
-  SEED=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+  SEED=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 32 | head -n 1)
 elif [ -z "$SEED" ]; then
   usage "Seed is null and random not specified."
 fi
