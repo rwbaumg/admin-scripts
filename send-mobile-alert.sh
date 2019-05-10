@@ -49,13 +49,13 @@ exit_script()
     local re var
 
     re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
-    if echo "$1" | egrep -q "$re"; then
+    if echo "$1" | grep -q "$re"; then
         exit_code=$1
         shift
     fi
 
     re='[[:alnum:]]'
-    if echo "$@" | egrep -iq "$re"; then
+    if echo "$@" | grep -iq "$re"; then
         echo
         if [ $exit_code -eq 0 ]; then
             echo "INFO: $@"
@@ -79,7 +79,7 @@ usage()
                        -e "s|SMTP_SERVER|$SMTP_SERVER|" \
                        -e "s|MAIL_FROM|$MAIL_FROM|" \
                        -e "s|SUBJECT|$SUBJECT|" \
-        <<"    EOF"
+        << EOF
     USAGE
 
     Send a message to a mobile device.
@@ -105,7 +105,7 @@ usage()
      -v, --verbose                 Make the script more verbose. This option can be specified multiple times.
      -h, --help                    Prints this usage.
 
-    EOF
+EOF
 
     exit_script $@
 }
@@ -117,12 +117,12 @@ test_arg()
     local argv="$2"
 
     if [ -z "$argv" ]; then
-        if echo "$arg" | egrep -q '^-'; then
+        if echo "$arg" | grep -q '^-'; then
             usage "Null argument supplied for option $arg"
         fi
     fi
 
-    if echo "$argv" | egrep -q '^-'; then
+    if echo "$argv" | grep -q '^-'; then
         usage "Argument for option $arg cannot start with '-'"
     fi
 }

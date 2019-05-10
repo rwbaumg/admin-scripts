@@ -8,13 +8,13 @@ exit_script()
   local re var
 
   re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
-  if echo "$1" | egrep -q "$re"; then
+  if echo "$1" | grep -q "$re"; then
     exit_code=$1
     shift
   fi
 
   re='[[:alnum:]]'
-  if echo "$@" | egrep -iq "$re"; then
+  if echo "$@" | grep -iq "$re"; then
     if [ $exit_code -eq 0 ]; then
       echo "INFO: $@"
     else
@@ -31,7 +31,7 @@ exit_script()
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" <<"    EOF"
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
     USAGE
 
     This script scans for broken symlinks.
@@ -48,7 +48,7 @@ usage()
      -v, --verbose         Make the script more verbose.
      -h, --help            Prints this usage.
 
-    EOF
+EOF
 
     exit_script $@
 }
@@ -60,12 +60,12 @@ test_arg()
   local argv="$2"
 
   if [ -z "$argv" ]; then
-    if echo "$arg" | egrep -q '^-'; then
+    if echo "$arg" | grep -q '^-'; then
       usage "Null argument supplied for option $arg"
     fi
   fi
 
-  if echo "$argv" | egrep -q '^-'; then
+  if echo "$argv" | grep -q '^-'; then
     usage "Argument for option $arg cannot start with '-'"
   fi
 }

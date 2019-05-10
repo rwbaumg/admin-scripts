@@ -33,7 +33,7 @@ perl $PULLEDPORK_PLSCRIPT -T \
 if $(git -C "/etc" rev-parse > /dev/null 2>&1); then
   # check /etc/suricata for modifications
   # if there are changes under the config folder, commit them
-  if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/suricata|egrep '^(M| M)')" != "" ]]; then
+  if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/suricata|grep '^(M| M)')" != "" ]]; then
     echo "Auto-committing updated ruleset..."
     pushd /etc > /dev/null 2>&1
     git add --all /etc/suricata

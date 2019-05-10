@@ -2,7 +2,7 @@
 # X11 Notification Script
 #
 # The example below displays a reminder for the current user:
-#   export $(egrep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u $LOGNAME gnome-session)/environ);
+#   export $(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u $LOGNAME gnome-session)/environ);
 #   /usr/bin/notify-send -i appointment -c "im" "Example reminder" --icon=dialog-warning
 
 if [ -z "$1" ]; then
@@ -30,7 +30,7 @@ for SESSION in ${SESSIONS}; do
   DISP=$(echo ${SESSION} | awk '{print $2}')
 
   echo "Sending message to ${USER} on display ${DISP} ..."
-  export DISPLAY=${DISP}; export $(egrep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u ${USER} gnome-session)/environ);
+  export DISPLAY=${DISP}; export $(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u ${USER} gnome-session)/environ);
   ${NOTIFY_SEND} -u "${URGENCY}" -c "${CATEGORY}" "${MESSAGE}" -i "${ICON}"
 done
 
