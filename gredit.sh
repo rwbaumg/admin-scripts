@@ -13,9 +13,7 @@
 EDIT_COMMAND="editor"
 DEFAULT_CTX_LINES=20
 
-GREP_EXT_OPTS="-r"
 GREP_LOCATION="*"
-
 CONTEXT_REGEX=""
 TARGET_STRING=""
 CONTEXT_LINES=${DEFAULT_CTX_LINES}
@@ -72,6 +70,8 @@ usage()
      -c, --context <regex>  A RegEx to locate lines close to the desired target.
      -t, --target <expr>    An expression identifying the target lines to process.
      -s, --search <lines>   The number of lines around context matches to search within.
+
+     --dry-run              Do not invoke editor; print out commands instead.
 
      -v, --verbose          Make the script more verbose.
      -h, --help             Prints this usage.
@@ -150,7 +150,10 @@ check_verbose()
 
 i=1
 argc=$#
+TARGET=""
 TARGET_DIR=""
+GREP_RECURSIVE="false"
+DRY_RUN="false"
 
 # process arguments
 while [ $# -gt 0 ]; do
@@ -179,6 +182,14 @@ while [ $# -gt 0 ]; do
       i=$((i+1))
       shift
     ;;
+    --dry-run)
+      DRY_RUN="true"
+      shift
+    ;;
+    -r|--recursive)
+      GREP_RECURSIVE="true"
+      shift
+    ;;
     -h|--help)
       usage
     ;;
@@ -187,13 +198,22 @@ while [ $# -gt 0 ]; do
         usage "Cannot specify multiple search locations."
       fi
       test_path_arg "$1"
-      TARGET_DIR="$1"
+      TARGET="$(basename $1)"
+      TARGET_DIR="$(dirname $1)"
       shift
     ;;
   esac
 done
 
-GREP_CTX_OPTS="-r -P"
+if [ "${DRY_RUN}" == "true" ]; then
+  PRE_CMD="echo"
+fi
+
+GREP_EXT_OPTS=""
+GREP_CTX_OPTS="-P"
+if [ "${GREP_RECURSIVE}" == "true" ]; then
+  GREP_EXT_OPTS="${GREP_EXT_OPTS} -r"
+fi
 if [ -z "${TARGET_STRING}" ]; then
   usage "Must specify a target string to search for."
 fi
@@ -211,10 +231,24 @@ fi
 
 pushd "${TARGET_DIR}" > /dev/null 2>&1
 
-IFS=$'\n'; for l in $(grep ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} ${CONTEXT_REGEX} ${GREP_LOCATION} -A${CONTEXT_LINES} \
-  | grep ${TARGET_STRING} | grep -v -P "(\-|\:)[0-9]+(\-|\:)([\s]+)?\#" \
+GREP_COMMAND="grep ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} ${CONTEXT_REGEX} ${GREP_LOCATION} -A${CONTEXT_LINES}"
+GREP_RESULTS=$(grep ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} ${CONTEXT_REGEX} ${GREP_LOCATION} -A${CONTEXT_LINES})
+if [ ! -z "${TARGET}" ] && [ ! -d "${TARGET}" ]; then
+  GREP_COMMAND="${GREP_COMMAND} | grep \"${TARGET}\""
+  GREP_RESULTS=$(echo "${GREP_RESULTS}" | grep "${TARGET}")
+fi
+
+if [ $VERBOSITY -gt 0 ]; then
+  echo "Target string : ${TARGET_STRING}"
+  echo "Target path   : ${TARGET_DIR}"
+  echo "Grep location : ${GREP_LOCATION}"
+  echo "Grep command  : ${GREP_COMMAND}"
+fi
+
+IFS=$'\n'; for l in $(echo "${GREP_RESULTS}" | grep ${TARGET_STRING} \
+  | grep -v -P "(\-|\:)[0-9]+(\-|\:)([\s]+)?\#" \
   | sed -r "s/\-([0-9]+)\-${TARGET_STRING}/\:\1\:${TARGET_STRING}/" \
-  | awk -F: '{ printf "+%s %s\n", $2, $1 }'); do bash -c "${EDIT_COMMAND} ${l}"; done
+  | awk -F: '{ printf "+%s %s\n", $2, $1 }'); do ${PRE_CMD} bash -c "${EDIT_COMMAND} ${l}"; done
 
 popd > /dev/null 2>&1
 
