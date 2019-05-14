@@ -199,7 +199,11 @@ while [ $# -gt 0 ]; do
       fi
       test_path_arg "$1"
       TARGET="$(basename $1)"
-      TARGET_DIR="$(dirname $1)"
+      if [ ! -d "${1}" ]; then
+        TARGET_DIR="$(dirname $1)"
+      else
+        TARGET_DIR="${1}"
+      fi
       shift
     ;;
   esac
