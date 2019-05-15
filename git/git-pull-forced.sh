@@ -14,7 +14,7 @@ exit_script()
 {
     # Default exit code is 1
     local exit_code=1
-    local re var
+    local re
 
     re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
     if echo "$1" | grep -qE "$re"; then
