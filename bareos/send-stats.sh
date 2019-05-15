@@ -32,7 +32,7 @@ if [ -e "${CONFIG_PATH}" ]; then
 fi
 
 # Check if a drive path was supplied
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   DRIVE="$1"
 fi
 if [ ! -c "${DRIVE}" ]; then

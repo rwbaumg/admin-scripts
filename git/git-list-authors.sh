@@ -11,7 +11,7 @@ GIT_DIR=$(pwd)
 
 # check if an argument was provided
 if [ $# -gt 0 ]; then
-  if [ ! -z "$1" ]; then
+  if [ -n "$1" ]; then
     GIT_DIR=$1
   else
     echo >&2 "ERROR: Argument must not be null."

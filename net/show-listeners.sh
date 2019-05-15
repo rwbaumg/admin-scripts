@@ -24,7 +24,7 @@ IFS=$'\n'; for line in $LISTENERS; do
   con=$(echo $line | awk '{print $2}')
   cmd=$(ps -p $pid -o args | grep -v COMMAND)
   OUT=$(printf "%-40s %-10s %s\n" $con $pid $cmd | sed '/^\s*$/d')
-  if [ ! -z $OUT ]; then
+  if [ -n $OUT ]; then
     echo $OUT
   fi
 done

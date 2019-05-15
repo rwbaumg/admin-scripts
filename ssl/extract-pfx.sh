@@ -189,7 +189,7 @@ while [ $# -gt 0 ]; do
       usage
     ;;
     *)
-      if [ ! -z "${PFX_FILE}" ]; then
+      if [ -n "${PFX_FILE}" ]; then
         usage "Cannot specify multiple PKCS#12 bundles."
       fi
       test_file_arg "$1"

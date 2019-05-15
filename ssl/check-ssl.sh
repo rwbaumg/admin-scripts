@@ -17,7 +17,7 @@ fi
 
 # figure out what port to try
 SP=$DEFAULT_PORT
-if [[ ! -z "$2" ]]; then
+if [[ -n "$2" ]]; then
   re='^[0-9]+$'
   if ! [[ $2 =~ $re ]]; then
     echo >&2 "ERROR: Port must be a valid number"

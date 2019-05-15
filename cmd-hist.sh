@@ -17,7 +17,7 @@ COUNT=$(echo "$UNIQUE" | wc -l)
 # Display results
 echo "Command History"
 echo "==============="
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
 echo "Applied command filter (grep): $1"
 fi
 echo "Found $COUNT unique commands out of $TOTAL BASH history entries for $USER."

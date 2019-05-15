@@ -15,7 +15,7 @@ if [[ $EUID -ne 0 ]] && [[ "$USER" != "bareos" ]]; then
    exit 1
 fi
 
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   DIR_NAME="$1"
 fi
 

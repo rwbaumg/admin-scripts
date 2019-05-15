@@ -154,7 +154,7 @@ function checkInclude() {
   local value="$2"
   local desc="$3"
 
-  if [ ! -z "${filter}" ]; then
+  if [ -n "${filter}" ]; then
     if [ ${#filter} -eq 1 ]; then
       if ! [ "$value" == "${filter}" ]; then
         echo "false"
@@ -223,49 +223,49 @@ while [ $# -gt 0 ]; do
       shift
     ;;
     --device-open)
-      if [ ! -z "${DEVICE_OPEN}" ]; then
+      if [ -n "${DEVICE_OPEN}" ]; then
         usage "Conflicting or duplicate option(s) specified."
       fi
       DEVICE_OPEN="true"
       shift
     ;;
     --device-closed)
-      if [ ! -z "${DEVICE_OPEN}" ]; then
+      if [ -n "${DEVICE_OPEN}" ]; then
         usage "Conflicting or duplicate option(s) specified."
       fi
       DEVICE_OPEN="false"
       shift
     ;;
     --zero-enabled)
-      if [ ! -z "${ZERO_ENABLED}" ]; then
+      if [ -n "${ZERO_ENABLED}" ]; then
         usage "Conflicting or duplicate option(s) specified."
       fi
       ZERO_ENABLED="true"
       shift
     ;;
     --zero-disabled)
-      if [ ! -z "${ZERO_ENABLED}" ]; then
+      if [ -n "${ZERO_ENABLED}" ]; then
         usage "Conflicting or duplicate option(s) specified."
       fi
       ZERO_DISABLED="false"
       shift
     ;;
     --minor-enabled)
-      if [ ! -z "${MINOR_ENABLED}" ]; then
+      if [ -n "${MINOR_ENABLED}" ]; then
         usage "Conflicting or duplicate option(s) specified."
       fi
       MINOR_ENABLED="true"
       shift
     ;;
     --minor-disabled)
-      if [ ! -z "${MINOR_ENABLED}" ]; then
+      if [ -n "${MINOR_ENABLED}" ]; then
         usage "Conflicting or duplicate option(s) specified."
       fi
       MINOR_ENABLED="false"
       shift
     ;;
     --ignore-snapshots)
-      if [ ! -z "${IGNORE_SNAPSHOTS}" ]; then
+      if [ -n "${IGNORE_SNAPSHOTS}" ]; then
         usage "Conflicting or duplicate option(s) specified."
       fi
       IGNORE_SNAPSHOTS="true"

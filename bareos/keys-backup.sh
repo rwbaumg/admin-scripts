@@ -36,7 +36,7 @@ hash bsmtp 2>/dev/null || { echo >&2 "You need to install bareos-common. Abortin
 hash gpg 2>/dev/null || { echo >&2 "You need to install gnupg. Aborting."; exit 1; }
 
 # Enable overriding config file
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   if [ ! -e "$1" ]; then
     echo >&2 "ERROR: The specified configuration file '$1' does not exist."
     exit 1
@@ -143,11 +143,11 @@ fi
 # Check for differences between backups
 HEAD_LINES=3
 DIFF=$(diff <( echo "${NEW}" | tail -n +${HEAD_LINES}) <(echo "${CURRENT}" | tail -n +${HEAD_LINES}))
-if [ ! -z "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
+if [ -n "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
   # Backup has changed; update file
   if [ "${DECRYPT_FAILED}" == "true" ]; then
     echo >&2 "Failed to decrypt previous encryption keys backup; re-writing backup..."
-  elif [ ! -z "${DIFF}" ]; then
+  elif [ -n "${DIFF}" ]; then
     echo "Hardware encryption keys backup has changed; writing new backup..."
   fi
   if [ -e "${FILE1}" ]; then
@@ -232,11 +232,11 @@ fi
 if [ "${MAIL_ENABLE}" == "true" ] && [ "${SHOULD_SEND_MAIL}" == "true" ]; then
   # Send the updated backup file via bsmtp
   sendFailed=0
-  if [ ! -z "${MAIL_HEADER}" ]; then
+  if [ -n "${MAIL_HEADER}" ]; then
     if ! $(printf "${MAIL_HEADER}\n\n$(cat ${FILE1})\n\n${MAIL_FOOTER}\n" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"); then
       sendFailed=1
     fi
-  elif [ ! -z "${MAIL_FOOTER}" ]; then
+  elif [ -n "${MAIL_FOOTER}" ]; then
     if ! $(printf "%s\n\n" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"); then
       sendFailed=1
     fi

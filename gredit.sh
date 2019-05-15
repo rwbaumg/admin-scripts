@@ -72,6 +72,7 @@ usage()
      -s, --search <lines>   The number of lines around context matches to search within.
 
      --dry-run              Do not invoke editor; print out commands instead.
+     --vim                  Use Vim instead of the default editor.
 
      -v, --verbose          Make the script more verbose.
      -h, --help             Prints this usage.
@@ -154,6 +155,7 @@ TARGET=""
 TARGET_DIR=""
 GREP_RECURSIVE="false"
 DRY_RUN="false"
+USE_VIM="false"
 
 # process arguments
 while [ $# -gt 0 ]; do
@@ -186,6 +188,10 @@ while [ $# -gt 0 ]; do
       DRY_RUN="true"
       shift
     ;;
+    --vim)
+      USE_VIM="true"
+      shift
+    ;;
     -r|--recursive)
       GREP_RECURSIVE="true"
       shift
@@ -194,7 +200,7 @@ while [ $# -gt 0 ]; do
       usage
     ;;
     *)
-      if [ ! -z "${TARGET_DIR}" ]; then
+      if [ -n "${TARGET_DIR}" ]; then
         usage "Cannot specify multiple search locations."
       fi
       test_path_arg "$1"
@@ -208,6 +214,10 @@ while [ $# -gt 0 ]; do
     ;;
   esac
 done
+
+if [ "${USE_VIM}" == "true" ]; then
+  EDIT_COMMAND="vim"
+fi
 
 if [ "${DRY_RUN}" == "true" ]; then
   PRE_CMD="echo"
@@ -237,7 +247,7 @@ pushd "${TARGET_DIR}" > /dev/null 2>&1
 
 GREP_COMMAND="grep ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} ${CONTEXT_REGEX} ${GREP_LOCATION} -A${CONTEXT_LINES}"
 GREP_RESULTS=$(grep ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} ${CONTEXT_REGEX} ${GREP_LOCATION} -A${CONTEXT_LINES})
-if [ ! -z "${TARGET}" ] && [ ! -d "${TARGET}" ]; then
+if [ -n "${TARGET}" ] && [ ! -d "${TARGET}" ]; then
   GREP_COMMAND="${GREP_COMMAND} | grep \"${TARGET}\""
   GREP_RESULTS=$(echo "${GREP_RESULTS}" | grep "${TARGET}")
 fi

@@ -5,7 +5,7 @@ hash tapestat 2>/dev/null || { echo >&2 "You need to install sysstat. Aborting."
 hash smartctl 2>/dev/null || { echo >&2 "You need to install smartmontools. Aborting."; exit 1; }
 
 DRIVE="/dev/sg0"
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   DRIVE="$1"
 fi
 

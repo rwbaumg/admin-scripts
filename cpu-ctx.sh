@@ -75,7 +75,7 @@ function show_all()
   return 0
 }
 
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   check_core_id "$1"
 fi
 
@@ -85,17 +85,17 @@ echo "==================================="
 echo
 
 total=$(get_ctx_total)
-if [ ! -z "$total" ]; then
+if [ -n "$total" ]; then
   echo -e "Total CTX count:\t$total"
 fi
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   echo -e "Selected CPU core:\t$1"
 fi
 
 echo
 printf "PID    COMM\t\tCTX\n"
 echo "-----------------------------------"
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   show_core "$1"
 else
   show_all

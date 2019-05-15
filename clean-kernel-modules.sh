@@ -3,7 +3,7 @@
 # the current kernel is excluded for posterity
 
 TMP=*
-if [[ ! -z "$1" ]]; then
+if [[ -n "$1" ]]; then
   TMP=$1
 fi
 

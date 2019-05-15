@@ -256,7 +256,7 @@ fi
 
 echo "Running storage initialization for ${INIT_COUNT} element(s), starting at index ${START_INDEX}..."
 
-if [ ! -z "${ENCRYPT}" ]; then
+if [ -n "${ENCRYPT}" ]; then
   echo "Hardware LTO encryption enabled."
 fi
 
@@ -277,7 +277,7 @@ if [ $VERBOSITY -gt 1 ]; then
   echo >&2 "AUTOCHANGER   = ${DEV_CHNGR}"
   echo >&2 "DRIVE DEVICE  = ${DEV_DRIVE}"
   echo >&2 "DRIVE INDEX   = ${DRIVE_IDX}"
-  if [ ! -z "${ENCRYPT}" ]; then
+  if [ -n "${ENCRYPT}" ]; then
   echo >&2 "ENCRYPTION    = enabled"
   else
   echo >&2 "ENCRYPTION    = disabled"

@@ -14,7 +14,7 @@ if [ -z "$1" ]; then
    echo >&2 "Usage: $0 <lv-path> [mountpoint]"
    exit 1
 fi
-if [ ! -z "$2" ]; then
+if [ -n "$2" ]; then
   MOUNTPOINT="$2"
 fi
 
@@ -120,7 +120,7 @@ for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
   if [ ! -b "$dev" ]; then
     echo >&2 "WARNING: '${map}' does not point to a valid block device."
   fi
-  if [ ! -z "$(mount | grep ${mnt})" ]; then
+  if [ -n "$(mount | grep ${mnt})" ]; then
     echo >&2 "ERROR: '${map}' is already mounted; aborting..."
     exit 1
   fi

@@ -48,7 +48,7 @@ logger -p syslog.info "Logging to $LOG_FILE"
 
 # check if x11vnc is already running
 VNC_PID=$(ps -ef | grep "[x]11vnc" | grep $CURRENT_UID | awk '{ print $2}')
-if [[ ! -z "$VNC_PID" ]]; then
+if [[ -n "$VNC_PID" ]]; then
   logger -p syslog.error "ERROR: x11vnc appears to be running already for UID $CURRENT_UID (pid $VNC_PID)."
   echo >&2 "ERROR: x11vnc appears to be running already for UID $CURRENT_UID (pid $VNC_PID)."
   exit 1

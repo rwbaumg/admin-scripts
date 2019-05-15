@@ -454,7 +454,7 @@ fi
 
 cat /proc/asound/modules 2>/dev/null | awk '{ print $2 }' > $TEMPDIR/alsamodules.tmp
 cat /proc/asound/cards > $TEMPDIR/alsacards.tmp
-if [[ ! -z "$LSPCI" ]]; then
+if [[ -n "$LSPCI" ]]; then
   lspci | grep -i "multi\|audio">$TEMPDIR/lspci.tmp
 fi
 
@@ -578,7 +578,7 @@ cat $TEMPDIR/alsacards.tmp >> $FILE
 echo "" >> $FILE
 echo "" >> $FILE
 
-if [[ ! -z "$LSPCI" ]]; then
+if [[ -n "$LSPCI" ]]; then
 echo "!!PCI Soundcards installed in the system" >> $FILE
 echo "!!--------------------------------------" >> $FILE
 echo "" >> $FILE

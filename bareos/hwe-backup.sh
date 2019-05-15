@@ -21,7 +21,7 @@ hash bareos-sd 2>/dev/null || { echo >&2 "You need to install bareos-storage. Ab
 hash bscrypto 2>/dev/null || { echo >&2 "You need to install bareos-storage-tape. Aborting."; exit 1; }
 
 # Enable overriding director name
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   DIR_CONFIG_NAME="$1"
 fi
 
@@ -35,7 +35,7 @@ fi
 # Determine the configured port for the Storage Daemon
 SD_PORT=9103
 CFG_PORT=$(grep -Po "[Ss][Dd](?:\s?)[Pp][Oo][Rr][Tt](?:\s?)=(?:\s?)\d+" "${CONFIG_PATH}" | awk -F= '{ print $2 }' | awk '{$1=$1};1')
-if [ ! -z "${CFG_PORT}" ]; then
+if [ -n "${CFG_PORT}" ]; then
   SD_PORT=${CFG_PORT}
 fi
 

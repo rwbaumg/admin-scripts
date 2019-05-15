@@ -10,10 +10,10 @@ IMG_CMD="feh"
 # CMD_ARG="--bg-seamless"
 
 # Allow overriding image command using environment variables
-if [ ! -z "${IMAGE_COMMAND}" ]; then
+if [ -n "${IMAGE_COMMAND}" ]; then
   IMG_CMD="${IMAGE_COMMAND}"
 fi
-if [ ! -z "${IMAGE_COMMAND_ARGS}" ]; then
+if [ -n "${IMAGE_COMMAND_ARGS}" ]; then
   CMD_ARG="${IMAGE_COMMAND_ARGS}"
 fi
 
@@ -21,7 +21,7 @@ if echo "${IMG_CMD}" | grep -Po '\s'; then
   echo >&2 "ERROR: Invalid image command: '${IMG_CMD}'"
   exit 1
 fi
-if [ -z "${IMG_CMD}" ] && [ ! -z "${CMD_ARGS}" ]; then
+if [ -z "${IMG_CMD}" ] && [ -n "${CMD_ARGS}" ]; then
   echo >&2 "ERROR: Image command arguments configured without base command."
   exit 1
 fi
@@ -45,7 +45,7 @@ fi
 
 echo "Current top-rated wallpaper: ${TOP_URL}"
 
-if [ ! -z "${IMG_CMD}${CMD_ARGS}" ]; then
+if [ -n "${IMG_CMD}${CMD_ARGS}" ]; then
   echo "Image processing command: ${IMG_CMD} ${CMD_ARGS}"
   echo ${TOP_URL} | xargs ${IMG_CMD} ${CMD_ARG}
   exit $?

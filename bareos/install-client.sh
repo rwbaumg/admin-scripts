@@ -56,7 +56,7 @@ function check_installed()
   fi
 
   if hash apt-cache 2>/dev/null; then
-    if [ ! -z "$(apt-cache policy ${pkg_name} | grep -v '(none)' | grep Installed)" ]; then
+    if [ -n "$(apt-cache policy ${pkg_name} | grep -v '(none)' | grep Installed)" ]; then
       return 0
     fi
   fi
@@ -453,7 +453,7 @@ fi
 
 # add the package source if not already configured
 CUR_CFG=$(grep -RF "${PKG_SRC}" "${APT_DIR}/" 2>/dev/null | grep -v '\#' | head -n1 | cut -d: -f1)
-if [ ! -z "${CUR_CFG}" ] && [ ! -e "${CUR_CFG}" ]; then
+if [ -n "${CUR_CFG}" ] && [ ! -e "${CUR_CFG}" ]; then
   echo >&2 "ERROR: Something went wrong while looking for source configuration."
   exit 1
 fi

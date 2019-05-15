@@ -5,7 +5,7 @@ ps --no-headers -eo user:20,pcpu,pmem | sort -k1,3n | awk '{num[$1]++; cpu[$1] +
 #for pid in $(ps --no-headers -ef | awk '{print $2}'); do
 #    if [ -e /proc/$pid/smaps ]; then
 #      size=$(cat /proc/$pid/smaps 2>/dev/null | grep -m 1 -e ^Size: | awk '{print $2}')
-#      if [ ! -z "${size}" ]; then
+#      if [ -n "${size}" ]; then
 #        echo "* Mem usage for PID $pid"
 #        echo "-- Size: "$size
 #        echo "-- Rss:"

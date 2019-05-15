@@ -14,7 +14,7 @@ if [ -z "$1" ]; then
    echo >&2 "Usage: $0 <lv-path> [mountpoint]"
    exit 1
 fi
-if [ ! -z "$2" ]; then
+if [ -n "$2" ]; then
   MOUNTPOINT="$2"
 fi
 

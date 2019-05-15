@@ -161,7 +161,7 @@ case "$1" in
   -a|--attachment)
     test_arg "$1" "$2"
     shift
-    if [[ ! -z "$1" ]]; then
+    if [[ -n "$1" ]]; then
       if [ ! -f "$1" ]; then
         echo >&2 "ERROR: Specified attachment file not found!"
         exit 1

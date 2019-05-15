@@ -7,7 +7,7 @@
 # Robert W. Baumgartner <rwb@0x19e.net>
 #
 DRIVE="/dev/sg0"
-if [ ! -z "$1" ]; then
+if [ -n "$1" ]; then
   DRIVE="$1"
 fi
 
@@ -24,7 +24,7 @@ if ! OUTPUT=$(smartctl -H ${DRIVE}); then
 fi
 
 ALERT=$(echo "${OUTPUT}" | tail -n+5 | cut -d ':' -f2 | awk '{$1=$1};1')
-if [ ! -z "${ALERT}" ] && [ "${ALERT}" != "OK" ]; then
+if [ -n "${ALERT}" ] && [ "${ALERT}" != "OK" ]; then
   # Error detected
   echo "Tape alert: ${ALERT}"
   exit 1

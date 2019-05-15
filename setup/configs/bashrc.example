@@ -157,7 +157,7 @@ PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 SSH_USERS_LOGFILE="/var/log/sshdusers.log"
 SSH_AUTHORIZED_KEYS="$HOME/.ssh/authorized_keys"
 
-if [ -e "${SSH_USERS_LOGFILE}" ] && [ ! -z "$SSH_CONNECTION" ]; then
+if [ -e "${SSH_USERS_LOGFILE}" ] && [ -n "$SSH_CONNECTION" ]; then
   # capture then modify umask
   old_umask=$(umask)
   umask 077
@@ -172,10 +172,10 @@ if [ -e "${SSH_USERS_LOGFILE}" ] && [ ! -z "$SSH_CONNECTION" ]; then
     sed -ne "/sshd.\($(($(ps ho ppid $PPID)))\|$PPID\).:.*\(Accepted publickey\|matching .SA key\)/{s/^.* //g;h};\${x;p}" $SSH_USERS_LOGFILE
   )
 
-  if [[ ! -z "$current_fp" ]]; then
+  if [[ -n "$current_fp" ]]; then
     for ((ssh_i=1;ssh_i<=$(wc -l < $SSH_AUTHORIZED_KEYS);ssh_i++)); do
       ssh_line="$(sed -ne ${ssh_i}p < $SSH_AUTHORIZED_KEYS)"
-      if [[ ! $ssh_line =~ ^# ]] && [[ ! -z "$ssh_line" ]]; then
+      if [[ ! $ssh_line =~ ^# ]] && [[ -n "$ssh_line" ]]; then
         # write the current key to a temporary file
         echo "$ssh_line" > tempKey
         # extract the public key fingerprint
@@ -228,7 +228,7 @@ fi
 
 # If SSH_CLIENT_KEY is set, public-key authentication is being used
 # Otherwise, password authentication (or possibly something else) is being used
-if [ ! -z "$SSH_CLIENT_KEY" ]; then
+if [ -n "$SSH_CLIENT_KEY" ]; then
   echo "Connected with public key: $SSH_CLIENT_KEY"
 fi
 

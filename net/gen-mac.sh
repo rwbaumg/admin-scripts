@@ -125,7 +125,7 @@ while [ $# -gt 0 ]; do
       shift
     ;;
     -s|--seed)
-      if [[ ! -z "$SEED" ]]; then
+      if [[ -n "$SEED" ]]; then
         usage "Seed specified multiple times."
       fi
       test_arg "$1" "$2"
@@ -146,7 +146,7 @@ while [ $# -gt 0 ]; do
       usage
     ;;
     *)
-      if [[ ! -z "$SEED" ]]; then
+      if [[ -n "$SEED" ]]; then
         usage "Seed specified multiple times."
       fi
       test_arg "Seed" "$1"

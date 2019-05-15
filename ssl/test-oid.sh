@@ -14,7 +14,7 @@ if [ -z "${OID}" ]; then
   exit 1
 fi
 
-if [ ! -z "$2" ]; then
+if [ -n "$2" ]; then
   if [ -e "$2" ]; then
     export OPENSSL_CONF="$2"
     echo "Using configuration file ${OPENSSL_CONF}"

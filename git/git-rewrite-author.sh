@@ -234,7 +234,7 @@ fi
 
 # rewrite author info
 git filter-branch --env-filter '
-	if [ ! -z "$OLD_NAME" ]; then
+	if [ -n "$OLD_NAME" ]; then
 		# correct committer name
 		if [ "$GIT_COMMITTER_NAME" = "$OLD_NAME" ]; then
 			export GIT_COMMITTER_NAME="$CORRECT_NAME"
@@ -248,7 +248,7 @@ git filter-branch --env-filter '
 		fi
 	fi
 
-	if [ ! -z "$OLD_EMAIL" ]; then
+	if [ -n "$OLD_EMAIL" ]; then
 		# correct committer e-mail
 		if [ "$GIT_COMMITTER_EMAIL" = "$OLD_EMAIL" ]; then
 			export GIT_COMMITTER_NAME="$CORRECT_NAME"

@@ -134,7 +134,7 @@ while [ $# -gt 0 ]; do
       usage
     ;;
     *)
-      if [ ! -z "${MOUNTPOINT}" ]; then
+      if [ -n "${MOUNTPOINT}" ]; then
         usage
       fi
       test_path "$1"
