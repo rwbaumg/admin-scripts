@@ -10,8 +10,8 @@ LOG_COUNT=50
 
 # check if an argument was provided
 if [ $# -gt 0 ]; then
-  if [[ "$@" =~ ^-?[0-9]+$ ]]; then
-    LOG_COUNT=$@
+  if [[ "$*" =~ ^-?[0-9]+$ ]]; then
+    LOG_COUNT="$*"
   else
     echo >&2 "ERROR: Argument must be a valid number."
     exit 1

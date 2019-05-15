@@ -240,14 +240,14 @@ GIT_SVN_TAGS=$(git branch -r | grep "\s$SOURCE_REMOTE\/tags\/[a-zA-Z0-9\._-]*$" 
 
 # print processed refs
 if [ $VERBOSITY -gt 1 ]; then
-  if  [ -n "${GIT_REFS[@]}" ]; then
+  if  [ -n "${GIT_REFS[*]}" ]; then
     echo "INFO: The following branches were found in $SOURCE_REMOTE: $(echo ${GIT_REFS[@]}|tr " " "|")"
   else
     echo "INFO: No branches were found in $SOURCE_REMOTE"
   fi
 fi
 if [ $VERBOSITY -gt 1 ]; then
-  if  [ -n "${GIT_SVN_TAGS[@]}" ]; then
+  if  [ -n "${GIT_SVN_TAGS[*]}" ]; then
     echo "INFO: The following SVN tags were found in $SOURCE_REMOTE: $(echo ${GIT_SVN_TAGS[@]}|tr " " "|")"
   else
     echo "INFO: No SVN tags were found in $SOURCE_REMOTE"

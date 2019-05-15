@@ -16,9 +16,9 @@ exit_script()
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
     if [ $exit_code -eq 0 ]; then
-      echo >&2 "INFO: $@"
+      echo >&2 "INFO: $*"
     else
-      echo "ERROR: $@" 1>&2
+      echo "ERROR: $*" 1>&2
     fi
   fi
 
@@ -126,7 +126,7 @@ for cert in $(find "$SEARCH_DIR" -not -empty -type f -name "*.crt" -o -name "*.p
   fi
   if ! openssl x509 -noout -checkend $EXPIRE_TIME -in $cert > /dev/null 2>&1;
   then
-    let found+=1
+    (( found ++ ))
     CERT_SERIAL=$(openssl x509 -in $cert -noout -serial)
     echo "$cert ($CERT_SERIAL)"
   fi

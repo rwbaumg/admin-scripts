@@ -298,9 +298,9 @@ if [ "$DRY_RUN" = "true" ]; then
   echo "find . -type d | xargs chmod $VERBOSE $DIR_MASK"
   echo "find . -type d | xargs chmod $VERBOSE g+s"
 else
-  find . -type f | xargs chmod $VERBOSE $FILE_MASK
-  find . -type d | xargs chmod $VERBOSE $DIR_MASK
-  find . -type d | xargs chmod $VERBOSE g+s
+  find . -type f -print0 | xargs -0 chmod $VERBOSE $FILE_MASK
+  find . -type d -print0 | xargs -0 chmod $VERBOSE $DIR_MASK
+  find . -type d -print0 | xargs -0 chmod $VERBOSE g+s
 fi
 
 if [ -n "$GIT_HEAD" ]; then

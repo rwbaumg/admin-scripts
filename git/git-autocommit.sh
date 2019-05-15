@@ -54,4 +54,4 @@ if hash git 2>/dev/null; then
   popd > /dev/null 2>&1
 fi
 
-exit -1
+exit 2

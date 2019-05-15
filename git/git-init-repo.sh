@@ -445,9 +445,9 @@ if [ "$MAKE_SHARED" = "true" ]; then
     echo "find $GIT_DIR/ -type d | xargs chmod $VERBOSE $SHARED_DIR_MASK"
     echo "find $GIT_DIR/ -type d | xargs chmod $VERBOSE g+s"
   else
-    find $GIT_DIR/ -type f | xargs chmod $VERBOSE $SHARED_FILE_MASK
-    find $GIT_DIR/ -type d | xargs chmod $VERBOSE $SHARED_DIR_MASK
-    find $GIT_DIR/ -type d | xargs chmod $VERBOSE g+s
+    find $GIT_DIR/ -type f -print0 | xargs -0 chmod $VERBOSE $SHARED_FILE_MASK
+    find $GIT_DIR/ -type d -print0 | xargs -0 chmod $VERBOSE $SHARED_DIR_MASK
+    find $GIT_DIR/ -type d -print0 | xargs -0 chmod $VERBOSE g+s
   fi
 fi
 
