@@ -18,14 +18,14 @@
 
 hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1; }
 
-if ! $(git -C . rev-parse); then
+if ! git -C . rev-parse; then
   echo >&2 "Directory does not appear to be a valid Git repository."
   exit 1
 fi
 
 git log --shortstat \
   | grep -E "fil(e|es) changed" \
-  | awk '{files+=$1; inserted+=$4; deleted+=$6; delta+=$4-$6; ratio=deleted/inserted} END {printf "Commit stats:\n- Files changed (total)..  %s\n- Lines added (total)....  %s\n- Lines deleted (total)..  %s\n- Total lines (delta)....  %s\n- Add./Del. ratio (1:n)..  1 : %s\n", files, inserted, deleted, delta, ratio }'
+  | awk '{files+=$1; inserted+=$4; deleted+=$6; delta+=$4-$6; if(inserted>0) { ratio=deleted/inserted } } END {printf "Commit stats:\n- Files changed (total)..  %s\n- Lines added (total)....  %s\n- Lines deleted (total)..  %s\n- Total lines (delta)....  %s\n- Add./Del. ratio (1:n)..  1 : %s\n", files, inserted, deleted, delta, ratio }'
 
 echo
 echo "Contributors:"
