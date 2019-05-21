@@ -31,10 +31,6 @@ alias l='ls -CF'
 # List all TODO/FIXME comments
 alias tasks='grep --exclude-dir=.git --exclude-dir=.svn -rEI "TODO|FIXME" . 2>/dev/null'
 
-# create a tgz of the current directory, excluding VCS folders
-# alternative one-liner; disable the function below if enabled
-# alias tarcwd='( ( D=`basename $(builtin pwd)`; F=$(date +$HOME/`sed "s,[/ ],.,g" <<< ${D/${HOME}/}`-%F.tgz); tar --ignore-failed-read --transform "s,^${D%/*},`date +${D%/*}.%F`,S" --exclude-vcs -czPf "$F" "$D" &>/dev/null ) & )'
-
 # simple dig alias
 alias ds='dig +noauthority +noadditional +noqr +nostats +noidentify +nocmd +noquestion +nocomments'
 
@@ -89,9 +85,15 @@ function add-alias()
 # create a tgz of the current directory, excluding VCS folders
 function tarcwd()
 {
-  D=$(basename $(builtin pwd))
-  F=$(date +$HOME/$(sed "s,[/ ],.,g" <<< ${D/${HOME}/})-%F.tgz)
-  (tar --ignore-failed-read --transform "s,^${D%/*},$(date +${D%/*}.%F),S" --exclude-vcs -czPf "$F" "$D" &>/dev/null && echo "Finished archiving $D -> $F") &
+  D=$(builtin pwd)
+  DN=$(dirname $D)
+  DE=$(basename $D)
+  F=$(date +$HOME/$(sed "s,[/ ],.,g" <<< ${DE/${HOME}/})-%F.tgz)
+  if (tar --ignore-failed-read --transform "s,^${DN}\/,,S" --transform "s,^${DE%/*},$(date +${DE%/*}.%F),S" --exclude-vcs -czPf "$F" "$D") &>/dev/null; then
+    echo "Finished archiving $D -> $F"
+  else
+    echo >&2 "ERROR: Failed to archive $D"
+  fi
 }
 
 # "repeat" command.  Like:
