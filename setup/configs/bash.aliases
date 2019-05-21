@@ -89,6 +89,10 @@ function tarcwd()
   DN=$(dirname $D)
   DE=$(basename $D)
   F=$(date +$HOME/$(sed "s,[/ ],.,g" <<< ${DE/${HOME}/})-%F.tgz)
+  if [ -e "${F}" ]; then
+    echo >&2 "ERROR: Output file '${F}' already exists."
+    return
+  fi
   if (tar --ignore-failed-read --transform "s,^${DN}\/,,S" --transform "s,^${DE%/*},$(date +${DE%/*}.%F),S" --exclude-vcs -czPf "$F" "$D") &>/dev/null; then
     echo "Finished archiving $D -> $F"
   else
