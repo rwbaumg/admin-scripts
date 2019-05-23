@@ -4,6 +4,9 @@ keyserver hkp://keys.gnupg.net
 keyserver-options auto-key-retrieve
 keyserver-options honor-keyserver-url=yes
 
+#agent-program /usr/local/bin/gpg-agent
+#dirmngr-program /usr/local/bin/dirmngr
+
 armor
 use-agent
 utf8-strings

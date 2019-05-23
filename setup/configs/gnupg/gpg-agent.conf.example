@@ -4,3 +4,11 @@ default-cache-ttl 60
 max-cache-ttl 120
 default-cache-ttl-ssh 60
 max-cache-ttl-ssh 120
+
+log-file gpg-agent.log
+# write-env-file /home/$USER/.gnupg/gpg-agent-info
+
+#dirmngr-program /usr/local/bin/dirmngr
+#scdaemon-program /usr/local/lib/scdaemon
+
+extra-socket /home/$HOME/.gnupg/S.gpg-agent.extra

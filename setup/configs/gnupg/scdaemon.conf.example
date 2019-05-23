@@ -1,0 +1,11 @@
+reader-port "Yubico Yubikey NEO OTP+U2F+CCID 0"
+log-file reader.log
+verbose
+debug-level guru
+#debug 2048
+
+allow-admin
+
+# enable shared access for multi-purpose keys
+# note: only supported by custom builds
+shared-access

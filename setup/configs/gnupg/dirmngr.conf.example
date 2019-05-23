@@ -1,0 +1,17 @@
+keyserver hkps://hkps.pool.sks-keyservers.net
+keyserver hkp://keys.gnupg.net
+keyserver hkp://jirk5u4osbsr34t5.onion
+
+honor-http-proxy
+allow-ocsp
+disable-ipv6
+
+# note: use 'use-tor' to enable tor
+no-use-tor
+
+log-file agent-debug.log
+debug-level basic
+
+connect-timeout 8
+connect-quick-timeout 2
+resolver-timeout 15
