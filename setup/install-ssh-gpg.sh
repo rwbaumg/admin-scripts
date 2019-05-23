@@ -105,16 +105,24 @@ sudo update-alternatives --verbose --install /usr/local/bin/gpg gnupg /usr/bin/g
 sudo update-alternatives --verbose --install /usr/local/bin/gpg gnupg /usr/bin/gpg 10
 
 if [ ! -e "$HOME/.ssh/config" ]; then
+  echo "Installing example .ssh/config ..."
   echo "${USER_SSH_CFG}" > $HOME/.ssh/config
 fi
 
-if ! sudo cp configs/ssh/sshd.config /etc/ssh/sshd_config; then
+echo "Installing base configuration /etc/ssh/sshd_config ..."
+if ! sudo cp -v configs/ssh/sshd.config /etc/ssh/sshd_config; then
   echo >&2 "WARNING: Failed to install sshd configuration."
+else
+  if ! sudo service ssh restart; then
+    echo >&2 "WARNING: Failed to restart openssh service."
+  fi
 fi
 
 if [ -e "/etc/rsyslog.d/" ]; then
+  echo "Configuring OpenSSH user logging..."
+
   if [ ! -e "/etc/rsyslog.d/sshdusers.conf" ]; then
-    if ! sudo cp configs/ssh/sshdusers.rsyslog /etc/rsyslog.d/sshdusers.conf; then
+    if ! sudo cp -v configs/ssh/sshdusers.rsyslog /etc/rsyslog.d/sshdusers.conf; then
       echo >&2 "WARNING: Failed to install sshdusers rsyslog configuration."
     fi
   else
