@@ -8,4 +8,4 @@ allow-admin
 
 # enable shared access for multi-purpose keys
 # note: only supported by custom builds
-shared-access
+#shared-access
