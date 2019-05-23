@@ -41,17 +41,17 @@ if ! sudo apt-get update; then
 fi
 
 # Install OpenSSH
-if ! sudo apt-get install openssh-server openssh-client openssh-sftp-server; then
+if ! sudo apt-get install -y openssh-server openssh-client openssh-sftp-server; then
   exit 1
 fi
 
 # Install GnuPG v1 & v2
-if ! sudo apt-get install gnupg gnupg-agent gnupg-doc gnupg-pkcs11-scd gnupg-utils gnupg2; then
+if ! sudo apt-get install -y gnupg gnupg-agent gnupg-pkcs11-scd gnupg-utils gnupg2; then
   exit 1
 fi
 
 # Install OpenSC
-if ! sudo apt-get install opensc opensc-pkcs11; then
+if ! sudo apt-get install -y opensc opensc-pkcs11; then
   echo >&2 "WARNING: Failed to install OpenSC."
 fi
 
@@ -59,7 +59,7 @@ fi
 PINENTRY_INST=0
 
 if dpkg -l | grep -Pq '^ii(\s+)libncursesw5'; then
-  if ! sudo apt-get install pinentry-curses; then
+  if ! sudo apt-get install -y pinentry-curses; then
     echo >&2 "WARNING: Failed to install pinentry-curses program."
   else
     PINENTRY_INST=1
@@ -67,7 +67,7 @@ if dpkg -l | grep -Pq '^ii(\s+)libncursesw5'; then
 fi
 
 if dpkg -l | grep -Pq '^ii(\s+)libgtk2.0-0'; then
-  if ! sudo apt-get install pinentry-gtk2; then
+  if ! sudo apt-get install -y pinentry-gtk2; then
     echo >&2 "WARNING: Failed to install pinentry-gtk2 program."
   else
     PINENTRY_INST=1
@@ -75,7 +75,7 @@ if dpkg -l | grep -Pq '^ii(\s+)libgtk2.0-0'; then
 fi
 
 if dpkg -l | grep -Pq '^ii(\s+)libqt5gui5'; then
-  if ! sudo apt-get install pinentry-qt; then
+  if ! sudo apt-get install -y pinentry-qt; then
     echo >&2 "WARNING: Failed to install pinentry-qt program."
   else
     PINENTRY_INST=1
