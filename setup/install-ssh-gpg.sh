@@ -118,6 +118,9 @@ if [ -e "/etc/rsyslog.d/" ]; then
       echo >&2 "WARNING: Failed to install sshdusers rsyslog configuration."
     fi
   else
+    if ! sudo service rsyslog restart; then
+      echo >&2 "WARNING: Failed to restart rsyslog."
+    fi
     echo "sshdusers rsyslog configuration is already installed."
   fi
 
