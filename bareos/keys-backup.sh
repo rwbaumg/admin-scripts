@@ -124,7 +124,7 @@ FILE1="${BACKUP_PATH}/${BACKUP_NAME}"
 CURRENT=""
 DECRYPT_FAILED="false"
 if [ "${GPG_ENCRYPT_MODE}" == "password" ] && [ -e "${FILE1}" ]; then
-  if ! CURRENT=$(echo "${GPG_PASSWORD}" | gpg --batch --no-options --passphrase-file="${PASSWORD_FILE}" --homedir="${GNUPGHOME}" --armor --decrypt "${FILE1}" 2>/dev/null); then
+  if ! CURRENT=$(gpg --batch --no-options --passphrase-file="${PASSWORD_FILE}" --homedir="${GNUPGHOME}" --armor --decrypt "${FILE1}" 2>/dev/null); then
     if [ "${DECRYPT_IS_CRITICAL}" != "false" ]; then
       panic "Failed to decrypt previous backup."
     else
