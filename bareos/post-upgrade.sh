@@ -23,8 +23,7 @@ function disable_conf()
     exit 1
   fi
   if [ ! -e "${path}" ]; then
-    echo >&2 "ERROR: Specified path does not exist: ${path}"
-    exit 1
+    return 0
   fi
 
   full_path=$(realpath "${path}")
