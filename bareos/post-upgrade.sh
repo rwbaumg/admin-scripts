@@ -3,6 +3,8 @@
 # This script handles re-configuring the daemon after (possible) configuration changes
 # made during the upgrade process.
 
+ETC_DIR="/etc/bareos"
+
 hash sudo 2>/dev/null || { echo >&2 "You need to install sudo. Aborting."; exit 1; }
 
 # Ensure sudo privileges for the current user if not running as root.
@@ -15,7 +17,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Disables the specified configuration file by adding the '.disabled' extension.
-function disable_conf()
+function disable_config_file()
 {
   local path="$1"
   if [ -z "${path}" ]; then
@@ -39,36 +41,40 @@ declare -a config_paths=();
 function disable_conf()
 {
   if [ -z "$1" ]; then
-    exit_script 1 "Configuration path cannot be null."
+    echo >&2 "Configuration path cannot be null."
+    exit 1
   fi
   if echo "${config_paths[@]}" | grep -q -w "$1"; then
-    exit_script 1 "Configuration path '$1' processed twice."
+    echo >&2 "Configuration path '$1' processed twice."
+    exit 1
   fi
-  config_path="$1"
+  config_path="${ETC_DIR}/$1"
   config_paths=("${config_paths[@]}" "${config_path}")
 }
 
-disable_conf "bareos/bareos-dir.d/catalog/MyCatalog.conf"
-disable_conf "bareos/bareos-dir.d/client/bareos-fd.conf"
-disable_conf "bareos/bareos-dir.d/console/bareos-mon.conf"
-disable_conf "bareos/bareos-dir.d/director/bareos-dir.conf"
-disable_conf "bareos/bareos-dir.d/fileset/Windows All Drives.conf"
-disable_conf "bareos/bareos-dir.d/job/backup-bareos-fd.conf"
-disable_conf "bareos/bareos-fd.d/director/bareos-dir.conf"
-disable_conf "bareos/bareos-fd.d/director/bareos-mon.conf"
-disable_conf "bareos/bareos-sd.d/director/bareos-dir.conf"
-disable_conf "bareos/bareos-sd.d/director/bareos-mon.conf"
-disable_conf "bareos/bareos-sd.d/storage/bareos-sd.conf"
+disable_conf "bareos-dir.d/catalog/MyCatalog.conf"
+disable_conf "bareos-dir.d/client/bareos-fd.conf"
+disable_conf "bareos-dir.d/console/bareos-mon.conf"
+disable_conf "bareos-dir.d/director/bareos-dir.conf"
+disable_conf "bareos-dir.d/fileset/Windows All Drives.conf"
+disable_conf "bareos-dir.d/job/backup-bareos-fd.conf"
+disable_conf "bareos-fd.d/director/bareos-dir.conf"
+disable_conf "bareos-fd.d/director/bareos-mon.conf"
+disable_conf "bareos-sd.d/director/bareos-dir.conf"
+disable_conf "bareos-sd.d/director/bareos-mon.conf"
+disable_conf "bareos-sd.d/storage/bareos-sd.conf"
 
 err_count=0
 for ((idx=0;idx<=$((${#config_paths[@]}-1));idx++)); do
   config_path="${config_paths[$idx]}"
-  config_rel_path=$(realpath --relative-to="$(realpath "${PWD}")" "${config_path}")
-  if ! disable_conf "${config_path}"; then
-    echo >&2 "ERROR: Failed to disable configuration: ${config_rel_path}"
-    ((err_count++))
-  else
-    echo "Disabled configuration: ${config_rel_path}"
+  if [ -e "${config_path}" ]; then
+    config_rel_path=$(realpath --relative-to="$(realpath "${PWD}")" "${config_path}")
+    if ! disable_config_file "${config_path}"; then
+      echo >&2 "ERROR: Failed to disable configuration: ${config_rel_path}"
+      ((err_count++))
+    else
+      echo "Disabled configuration: ${config_rel_path}"
+    fi
   fi
 done
 if [[ $err_count -gt 0 ]]; then
