@@ -27,6 +27,9 @@ quit
 END_OF_DATA
 ); then
   echo >&2 "ERROR: Failed to run post-job commands for job ${JOB_ID}."
+  if [ -n "${OUTPUT}" ]; then
+    echo >&2 "ERROR: Command output: ${OUTPUT}"
+  fi
   exit 1
 fi
 

@@ -22,13 +22,16 @@ done
 CWD="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 # Create some variables for use in configurerd strings
-TIME=$(date '+%H:%M:%S%z')
-DATE=$(date '+%Y.%m.%d')
-TIMESTAMP=$(date '+%Y.%m.%d_%H:%M:%S%z')
+T_STAMP=$(date '+%H:%M:%S%z')
+D_STAMP=$(date '+%Y.%m.%d')
+DT_STAMP=$(date '+%Y.%m.%d_%H:%M:%S%z')
+export TIME="${T_STAMP}"
+export DATE="${D_STAMP}"
+export TIMESTAMP="${DT_STAMP}"
 
 CONFIG_PATH="${CWD}/${CFG_NAME}"
 if [ -e "${CONFIG_PATH}" ]; then
-  source "${BACKUP_CONFIG_FILE}"
+  source "${CONFIG_PATH}"
 fi
 
 # Check if a drive path was supplied

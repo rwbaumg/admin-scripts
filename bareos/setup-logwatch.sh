@@ -3,14 +3,15 @@
 # See bareos/core/scripts/logwatch/README for details.
 
 ## Resolve root directory path
+ROOT_DIR=""
 SOURCE="${BASH_SOURCE[0]}"
 if [ -h "$SOURCE" ]; then
   DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
   SOURCE="$(readlink "$SOURCE")"
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-  export ROOT_DIR="$( cd -P $DIR && pwd )"
+  ROOT_DIR="$( cd -P "$DIR" && pwd )"
 else
-  export ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 fi
 
 BAREOS_SRC="${ROOT_DIR}"
@@ -37,7 +38,7 @@ if [ ! -e "${LOGWATCH_DIR}" ]; then
 fi
 
 # Manual installation
-pushd ${BAREOS_SRC}
+pushd "${BAREOS_SRC}"
 
 sudo cp -v -p logwatch/bareos ${LOGWATCH_DIR}/scripts/services/bareos
 sudo cp -v -p logwatch/applybareosdate ${LOGWATCH_DIR}/scripts/shared/applybareosdate

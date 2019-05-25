@@ -27,12 +27,12 @@ function InitTape()
     exit 1
   fi
 
-  if ! ${MTX_SCRIPT} ${DEV_CHNGR} load ${tape_num} ${DEV_DRIVE} ${DRIVE_IDX}; then
+  if ! ${MTX_SCRIPT} ${DEV_CHNGR} load "${tape_num}" ${DEV_DRIVE} ${DRIVE_IDX}; then
     echo >&2 "ERROR: Failed to load tape ${tape_num} to drive ${DRIVE_IDX} (${DEV_DRIVE})."
     exit 1
   fi
 
-  if [ $VERBOSITY -gt 0 ]; then
+  if [ "$VERBOSITY" -gt 0 ]; then
     echo "Writing EOF to start of tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE})..."
   fi
 
@@ -46,16 +46,16 @@ function InitTape()
     exit 1
   fi
 
-  if [ $VERBOSITY -gt 0 ]; then
+  if [ "$VERBOSITY" -gt 0 ]; then
     echo "Writing label for pool '${POOL}' to tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE})..."
   fi
 
-  if ! $(echo "label barcodes pool=${POOL} drive=${DRIVE_IDX} slot=${tape_num} ${ENCRYPT} yes" | bconsole); then
+  if ! echo "label barcodes pool=${POOL} drive=${DRIVE_IDX} slot=${tape_num} ${ENCRYPT} yes" | bconsole; then
     echo >&2 "ERROR: Failed to label tape ${tape_num} on drive ${DRIVE_IDX} (${DEV_DRIVE})."
     exit 1
   fi
 
-  if ! ${MTX_SCRIPT} ${DEV_CHNGR} unload ${tape_num} ${DEV_DRIVE} ${DRIVE_IDX}; then
+  if ! ${MTX_SCRIPT} ${DEV_CHNGR} unload "${tape_num}" ${DEV_DRIVE} ${DRIVE_IDX}; then
     echo >&2 "ERROR: Failed to unload tape ${tape_num} from drive ${DRIVE_IDX} (${DEV_DRIVE})."
     exit 1
   fi
@@ -75,23 +75,23 @@ exit_script()
 
     re='[[:alnum:]]'
     if echo "$@" | grep -iqE "$re"; then
-        if [ $exit_code -eq 0 ]; then
-            echo "INFO: $@"
+        if [ "$exit_code" -eq 0 ]; then
+            echo "INFO: $*"
         else
-            echo "ERROR: $@" 1>&2
+            echo "ERROR: $*" 1>&2
         fi
     fi
 
     # Print 'aborting' string if exit code is not 0
-    [ $exit_code -ne 0 ] && echo "Aborting script..."
+    [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
-    exit $exit_code
+    exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     Initializes one or more LTO tape storage elements for Bareos.
@@ -125,7 +125,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -163,18 +163,11 @@ test_number()
 }
 
 # Check permission
-if ! $(bconsole -t > /dev/null 2>&1); then
+if ! bconsole -t > /dev/null 2>&1; then
   usage "User $USER does not have permission to initialize storage elements."
 fi
 
 VERBOSITY=0
-VERBOPT=""
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOPT="-v"
-  fi
-}
 
 # process arguments
 [ $# -gt 0 ] || usage
@@ -222,13 +215,11 @@ while [ $# -gt 0 ]; do
     ;;
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
       shift
     ;;
     -vv)
       ((VERBOSITY++))
       ((VERBOSITY++))
-      check_verbose
       shift
     ;;
     -h|--help)
@@ -241,10 +232,10 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ ${START_INDEX} -lt 1 ]; then
+if [ "${START_INDEX}" -lt 1 ]; then
   usage "Start index must be greater than or equal to 1."
 fi
-if [ ${INIT_COUNT} -lt 1 ]; then
+if [ "${INIT_COUNT}" -lt 1 ]; then
   usage "Count must be greater than or equal to 1."
 fi
 
@@ -287,7 +278,7 @@ if [ $VERBOSITY -gt 1 ]; then
 fi
 
 X=0
-for ((idx=1;idx<=${INIT_COUNT};idx++)); do
+for ((idx=1;idx<=INIT_COUNT;idx++)); do
   CURRENT_ELEMENT=$(((idx + START_INDEX) - 1))
 
   if [ $VERBOSITY -gt 0 ]; then

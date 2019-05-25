@@ -43,7 +43,7 @@ if [ ! -e "${CHANGER_SCRIPT}" ]; then
   exit 1
 fi
 
-if [ ${SLOT_NUMBER} -le 0 ]; then
+if [ "${SLOT_NUMBER}" -le 0 ]; then
   echo >&2 "ERROR: Invalid slot number: ${SLOT_NUMBER}"
   exit 1
 fi
@@ -51,22 +51,21 @@ fi
 echo "Processing cleanup request for tape ${SLOT_NUMBER} in autochanger ${AUTOCHANGER} ..."
 
 STATUS_OUTPUT=$(mtx -f ${AUTOCHANGER} status)
-SLOT_STATUS=$(echo ${STATUS_OUTPUT} | grep "Storage Element ${SLOT_NUMBER}:" | awk -F: '{print $2}')
-DRIVE_STATUS=$(echo ${STATUS_OUTPUT} | grep "Data Transfer Element ${DRIVE_INDEX}:" | awk -F: '{print $2}')
+SLOT_STATUS=$(echo "${STATUS_OUTPUT}" | grep "Storage Element ${SLOT_NUMBER}:" | awk -F: '{print $2}')
+DRIVE_STATUS=$(echo "${STATUS_OUTPUT}" | grep "Data Transfer Element ${DRIVE_INDEX}:" | awk -F: '{print $2}')
 TAPE_IN_DRIVE=$(${CHANGER_SCRIPT} ${AUTOCHANGER} loaded 0 ${TAPE_DRIVE} ${DRIVE_INDEX})
 
 # check the drive to make sure it is empty
-#if [ "${DRIVE_STATUS}" != "Empty" ]; then
 if [ "${DRIVE_STATUS}" != "Empty" ] && [  "${TAPE_IN_DRIVE}" != "0" ]; then
   # get the element number of the loaded tape
   # TAPE_IN_DRIVE=$(echo $DRIVE_STATUS | grep -Po '(?<=\(Storage\sElement\s)\d(?=\sLoaded\))')
 
-  echo "Found tape ${TAPE_IN_DRIVE} loaded in drive ${DRIVE_INDEX} (${TAPE_DRIVE})"
+  echo "Found tape ${TAPE_IN_DRIVE} loaded in drive ${DRIVE_INDEX} (${TAPE_DRIVE}; slot status: ${SLOT_STATUS})"
 
   if [ "${TAPE_IN_DRIVE}" != "${SLOT_NUMBER}" ]; then
     # unload the current tape
     echo "Unloading tape ${TAPE_IN_DRIVE} ..."
-    if ! ${CHANGER_SCRIPT} ${AUTOCHANGER} unload ${TAPE_IN_DRIVE} ${TAPE_DRIVE} ${DRIVE_INDEX}; then
+    if ! ${CHANGER_SCRIPT} ${AUTOCHANGER} unload "${TAPE_IN_DRIVE}" "${TAPE_DRIVE}" ${DRIVE_INDEX}; then
       echo >&2 "ERROR: Failed to unload tape ${TAPE_IN_DRIVE} from drive ${DRIVE_INDEX} (${TAPE_DRIVE})."
       exit 1
     fi
@@ -76,7 +75,7 @@ fi
 TAPE_IN_DRIVE=$(${CHANGER_SCRIPT} ${AUTOCHANGER} loaded 0 ${TAPE_DRIVE} ${DRIVE_INDEX})
 if [ "${TAPE_IN_DRIVE}" != "${SLOT_NUMBER}" ]; then
   echo "Loading tape ${SLOT_NUMBER} to drive ${DRIVE_INDEX} (${TAPE_DRIVE}) ..."
-  if ! ${CHANGER_SCRIPT} ${AUTOCHANGER} load ${SLOT_NUMBER} ${TAPE_DRIVE} ${DRIVE_INDEX}; then
+  if ! ${CHANGER_SCRIPT} ${AUTOCHANGER} load "${SLOT_NUMBER}" ${TAPE_DRIVE} ${DRIVE_INDEX}; then
     echo >&2 "ERROR: Failed to load tape ${SLOT_NUMBER} to drive ${DRIVE_INDEX} (${TAPE_DRIVE})."
     exit 1
   fi

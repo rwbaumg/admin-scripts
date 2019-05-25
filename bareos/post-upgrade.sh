@@ -27,8 +27,8 @@ function disable_conf()
     exit 1
   fi
 
-  local full_path=$(realpath "${path}")
-  if ! sudo mv -vf ${full_path}{,.disabled}; then
+  full_path=$(realpath "${path}")
+  if ! sudo mv -vf "${full_path}"{,.disabled}; then
     return 1
   fi
 
@@ -36,17 +36,17 @@ function disable_conf()
 }
 
 # Adds a configuration path to the list of files to be disabled.
-declare -a conf_paths=();
+declare -a config_paths=();
 function disable_conf()
 {
   if [ -z "$1" ]; then
     exit_script 1 "Configuration path cannot be null."
   fi
-  if echo "${conf_paths[@]}" | grep -q -w "$1"; then
+  if echo "${config_paths[@]}" | grep -q -w "$1"; then
     exit_script 1 "Configuration path '$1' processed twice."
   fi
-  conf_path="$1"
-  conf_paths=("${conf_paths[@]}" "${conf_path}")
+  config_path="$1"
+  config_paths=("${config_paths[@]}" "${config_path}")
 }
 
 disable_conf "bareos/bareos-dir.d/catalog/MyCatalog.conf"
@@ -64,7 +64,7 @@ disable_conf "bareos/bareos-sd.d/storage/bareos-sd.conf"
 err_count=0
 for ((idx=0;idx<=$((${#config_paths[@]}-1));idx++)); do
   config_path="${config_paths[$idx]}"
-  config_rel_path=$(realpath --relative-to=$(realpath "${PWD}") "${config_path}")
+  config_rel_path=$(realpath --relative-to="$(realpath "${PWD}")" "${config_path}")
   if ! disable_conf "${config_path}"; then
     echo >&2 "ERROR: Failed to disable configuration: ${config_rel_path}"
     ((err_count++))
@@ -81,7 +81,7 @@ fi
 # git handling for etckeeper (check if /etc/.git exists)
 if hash git 2>/dev/null; then
   if git -C "/etc" rev-parse > /dev/null 2>&1; then
-    if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/bareos|egrep '^(M| M|D| D)')" != "" ]]; then
+    if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/bareos|grep -E '^(M| M|D| D)')" != "" ]]; then
       pushd /etc/bareos > /dev/null 2>&1
       git add --all
       git commit -m "bareos: auto-commit configuration reset."

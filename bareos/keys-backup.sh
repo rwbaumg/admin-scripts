@@ -46,9 +46,13 @@ if [ -n "$1" ]; then
 fi
 
 # Create some variables for use in configurerd strings
-TIME=$(date '+%H:%M:%S%z')
-DATE=$(date '+%Y.%m.%d')
-TIMESTAMP=$(date '+%Y.%m.%d_%H:%M:%S%z')
+T_STAMP=$(date '+%H:%M:%S%z')
+D_STAMP=$(date '+%Y.%m.%d')
+DT_STAMP=$(date '+%Y.%m.%d_%H:%M:%S%z')
+export TIME="${T_STAMP}"
+export DATE="${D_STAMP}"
+export TIMESTAMP="${DT_STAMP}"
+
 BACKUP_CHANGED="false"
 SHOULD_SEND_MAIL="false"
 
@@ -84,7 +88,7 @@ if [[ $temp =~ $re ]] ; then
   fi
   GPG_ENCRYPT_MODE="$temp"
 else
-  if ! echo ${encryptModes[@]} | grep -q -w "$temp"; then
+  if ! echo "${encryptModes[@]}" | grep -q -w "$temp"; then
     echo >&2 "ERROR: '$GPG_ENCRYPT_MODE' is not a valid GPG encryption mode."
     exit 1
   fi
@@ -113,7 +117,7 @@ function panic()
   echo >&2 "ERROR: ${msg}"
 
   if [ -e "${GNUPGHOME}" ]; then
-    rm -rf $GNUPGHOME
+    rm -rf "$GNUPGHOME"
   fi
 
   exit 1
@@ -155,20 +159,20 @@ if [ -n "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
   fi
 
   if [ "${GPG_ENCRYPT_MODE}" == "password" ]; then
-    if ! $(echo "${NEW}" | gpg --batch \
-                               --no-options \
-                               --no-emit-version \
-                               --no-comments \
-                               --passphrase-file="${PASSWORD_FILE}" \
-                               --homedir="${GNUPGHOME}" \
-                               --symmetric \
-                               --force-mdc \
-                               --armor \
-                               --s2k-cipher-algo aes256 \
-                               --s2k-digest-algo sha512 \
-                               --s2k-mode 3 \
-                               --s2k-count 65000000 \
-                               --output "${FILE1}" > /dev/null 2>&1); then
+    if ! echo "${NEW}" | gpg --batch \
+                             --no-options \
+                             --no-emit-version \
+                             --no-comments \
+                             --passphrase-file="${PASSWORD_FILE}" \
+                             --homedir="${GNUPGHOME}" \
+                             --symmetric \
+                             --force-mdc \
+                             --armor \
+                             --s2k-cipher-algo aes256 \
+                             --s2k-digest-algo sha512 \
+                             --s2k-mode 3 \
+                             --s2k-count 65000000 \
+                             --output "${FILE1}" > /dev/null 2>&1; then
       panic "Backup password encryption failed; update aborted."
     fi
 
@@ -185,18 +189,18 @@ if [ -n "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
       echo "Using GnuPG public-key with ID ${KEY_ID} for backup encryption."
     fi
 
-    if ! $(echo "${NEW}" | gpg --batch \
-                               --encrypt \
-                               --trust-model always \
-                               --no-options \
-                               --no-emit-version \
-                               --no-comments \
-                               --digest-algo sha512 \
-                               --cipher-algo aes256 \
-                               --homedir="${GNUPGHOME}" \
-                               --armor \
-                               --recipient ${KEY_ID} \
-                               --output "${FILE1}" > /dev/null 2>&1); then
+    if ! echo "${NEW}" | gpg --batch \
+                             --encrypt \
+                             --trust-model always \
+                             --no-options \
+                             --no-emit-version \
+                             --no-comments \
+                             --digest-algo sha512 \
+                             --cipher-algo aes256 \
+                             --homedir="${GNUPGHOME}" \
+                             --armor \
+                             --recipient "${KEY_ID}" \
+                             --output "${FILE1}" > /dev/null 2>&1; then
       panic "Backup public-key encryption failed; update aborted."
     fi
 
@@ -207,7 +211,7 @@ if [ -n "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
 
   # git handling for etckeeper (check if /etc/.git exists)
   if [ "${ETCKEEPER_AUTOCOMMIT}" == "true" ] && hash git 2>/dev/null; then
-    if $(git -C "/etc" rev-parse > /dev/null 2>&1); then
+    if git -C "/etc" rev-parse > /dev/null 2>&1; then
       if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- ${FILE1}|grep '^(M| M)')" != "" ]]; then
         pushd /etc > /dev/null 2>&1
         git add "${FILE1}"
@@ -233,15 +237,15 @@ if [ "${MAIL_ENABLE}" == "true" ] && [ "${SHOULD_SEND_MAIL}" == "true" ]; then
   # Send the updated backup file via bsmtp
   sendFailed=0
   if [ -n "${MAIL_HEADER}" ]; then
-    if ! $(printf "${MAIL_HEADER}\n\n$(cat ${FILE1})\n\n${MAIL_FOOTER}\n" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"); then
+    if ! printf "${MAIL_HEADER}\n\n$(cat ${FILE1})\n\n${MAIL_FOOTER}\n" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
       sendFailed=1
     fi
   elif [ -n "${MAIL_FOOTER}" ]; then
-    if ! $(printf "%s\n\n" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"); then
+    if ! printf "%s\n\n" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
       sendFailed=1
     fi
   else
-    if ! $(cat "${FILE1}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"); then
+    if ! cat "${FILE1}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
       sendFailed=1
     fi
   fi
@@ -255,7 +259,7 @@ fi
 
 # Remove temporary home
 if [ -e "${GNUPGHOME}" ]; then
-  rm -rf ${GNUPGHOME}
+  rm -rf "${GNUPGHOME}"
 fi
 
 exit 0

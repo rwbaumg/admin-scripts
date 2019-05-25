@@ -56,7 +56,7 @@ function check_installed()
   fi
 
   if hash apt-cache 2>/dev/null; then
-    if [ -n "$(apt-cache policy ${pkg_name} | grep -v '(none)' | grep Installed)" ]; then
+    if [ -n "$(apt-cache policy "${pkg_name}" | grep -v '(none)' | grep Installed)" ]; then
       return 0
     fi
   fi
@@ -157,7 +157,7 @@ check_etckeeper()
 
   # git handling for etckeeper (check if /etc/.git exists)
   if [ -d /etc/.git  ] && hash git 2>/dev/null; then
-    if $(git -C "/etc" rev-parse > /dev/null 2>&1); then
+    if git -C "/etc" rev-parse > /dev/null 2>&1; then
       # check /etc/apt for modifications
       # if there are changes, commit them
       if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/apt|grep '^(M| M)')" != "" ]]; then
@@ -240,23 +240,23 @@ exit_script()
 
     re='[[:alnum:]]'
     if echo "$@" | grep -iqE "$re"; then
-        if [ $exit_code -eq 0 ]; then
-            echo "INFO: $@"
+        if [ "$exit_code" -eq 0 ]; then
+            echo "INFO: $*"
         else
-            echo "ERROR: $@" 1>&2
+            echo "ERROR: $*" 1>&2
         fi
     fi
 
     # Print 'aborting' string if exit code is not 0
-    [ $exit_code -ne 0 ] && echo "Aborting script..."
+    [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
-    exit $exit_code
+    exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     Installs the Bareos Filedaemon client daemon on the current host.
@@ -277,7 +277,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -310,14 +310,6 @@ test_proto_arg()
 
   if ! is_valid_protocol "$argv"; then
     usage "Invalid protocol specified: '$argv' (must be http or https)"
-  fi
-}
-
-VERBOPT=""
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOPT="-v"
   fi
 }
 
@@ -357,13 +349,11 @@ while [ $# -gt 0 ]; do
     ;;
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
       shift
     ;;
     -vv)
       ((VERBOSITY++))
       ((VERBOSITY++))
-      check_verbose
       shift
     ;;
     -h|--help)
@@ -477,7 +467,8 @@ check_etckeeper
 
 # install the actual package
 echo "Installing package : ${PKGNAME} ..."
-if ! sudo apt-get ${APT_ARG} install ${PKGNAME}; then
+install_cmd="sudo apt-get ${APT_ARG}"
+if ! ${install_cmd} install ${PKGNAME}; then
   echo >&2 "ERROR: Failed to install Bareos client."
   exit 1
 fi
