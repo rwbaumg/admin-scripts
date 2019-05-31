@@ -222,9 +222,9 @@ net.ipv4.tcp_timestamps = 1
 
 # libvirt: control whether bridged virtual adapters are sent to iptables
 # see https://wiki.libvirt.org/page/Net.bridge.bridge-nf-call_and_sysctl.conf
-net.bridge.bridge-nf-call-ip6tables = 0
-net.bridge.bridge-nf-call-iptables = 0
-net.bridge.bridge-nf-call-arptables = 0
+#net.bridge.bridge-nf-call-ip6tables = 0
+#net.bridge.bridge-nf-call-iptables = 0
+#net.bridge.bridge-nf-call-arptables = 0
 
 # Accept redirects on all interfaces
 # TODO: Disable as soon as network architecture is fixed!
@@ -235,6 +235,6 @@ net.ipv4.conf.all.secure_redirects = 1
 
 # Configure bridge interface to ensure correct settings
 # TODO: Test to see if this is needed after changing default
-net.ipv4.conf.xenbr0.accept_redirects = 1
-net.ipv4.conf.xenbr0.secure_redirects = 1
-net.ipv4.conf.xenbr0.send_redirects = 0
+#net.ipv4.conf.xenbr0.accept_redirects = 1
+#net.ipv4.conf.xenbr0.secure_redirects = 1
+#net.ipv4.conf.xenbr0.send_redirects = 0
