@@ -1,4 +1,8 @@
+## [ 0x19e Networks ]
+##
 ## Sample initialization file for GNU nano.
+## Includes edits for tabs and other settings
+## to provide a reasonable default.
 ##
 ## This file should not be in DOS or Mac format, and characters
 ## specially interpreted by the shell should not be escaped here.
@@ -162,10 +166,10 @@
 # set suspend
 
 ## Use this tab size instead of the default; it must be greater than 0.
-# set tabsize 8
+set tabsize 4
 
 ## Convert typed tabs to spaces.
-# set tabstospaces
+set tabstospaces
 
 ## Save automatically on exit; don't prompt.
 # set tempfile
@@ -260,6 +264,7 @@
 
 ## To include all existing syntax definitions, you can do:
 # include "@PKGDATADIR@/*.nanorc"
+include "/usr/share/nano/*.nanorc"
 
 
 ## Key bindings.

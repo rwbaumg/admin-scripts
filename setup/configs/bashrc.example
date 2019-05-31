@@ -233,7 +233,7 @@ if [ -n "$SSH_CLIENT_KEY" ]; then
 fi
 
 # find path to OpenSC library
-# export OPENSC=$(readlink -f `dpkg -L opensc-pkcs11 | grep \/opensc-pkcs11.so\$` | uniq | head -n1)
+# export OPENSC=$(readlink -f `dpkg -L opensc opensc-pkcs11 2>/dev/null | grep \/opensc-pkcs11.so\$` | uniq | head -n1)
 
 # create user directories at first login
 if [ -f ${HOME}/.first-login ] ; then
