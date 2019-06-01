@@ -156,7 +156,10 @@ function checkInclude() {
 
   if [ -n "${filter}" ]; then
     if [ ${#filter} -eq 1 ]; then
-      if ! [ "$value" == "${filter}" ]; then
+      if [ "$value" != "${filter}" ]; then
+        if [ $VERBOSITY -gt 1 ]; then
+          echo >&2 "Value '${value}' filtered by '${filter}'."
+        fi
         echo "false"
       else
         echo "true"
