@@ -12,16 +12,14 @@ if [ ! -e "/usr/sbin/bscrypto" ]; then
   exit 1
 fi
 
-/sbin/setcap cap_sys_rawio=ep /usr/sbin/bareos-sd
-/sbin/setcap cap_sys_rawio=ep /usr/sbin/bscrypto
-
+failed=0
 if ! /sbin/setcap -v cap_sys_rawio=ep /usr/sbin/bareos-sd; then
   echo >&2 "ERROR: Failed to call /sbin/setcap for /usr/sbin/bareos-sd"
-  exit 1
+  failed=1
 fi
 if ! /sbin/setcap -v cap_sys_rawio=ep /usr/sbin/bscrypto; then
   echo >&2 "ERROR: Failed to call /sbin/setcap for /usr/sbin/bscrypto"
-  exit 1
+  failed=1
 fi
 
-exit 0
+exit $failed
