@@ -26,24 +26,24 @@ exit_script()
     fi
 
     re='[[:alnum:]]'
-    if echo "$@" | grep -iqE "$re"; then
-        if [ $exit_code -eq 0 ]; then
-            echo "INFO: $@"
+    if echo "$*" | grep -iqE "$re"; then
+        if [ "$exit_code" -eq 0 ]; then
+            echo "INFO: $*"
         else
-            echo "ERROR: $@" 1>&2
+            echo "ERROR: $*" 1>&2
         fi
     fi
 
     # Print 'aborting' string if exit code is not 0
-    [ $exit_code -ne 0 ] && echo "Aborting script..."
+    [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
-    exit $exit_code
+    exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     Lists available Logical Volume Manager (LVM) volumes.
@@ -82,7 +82,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$*"
 }
 
 test_arg()
@@ -141,13 +141,13 @@ test_char()
 }
 
 VERBOSITY=0
-VERBOPT=""
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOPT="-v"
-  fi
-}
+#VERBOPT=""
+#check_verbose()
+#{
+#  if [ $VERBOSITY -gt 1 ]; then
+#    VERBOPT="-v"
+#  fi
+#}
 
 function checkInclude() {
   local filter="$1"
@@ -247,7 +247,7 @@ while [ $# -gt 0 ]; do
       if [ -n "${ZERO_ENABLED}" ]; then
         usage "Conflicting or duplicate option(s) specified."
       fi
-      ZERO_DISABLED="false"
+      ZERO_ENABLED="false"
       shift
     ;;
     --minor-enabled)
@@ -273,20 +273,20 @@ while [ $# -gt 0 ]; do
     ;;
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -vv)
       ((VERBOSITY++))
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -vvv)
       ((VERBOSITY++))
       ((VERBOSITY++))
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -vvvv)
@@ -294,7 +294,7 @@ while [ $# -gt 0 ]; do
       ((VERBOSITY++))
       ((VERBOSITY++))
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -h|--help)
@@ -335,8 +335,8 @@ IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
   zero=${attr:7:1}
 
   # NOTE: Attributes after this point depend on lvs version
-  health=${attr:8:1}
-  skip=${attr:9:1}
+  #health=${attr:8:1}
+  #skip=${attr:9:1}
 
   include="true"
 
@@ -649,44 +649,44 @@ IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
   esac
 
   # Health
-  health_desc=""
-  case "$health" in
-    p)
-    # Partial
-    health_desc="Partial"
-    ;;
-    r)
-    # Refresh needed
-    health_desc="Refresh needed"
-    ;;
-    m)
-    # Mismatches exist
-    health_desc="Mismatches exist"
-    ;;
-    w)
-    # Writemostly
-    health_desc="Writemostly"
-    ;;
-    X)
-    # Unknown
-    health_desc="Unknown"
-    ;;
-    -)
-    health_desc="N/A"
-    ;;
-  esac
+  #health_desc=""
+  #case "$health" in
+  #  p)
+  #  # Partial
+  #  health_desc="Partial"
+  #  ;;
+  #  r)
+  #  # Refresh needed
+  #  health_desc="Refresh needed"
+  #  ;;
+  #  m)
+  #  # Mismatches exist
+  #  health_desc="Mismatches exist"
+  #  ;;
+  #  w)
+  #  # Writemostly
+  #  health_desc="Writemostly"
+  #  ;;
+  #  X)
+  #  # Unknown
+  #  health_desc="Unknown"
+  #  ;;
+  #  -)
+  #  health_desc="N/A"
+  #  ;;
+  #esac
 
   # Skip
-  skip_desc=""
-  case "$skip" in
-    k)
-    # Skip activation
-    skip_desc="Volume is flagged to be skipped during activation"
-    ;;
-    -)
-    skip_desc="N/A"
-    ;;
-  esac
+  #skip_desc=""
+  #case "$skip" in
+  #  k)
+  #  # Skip activation
+  #  skip_desc="Volume is flagged to be skipped during activation"
+  #  ;;
+  #  -)
+  #  skip_desc="N/A"
+  #  ;;
+  #esac
 
   if [ "$include" == "true" ]; then
 
