@@ -18,12 +18,12 @@ hash x11vnc 2>/dev/null || { echo >&2 "You need to install x11vnc. Aborting."; e
 # /run/user/122/gdm/Xauthority
 
 HAS_NETCAT="false"
-if $(hash netstat 2>/dev/null); then
+if hash netstat 2>/dev/null; then
   HAS_NETCAT="true"
 fi
 
 DEBUG=0
-CURRENT_UID=$(id -u $USER)
+CURRENT_UID=$(id -u "$USER")
 if [[ $CURRENT_UID == 0 ]]; then
   logger -p syslog.warn "WARNING: x11vnc found UID==0; forcing gdm UID"
   echo >&2 "WARNING: x11vnc found UID==0; forcing gdm UID"
@@ -32,7 +32,7 @@ fi
 
 CURRENT_USER="$USER"
 if [[ -z "$CURRENT_USER" ]]; then
-  CURRENT_USER=$(getent passwd $CURRENT_UID | awk -F: '{ print $1 }')
+  CURRENT_USER=$(getent passwd "$CURRENT_UID" | awk -F: '{ print $1 }')
 fi
 if [[ -z "$CURRENT_USER" ]]; then
   logger -p syslog.error "ERROR: x11vnc could not identify the user to run under."
@@ -47,7 +47,7 @@ logger -p syslog.info "Starting x11vnc for user $CURRENT_USER (uid $CURRENT_UID)
 logger -p syslog.info "Logging to $LOG_FILE"
 
 # check if x11vnc is already running
-VNC_PID=$(ps -ef | grep "[x]11vnc" | grep $CURRENT_UID | awk '{ print $2}')
+VNC_PID=$(pgrep -f "[x]11vnc" --euid "$CURRENT_UID")
 if [[ -n "$VNC_PID" ]]; then
   logger -p syslog.error "ERROR: x11vnc appears to be running already for UID $CURRENT_UID (pid $VNC_PID)."
   echo >&2 "ERROR: x11vnc appears to be running already for UID $CURRENT_UID (pid $VNC_PID)."
@@ -76,13 +76,13 @@ fi
 
 # note: use -logappend for persistent logging
 x11vnc -bg $DISP_ARG \
-       -auth $AUTH_COOKIE \
-       -logfile $LOG_FILE \
-       -usepw $PW_OPT \
+       -auth "$AUTH_COOKIE" \
+       -logfile "$LOG_FILE" \
+       -usepw "$PW_OPT" \
        -forever \
        -noxdamage > /dev/null 2>&1 &
 
-VNC_PID=$(ps -ef | grep "[x]11vnc" | grep $CURRENT_UID | awk '{ print $2}')
+VNC_PID=$(pgrep -f "[x]11vnc" --euid "$CURRENT_UID")
 if [[ -z "$VNC_PID" ]]; then
   logger -p syslog.error "ERROR: x11vnc failed to start."
   echo >&2 "ERROR: x11vnc failed to start."
