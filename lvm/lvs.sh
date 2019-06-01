@@ -8,8 +8,8 @@
 # Robert W. Baumgartner <rwb@0x19e.net>
 #
 SKIP_OPEN_DEVS="false"
-SKIP_SNAPSHOTS="false"
 ALLOW_FUZZFILT="false"
+SKIP_SNAPSHOTS="false"
 
 hash lvs 2>/dev/null || { echo >&2 "You need to install lvm2. Aborting."; exit 1; }
 
@@ -65,7 +65,7 @@ usage()
      --zero-disabled              Only list volumes with "Zero" disabled.
      --minor-enabled              Only list volumes using fixed minor.
      --minor-disabled             Only list volumes WITHOUT fixed minor.
-     --ignore-snapshots           Ignore snapshot volumes.
+     --include-snapshots          Include snapshot volumes in list.
 
      -v, --verbose                Make the script more verbose.
      -h, --help                   Prints this usage.
@@ -264,11 +264,11 @@ while [ $# -gt 0 ]; do
       MINOR_ENABLED="false"
       shift
     ;;
-    --ignore-snapshots)
+    --include-snapshots)
       if [ -n "${IGNORE_SNAPSHOTS}" ]; then
         usage "Conflicting or duplicate option(s) specified."
       fi
-      IGNORE_SNAPSHOTS="true"
+      IGNORE_SNAPSHOTS="false"
       shift
     ;;
     -v|--verbose)
@@ -374,20 +374,20 @@ IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
     s)
     # Snapshot
     type_desc="Snapshot"
-    if [ "$SKIP_SNAPSHOTS" == "true" ]; then
+    if [ "$SKIP_SNAPSHOTS" != "false" ]; then
       include="false"
     fi
-    if [ "$IGNORE_SNAPSHOTS" == "true" ]; then
+    if [ "$IGNORE_SNAPSHOTS" != "false" ]; then
       include="false"
     fi
     ;;
     S)
     # Merging snapshot
     type_desc="Merging snapshot"
-    #if [ "$IGNORE_SNAPSHOTS" == "true" ]; then
+    #if [ "$IGNORE_SNAPSHOTS" != "false" ]; then
     #  include="false"
     #fi
-    #if [ "$SKIP_SNAPSHOTS" == "true" ]; then
+    #if [ "$SKIP_SNAPSHOTS" != "false" ]; then
     #  include="false"
     #fi
     ;;
