@@ -19,7 +19,7 @@ OUT_FILE="$SCRIPT_DIR/services.svg"
 
 echo "Generating systemd service plot file $OUT_FILE ..."
 
-systemd-analyze dot --to-pattern='*.service' --from-pattern='*.service' | dot -Tsvg > $OUT_FILE
+systemd-analyze dot --to-pattern='*.service' --from-pattern='*.service' | dot -Tsvg > "$OUT_FILE"
 
 echo " done."
 

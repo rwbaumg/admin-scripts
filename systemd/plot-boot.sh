@@ -21,7 +21,7 @@ OUT_FILE="$SCRIPT_DIR/boot.svg"
 
 echo "Generating systemd plot file $OUT_FILE ..."
 
-systemd-analyze plot > $OUT_FILE
+systemd-analyze plot > "$OUT_FILE"
 
 echo " done."
 

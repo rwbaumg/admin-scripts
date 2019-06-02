@@ -19,7 +19,7 @@ OUT_FILE="$SCRIPT_DIR/targets.svg"
 
 echo "Generating systemd targets plot file $OUT_FILE ..."
 
-systemd-analyze dot --to-pattern='*.target' --from-pattern='*.target' | dot -Tsvg > $OUT_FILE
+systemd-analyze dot --to-pattern='*.target' --from-pattern='*.target' | dot -Tsvg > "$OUT_FILE"
 
 echo " done."
 
