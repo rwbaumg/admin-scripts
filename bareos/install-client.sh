@@ -56,7 +56,7 @@ function check_installed()
   fi
 
   if hash apt-cache 2>/dev/null; then
-    if [ -n "$(apt-cache policy "${pkg_name}" | grep -v '(none)' | grep Installed)" ]; then
+    if apt-cache policy "${pkg_name}" | grep -v '(none)' | grep -q Installed; then
       return 0
     fi
   fi
@@ -421,7 +421,7 @@ if [ "${FORCE_INSTALL}" != "true" ] && check_installed "${PKGNAME}"; then
     exit_script 0
   fi
 
-  usage "The package '${PKGNAME}' is already installed."
+  exit_script 0 "The package '${PKGNAME}' is already installed."
 fi
 
 echo "Installing Bareos FileDaemon backup client for Ubuntu ${UBUNTU_RELEASE} ..."

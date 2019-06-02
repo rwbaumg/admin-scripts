@@ -237,7 +237,7 @@ if [ "${MAIL_ENABLE}" == "true" ] && [ "${SHOULD_SEND_MAIL}" == "true" ]; then
   # Send the updated backup file via bsmtp
   sendFailed=0
   if [ -n "${MAIL_HEADER}" ]; then
-    if ! printf "${MAIL_HEADER}\n\n$(cat ${FILE1})\n\n${MAIL_FOOTER}\n" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
+    if ! printf "%s\n\n%s\n\n%s\n" "${MAIL_HEADER}" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
       sendFailed=1
     fi
   elif [ -n "${MAIL_FOOTER}" ]; then
@@ -245,7 +245,7 @@ if [ "${MAIL_ENABLE}" == "true" ] && [ "${SHOULD_SEND_MAIL}" == "true" ]; then
       sendFailed=1
     fi
   else
-    if ! cat "${FILE1}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
+    if ! bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}" < "${FILE1}"; then
       sendFailed=1
     fi
   fi
