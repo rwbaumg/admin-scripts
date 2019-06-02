@@ -4,8 +4,6 @@
 REPORT_DIR="/var/lib/tripwire/report"
 
 hash tripwire 2>/dev/null || { echo >&2 "You need to install tripwire. Aborting."; exit 1; }
-hash gawk 2>/dev/null || { echo >&2 "You need to install gawk. Aborting."; exit 1; }
-hash sed 2>/dev/null || { echo >&2 "You need to install sed. Aborting."; exit 1; }
 
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" >&2
@@ -13,14 +11,16 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Get the filename of the newest report
-REPORT=$(ls -lt "$REPORT_DIR" | sed -n 2p | gawk '{print $9}')
+REPORT=$(find "$REPORT_DIR" -type f -printf "%T@ %p\n" | sort -k1 -n | tail -n1 | cut -d' ' -f 2-)
 if [[ -z "$REPORT" ]]; then
   echo "Fatal: Couldn't find latest report, exiting..." >&2
   exit 1
 else
-  echo "Printing report: $REPORT_DIR/$REPORT"
+  echo "Printing report: $REPORT"
 fi
 
-twprint -m r --twrfile "$REPORT_DIR/$REPORT"
+if ! twprint -m r --twrfile "$REPORT"; then
+  exit 1
+fi
 
 exit 0
