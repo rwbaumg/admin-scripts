@@ -38,11 +38,13 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 # validate domain
 DOMAIN_NAME="$1"
-QEMU_PID=$(ps -ef | grep "qemu" | grep "name $DOMAIN_NAME" | awk '{ print $2}')
+QEMU_PID=$(pgrep -f '^(\/usr)?(\/lib)?(\/xen\-[1-9](\.[0-9]{1,2}))\/bin\/qemu.*\-name\s'"${DOMAIN_NAME}")
 if [[ -z "$QEMU_PID" ]]; then
   echo >&2 "ERROR: Failed to find qemu pid for '$DOMAIN_NAME'"
   exit 1
 fi
+
+echo "Found QEMU PID ${QEMU_PID} for domain '${DOMAIN_NAME}'"
 
 # get the vnc port
 VNC_PORT=$(lsof -nPi | grep "LISTEN" | grep "$QEMU_PID" | awk '{print $9}' | awk -F":" '{print $2}')
@@ -62,26 +64,33 @@ LISTEN_PORT=2$VNC_PORT
 PID_FILE="/tmp/stunnel_$VNC_PORT.pid"
 LOG_FILE="$LOG_DIR/stunnel_$VNC_PORT.log"
 CONF_FILE="/tmp/stunnel_$VNC_PORT.conf"
+CONFIG_NAME="stunnel_$VNC_PORT"
+
+# check if conf file already exists
+if [ -e "${CONF_FILE}" ]; then
+  echo >&2 "ERROR: The configuration file '${CONF_FILE}' already exists."
+  exit 1
+fi
 
 # check if $pidfile exists
-if [ -e $PID_FILE ]; then
-  pid=$(cat $PID_FILE)
+if [ -e "$PID_FILE" ]; then
+  pid=$(cat "$PID_FILE")
   # check if pid is running
-  if ( kill -0 $pid > /dev/null 2>&1; ); then
+  if ( kill -0 "$pid" > /dev/null 2>&1; ); then
     echo "stunnel already running on pid $pid"
     exit 1
   else
     echo >&2 "pid file exists but process not running, deleting stale pid file..."
-    rm -f $PID_FILE
+    rm -f "$PID_FILE"
   fi
 fi
 
 # forward
-FWD_NOTE=$(echo "local port $LISTEN_PORT -> 127.0.0.1:$VNC_PORT")
+FWD_NOTE="local port $LISTEN_PORT -> 127.0.0.1:$VNC_PORT"
 
 echo "forwarding $FWD_NOTE ..."
 
-TUNNEL_CONF=$(sed -e "s|NAME|$DOMAIN_NAME|" \
+TUNNEL_CONF=$(sed -e "s|NAME|$CONFIG_NAME|" \
                   -e "s|NOTE|$FWD_NOTE|" \
                   -e "s|CERT|$CERT|" \
                   -e "s|FIPS|$FIPS|" \
@@ -120,20 +129,9 @@ cert = CERT
 EOF
 )
 
-echo -e "$TUNNEL_CONF" > $CONF_FILE
-stunnel "$CONF_FILE"
-
-exit 0
-
-echo stunnel -options -D $DEBUG_LEVEL \
-        -s "$USER" \
-        -g "$GROUP" \
-        -C "$CIPHER_SUITE" \
-        -R "$RAND_FILE" \
-        -o "$LOG_FILE" \
-        -P "$PID_FILE" \
-        -p "$PEM_FILE" \
-        -d $LISTEN_PORT \
-        -r $VNC_PORT
+echo -e "$TUNNEL_CONF" > "$CONF_FILE"
+if ! stunnel "$CONF_FILE"; then
+  exit 1
+fi
 
 exit 0

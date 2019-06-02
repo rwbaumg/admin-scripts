@@ -29,17 +29,17 @@ if [ ! -f "$DOMAIN_CONF" ]; then
 fi
 
 # check if domain is already running
-PS_OUT=$(ps -eo pid,cmd|grep -v grep|grep xl|grep "$DOMAIN_NAME")
+PS_OUT=$(pgrep -f 'xl\screate\s.*\/etc\/xen\/'"$DOMAIN_NAME"'\.cfg')
 if [ -n "$PS_OUT" ]; then
-  pid=$(echo $PS_OUT | awk '{print $1}')
-  if ( kill -0 $pid > /dev/null 2>&1; ); then
+  pid=$(echo "$PS_OUT" | awk '{print $1}')
+  if ( kill -0 "$pid" > /dev/null 2>&1; ); then
     echo "The domain $DOMAIN_NAME is already running under xl on pid $pid"
     exit 1
   fi
 fi
 
 # create the new domain
-xl create $DOMAIN_CONF
+xl create "$DOMAIN_CONF"
 
 if [ -x "$POST_SCRIPT" ]; then
   echo "Running post-script $POST_SCRIPT ..."

@@ -14,7 +14,7 @@ if [ "$1" = "" ]; then
 fi
 
 NAME="$1"
-PID=$(ps -ef | grep "qemu" | grep "name $NAME" | awk '{ print $2}')
+PID=$(pgrep -f '^(\/usr)?(\/lib)?(\/xen\-[1-9](\.[0-9]{1,2}))\/bin\/qemu.*\-name\s'"${NAME}")
 
 if [[ -z "$PID" ]]; then
   echo "ERROR: Failed to find qemu pid for '$NAME'" >&2
@@ -31,6 +31,6 @@ if ! [[ $PORT =~ $re ]] ; then
   exit 1
 fi
 
-echo $PORT
+echo "$PORT"
 
 exit 0
