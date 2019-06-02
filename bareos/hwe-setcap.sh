@@ -26,7 +26,7 @@ function prog_getcap()
     exit 1
   fi
 
-  if ! cap=$(getcap "${path}" | grep -Po '(?<=\s\=\s).*$'); then
+  if ! cap=$(/sbin/getcap "${path}" | grep -Po '(?<=\s\=\s).*$'); then
     return 1
   fi
   if [ -z "${cap}" ]; then
