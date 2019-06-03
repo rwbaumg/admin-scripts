@@ -47,7 +47,7 @@ logger -p syslog.info "Starting x11vnc for user $CURRENT_USER (uid $CURRENT_UID)
 logger -p syslog.info "Logging to $LOG_FILE"
 
 # check if x11vnc is already running
-VNC_PID=$(pgrep -f "[x]11vnc" --euid "$CURRENT_UID")
+VNC_PID=$(pgrep -f "^[x]11vnc" --euid "$CURRENT_UID")
 if [[ -n "$VNC_PID" ]]; then
   logger -p syslog.error "ERROR: x11vnc appears to be running already for UID $CURRENT_UID (pid $VNC_PID)."
   echo >&2 "ERROR: x11vnc appears to be running already for UID $CURRENT_UID (pid $VNC_PID)."
@@ -75,14 +75,13 @@ if [[ -e /etc/x11vnc.pass ]]; then
 fi
 
 # note: use -logappend for persistent logging
-x11vnc -bg $DISP_ARG \
-       -auth "$AUTH_COOKIE" \
-       -logfile "$LOG_FILE" \
-       -usepw "$PW_OPT" \
-       -forever \
-       -noxdamage > /dev/null 2>&1 &
+VNC_CMD="x11vnc -bg $DISP_ARG -usepw $PW_OPT"
+${VNC_CMD} -auth "$AUTH_COOKIE" \
+           -logfile "$LOG_FILE" \
+           -forever \
+           -noxdamage > /dev/null 2>&1 &
 
-VNC_PID=$(pgrep -f "[x]11vnc" --euid "$CURRENT_UID")
+VNC_PID=$(pgrep -f "^[x]11vnc" --euid "$CURRENT_UID")
 if [[ -z "$VNC_PID" ]]; then
   logger -p syslog.error "ERROR: x11vnc failed to start."
   echo >&2 "ERROR: x11vnc failed to start."
