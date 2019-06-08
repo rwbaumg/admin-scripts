@@ -4,6 +4,10 @@
 TOP_10_MSG="top 10 by size"
 INPUT_PATH="."
 
+if [ -z "${NO_SPINNER}" ]; then
+  NO_SPINNER=0
+fi
+
 if [ -n "$1" ]; then
   if [ ! -d "$@" ]; then
     echo >&2 "usage: $0 [directory]"
@@ -18,7 +22,9 @@ fi
 
 trap cleanup EXIT INT TERM
 cleanup() {
-  kill $SCRIPT_PID
+  if [ -n "$SCRIPT_PID" ]; then
+    kill $SCRIPT_PID
+  fi
   exit $?
 }
 
@@ -52,7 +58,10 @@ stop_spinner()
   echo -ne "\r%\033[0K\r"
 }
 
-start_spinner "Calculating directory sizes ..."
+
+if [ "$NO_SPINNER" -eq 0 ]; then
+  start_spinner "Calculating directory sizes ..."
+fi
 
 INPUT_PATH_ESCAPED=""
 if [ "$INPUT_PATH" != "/" ]; then
@@ -69,7 +78,9 @@ OUTPUT=$((du -shx ./.[^.]* 2>/dev/null ; du -shx ./[^.]* 2>/dev/null) \
 
 popd > /dev/null 2>&1
 
-stop_spinner
+if [ "$NO_SPINNER" -eq 0 ]; then
+  stop_spinner
+fi
 
 echo "$OUTPUT"
 
