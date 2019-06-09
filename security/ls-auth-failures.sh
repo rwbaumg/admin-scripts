@@ -18,8 +18,8 @@ REGEX_MATCH_IPADDR='([0-9]{1,3}[\.]){3}[0-9]{1,3}'
 # Extract unique hosts which failed to authenticate
 declare -a REMOTE_HOSTS=();
 IFS=$'\n'; for line in ${FAILED}; do
-  rhost=$(echo $line | grep -Po "(?<=\s${REGEX_RHOST_START})${REGEX_MATCH_IPADDR}(?=${REGEX_RHOST_TERM})")
-  if [[ ! " ${REMOTE_HOSTS[@]} " =~ " ${rhost} " ]]; then
+  rhost=$(echo "$line" | grep -Po "(?<=\s${REGEX_RHOST_START})${REGEX_MATCH_IPADDR}(?=${REGEX_RHOST_TERM})")
+  if [[ ! " ${REMOTE_HOSTS[*]} " =~ ${rhost} ]]; then
     REMOTE_HOSTS=("${REMOTE_HOSTS[@]}" "${rhost}")
   fi
 done

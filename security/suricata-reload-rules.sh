@@ -18,7 +18,7 @@ fi
 for x in $(pidof "suricata"); do
   # send live reload signal (USR2)
   echo "Sending live reload signal to suricata pid $x ..."
-  kill -USR2 $x
+  kill -USR2 "$x"
 done
 
 exit 0

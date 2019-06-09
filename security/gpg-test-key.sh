@@ -13,6 +13,6 @@ EXTRA_OPTS="--verbose"
 #EXTRA_OPTS="--verbose --debug-all --debug-level guru"
 
 echo "Testing GnuPG key with fingerprint ID $1 ..."
-echo "$(uname -a)" | gpg ${EXTRA_OPTS} --encrypt --armor --recipient ${KEY_ID} | gpg ${EXTRA_OPTS} --decrypt --armor
+uname -a | gpg ${EXTRA_OPTS} --encrypt --armor --recipient "${KEY_ID}" | gpg ${EXTRA_OPTS} --decrypt --armor
 
 exit 0

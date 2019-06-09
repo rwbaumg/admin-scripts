@@ -9,6 +9,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-> /var/log/lastlog
+true > /var/log/lastlog
 
 exit 0

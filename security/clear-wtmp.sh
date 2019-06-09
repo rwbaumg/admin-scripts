@@ -9,6 +9,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-> /var/log/wtmp
-> /var/log/btmp
+true > /var/log/wtmp
+true > /var/log/btmp
 

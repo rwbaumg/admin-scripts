@@ -30,7 +30,7 @@ perl $PULLEDPORK_PLSCRIPT -T \
   -o $SURICATA_RULES_FILE # -k
 
 # git handling for etckeeper (check if /etc/.git exists)
-if $(git -C "/etc" rev-parse > /dev/null 2>&1); then
+if git -C "/etc" rev-parse > /dev/null 2>&1; then
   # check /etc/suricata for modifications
   # if there are changes under the config folder, commit them
   if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/suricata|grep '^(M| M)')" != "" ]]; then
@@ -46,7 +46,7 @@ fi
 for x in $(pidof "suricata"); do
   # send live reload signal (USR2)
   echo "Sending live reload signal to suricata pid $x ..."
-  kill -USR2 $x
+  kill -USR2 "$x"
 done
 
 exit 0

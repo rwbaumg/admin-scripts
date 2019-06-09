@@ -10,7 +10,7 @@ fi
 
 echo "Trying to delete GnuPG key with fingerprint ID $1 ..."
 
-gpg --delete-secret-key $1
-gpg --delete-key $1
+gpg --delete-secret-key "$1"
+gpg --delete-key "$1"
 
 exit 0

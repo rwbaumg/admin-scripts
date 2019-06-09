@@ -11,10 +11,10 @@ echo ""
 echo "COMMANDS BY USER"
 echo ""
 
-users=$(cat /etc/passwd | awk -F ':' '{print $1}' | sort)
+users=$(awk -F ':' '{print $1}' /etc/passwd | sort)
 
 for user in $users ; do
-  comm=$(lastcomm --user $user | awk '{print $1}' | sort | uniq -c | sort -nr)
+  comm=$(lastcomm --user "$user" | awk '{print $1}' | sort | uniq -c | sort -nr)
   if [ "$comm" ] ; then
     echo "$user:"
     echo "$comm"

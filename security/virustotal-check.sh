@@ -35,19 +35,19 @@ if [[ -f "$1" ]]; then
   MD5_SUM=$(md5sum "$1" | awk '{print $1}')
   echo "Processing $1 ($MD5_SUM) ..."
   REPORT=$(curl -s -X POST 'https://www.virustotal.com/vtapi/v2/file/report' --form apikey="$API_KEY" --form resource="$MD5_SUM")
-  SUMMARY=$(echo $REPORT | awk -F'positives\":' '{print $2}' | awk -F' ' '{print $1" "$4$5$6}'|sed 's/["}]//g')
+  SUMMARY=$(echo "$REPORT" | awk -F'positives\":' '{print $2}' | awk -F' ' '{print $1" "$4$5$6}'|sed 's/["}]//g')
   echo "VirusTotal Hits: $SUMMARY"
   exit 0
 fi
 
 # process single hash
-HTEST=$(echo $1 | grep -e "[0-9a-f]\{32\}")
+HTEST=$(echo "$1" | grep -e "[0-9a-f]\{32\}")
 if [ ! -f "$1" ] && [ "$HTEST" != "$1" ]; then
   echo "$1 is not a valid md5 hash"
 else
   echo "Processing $1 ..."
   REPORT=$(curl -s -X POST 'https://www.virustotal.com/vtapi/v2/file/report' --form apikey="$API_KEY" --form resource="$1")
-  echo $REPORT | awk -F'positives\":' '{print "VirusTotal Hits:" $2}' | awk -F' ' '{print $1$2" "$3$6$7}'|sed 's/["}]//g'
+  echo "$REPORT" | awk -F'positives\":' '{print "VirusTotal Hits:" $2}' | awk -F' ' '{print $1$2" "$3$6$7}'|sed 's/["}]//g'
 fi
 
 exit 0

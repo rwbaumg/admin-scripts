@@ -22,6 +22,6 @@ fi
 
 PASSWD=$(head $RNG_DEV | tr -dc "$CHARSET" | head -c $LENGTH)
 
-echo ${PASSWD}
+echo "${PASSWD}"
 
 exit 0

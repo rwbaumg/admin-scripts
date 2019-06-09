@@ -20,12 +20,12 @@ else
 fi
 
 # turn swap off
-swapoff -v $SWAP_DEVICE
+swapoff -v "$SWAP_DEVICE"
 
 # clear swap
-sswap -v $SWAP_DEVICE
+sswap -v "$SWAP_DEVICE"
 
 # turn swap back on
-swapon -v $SWAP_DEVICE
+swapon -v "$SWAP_DEVICE"
 
 exit 0
