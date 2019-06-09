@@ -17,9 +17,9 @@ exit_script()
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
     if [ $exit_code -eq 0 ]; then
-      echo "INFO: $@"
+      echo "INFO: $*"
     else
-      echo "ERROR: $@" 1>&2
+      echo "ERROR: $*" 1>&2
     fi
   fi
 
@@ -59,7 +59,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script $*
 }
 
 test_arg()
