@@ -8,13 +8,13 @@ OUTPUT=""
 
 if [ -n "${1}" ]; then
   if [ "${1}" == "-h" ] || [ "${1}" == "--help" ]; then
-    echo "Usage: $0 [drive] [output]"
+    echo "Usage: $0 [output] [drive]"
     exit 1
   fi
-  DRIVE="${1}"
+  OUTPUT="${1}"
 fi
 if [ -n "${2}" ]; then
-  OUTPUT="${2}"
+  DRIVE="${2}"
 fi
 
 if [ ! -b "${DRIVE}" ]; then
