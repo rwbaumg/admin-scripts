@@ -30,16 +30,25 @@ fi
 
 # check if a disk is inserted
 if ! blkid "$DRIVE" > /dev/null 2>&1; then
-  echo >&2 "ERROR: No disk found on $DRIVE"
+  echo >&2 "ERROR: No disk found in $DRIVE"
   exit 1
 fi
 
 # get some information about the inserted disk
-LABEL=$(blkid "$DRIVE" | sed -n 's/.*LABEL=\"\([^\"]*\)\".*/\1/p' | sed -e 's/ /_/g')
-SIZE=$(blockdev --getsize64 "$DRIVE")
+if ! LABEL=$(blkid "$DRIVE" | sed -n 's/.*LABEL=\"\([^\"]*\)\".*/\1/p' | sed -e 's/ /_/g'); then
+  echo >&2 "ERROR: Failed to determine label for media in ${DRIVE}"
+  exit 1
+fi
+if ! SIZE=$(blockdev --getsize64 "$DRIVE"); then
+  echo >&2 "ERROR: Failed to determine block size of media in ${DRIVE}"
+  exit 1
+fi
 
 if [ -z "${OUTPUT}" ]; then
-  OUTPUT=$(readlink -f "$LABEL".iso)
+  if ! OUTPUT=$(readlink -f "$LABEL".iso); then
+    echo >&2 "ERROR: Failed to generate output file name."
+    exit 1
+  fi
 fi
 if [ -e "${OUTPUT}" ]; then
   echo >&2 "ERROR: File '${OUTPUT}' already exists (will not overwrite)."
@@ -53,11 +62,19 @@ echo "Ripping $LABEL ($SIZE_IN_MB MB) from drive ${DRIVE}"
 echo "Writing image to $OUTPUT ..."
 
 # create an image
-dd if="$DRIVE" | pv -brtep -s "$SIZE" | dd of="$OUTPUT"
+if ! dd if="$DRIVE" | pv -brtep -s "$SIZE" | dd of="$OUTPUT"; then
+  echo >&2 "ERROR: Failed to create image."
+  if [ -e "${OUTPUT}" ]; then
+    rm -v "${OUTPUT}"
+  fi
+  exit 1
+fi
 
 # eject the disk
-eject "$DRIVE"
+echo "Ejecting ${DRIVE} ..."
+if ! eject "$DRIVE"; then
+  echo >&2 "WARNING: Failed to eject ${DRIVE}"
+fi
 
 echo "Image saved to $OUTPUT"
-
 exit 0
