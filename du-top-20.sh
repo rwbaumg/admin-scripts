@@ -66,7 +66,7 @@ fi
 INPUT_PATH_ESCAPED=""
 if [ "$INPUT_PATH" != "/" ]; then
   INPUT_PATH=${INPUT_PATH}"/"
-  INPUT_PATH_ESCAPED=$(realpath "${INPUT_PATH}" | sed -e 's/\//\\\//g' -e 's/\./\\\./g')
+  INPUT_PATH_ESCAPED=$(readlink -m "${INPUT_PATH}" | sed -e 's/\//\\\//g' -e 's/\./\\\./g')
 fi
 
 pushd "${INPUT_PATH}" > /dev/null 2>&1
