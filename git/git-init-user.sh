@@ -25,8 +25,17 @@ else
   USER_DOMAIN=$(hostname -d)
   USER_EMAIL="${USER}@${USER_DOMAIN}"
 
-  git config --global user.name "${USER_FULLNAME}"
-  git config --global user.email "${USER_EMAIL}"
+  err=0
+  if ! git config --global user.name "${USER_FULLNAME}"; then
+    err=1; echo >&2 "WARNING: Failed to set global user name."
+  fi
+  if ! git config --global user.email "${USER_EMAIL}"; then
+    err=1; echo >&2 "WARNING: Failed to set global user email."
+  fi
+
+  if [ "${err}" -ne 1 ]; then
+    echo "Configured global Git identity: user.name='${USER_FULLNAME}', user.email='${USER_EMAIL}'"
+  fi
 fi
 if [ -e "$HOME/.gitattributes" ]; then
   echo >&2 "WARNING: '$HOME/.gitattributes' already exists and will not be modified."
