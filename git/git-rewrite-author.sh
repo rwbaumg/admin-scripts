@@ -18,13 +18,13 @@ hash git 2>/dev/null || { echo >&2 "You need to install git. Aborting."; exit 1;
 
 pushd()
 {
-  command pushd "$@" > /dev/null
+  command pushd "$*" > /dev/null
 }
 
 popd()
 {
-  if [ $(dirs -p -v | wc -l) -gt 1 ]; then
-    command popd "$@" > /dev/null
+  if [ "$(dirs -p -v | wc -l)" -gt 1 ]; then
+    command popd "$*" > /dev/null
   fi
 }
 
@@ -41,8 +41,8 @@ exit_script()
   fi
 
   re='[[:alnum:]]'
-  if echo "$@" | grep -iqE "$re"; then
-    if [ $exit_code -eq 0 ]; then
+  if echo "$*" | grep -iqE "$re"; then
+    if [ "$exit_code" -eq 0 ]; then
       echo "INFO: $*"
     else
       echo "ERROR: $*" 1>&2
@@ -50,18 +50,18 @@ exit_script()
   fi
 
   # Print 'aborting' string if exit code is not 0
-  [ $exit_code -ne 0 ] && echo "Aborting script..."
+  [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
   # pop back to start directory
-  popd
+  popd "$@"
 
-  exit $exit_code
+  exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     Rewrites current Git repository history to update user details.
@@ -81,7 +81,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -106,7 +106,7 @@ test_git_path()
   # test directory argument
   local arg="$1"
 
-  test_arg $arg
+  test_arg "$arg"
 
   if [ ! -d "$arg" ]; then
     usage "Specified directory does not exist."
@@ -126,7 +126,7 @@ test_user_arg()
   local arg="$1"
   local argv="$2"
 
-  test_arg $arg $argv
+  test_arg "$arg" "$argv"
 
   if [ -z "$argv" ]; then
     argv="$arg"
@@ -139,21 +139,26 @@ test_email_arg()
   local arg="$1"
   local argv="$2"
 
-  test_arg $arg $argv
+  test_arg "$arg" "$argv"
 
   if [ -z "$argv" ]; then
     argv="$arg"
   fi
-}
 
-VERBOSE=""
-
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOSE="-v"
+  # regex borrowed from https://emailregex.com/
+  re='(?:[a-z0-9!#$%&'"'"'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'"'"'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])'
+  if ! echo "$argv" | grep -Poq "$re"; then
+    usage "Invalid e-mail address: ${argv}"
   fi
 }
+
+#VERBOSE=""
+#check_verbose()
+#{
+#  if [ $VERBOSITY -gt 1 ]; then
+#    VERBOSE="-v"
+#  fi
+#}
 
 export OLD_NAME=""
 export OLD_EMAIL=""
@@ -190,13 +195,13 @@ while [ $# -gt 0 ]; do
     ;;
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -vv)
       ((VERBOSITY++))
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -h|--help)
@@ -209,7 +214,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if ! $(git -C "$(dirname $0)" rev-parse); then
+if ! git -C "$(dirname "$0")" rev-parse; then
   usage "Directory does not appear to be a valid Git repository: $DIR"
   #echo >&2 "Directory does not appear to be a valid Git repository: $DIR"
   #exit 1
@@ -233,34 +238,34 @@ fi
 #fi
 
 # rewrite author info
-git filter-branch --env-filter '
-	if [ -n "$OLD_NAME" ]; then
+git filter-branch --env-filter "
+	if [ -n $OLD_NAME ]; then
 		# correct committer name
-		if [ "$GIT_COMMITTER_NAME" = "$OLD_NAME" ]; then
-			export GIT_COMMITTER_NAME="$CORRECT_NAME"
-			export GIT_COMMITTER_EMAIL="$CORRECT_EMAIL"
+		if [ $GIT_COMMITTER_NAME == $OLD_NAME ]; then
+			export GIT_COMMITTER_NAME=$CORRECT_NAME
+			export GIT_COMMITTER_EMAIL=$CORRECT_EMAIL
 		fi
 
 		# correct author name
-		if [ "$GIT_AUTHOR_NAME" = "$OLD_NAME" ]; then
-			export GIT_AUTHOR_NAME="$CORRECT_NAME"
-			export GIT_AUTHOR_EMAIL="$CORRECT_EMAIL"
+		if [ $GIT_AUTHOR_NAME == $OLD_NAME ]; then
+			export GIT_AUTHOR_NAME=$CORRECT_NAME
+			export GIT_AUTHOR_EMAIL=$CORRECT_EMAIL
 		fi
 	fi
 
-	if [ -n "$OLD_EMAIL" ]; then
+	if [ -n $OLD_EMAIL ]; then
 		# correct committer e-mail
-		if [ "$GIT_COMMITTER_EMAIL" = "$OLD_EMAIL" ]; then
-			export GIT_COMMITTER_NAME="$CORRECT_NAME"
-			export GIT_COMMITTER_EMAIL="$CORRECT_EMAIL"
+		if [ $GIT_COMMITTER_EMAIL == $OLD_EMAIL ]; then
+			export GIT_COMMITTER_NAME=$CORRECT_NAME
+			export GIT_COMMITTER_EMAIL=$CORRECT_EMAIL
 		fi
 
 		# correct author e-mail
-		if [ "$GIT_AUTHOR_EMAIL" = "$OLD_EMAIL" ]; then
-			export GIT_AUTHOR_NAME="$CORRECT_NAME"
-			export GIT_AUTHOR_EMAIL="$CORRECT_EMAIL"
+		if [ $GIT_AUTHOR_EMAIL == $OLD_EMAIL ]; then
+			export GIT_AUTHOR_NAME=$CORRECT_NAME
+			export GIT_AUTHOR_EMAIL=$CORRECT_EMAIL
 		fi
 	fi
-' --tag-name-filter cat -- --branches --tags
+" --tag-name-filter cat -- --branches --tags
 
 exit 0

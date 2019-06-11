@@ -11,7 +11,7 @@ while [ -h "$SOURCE" ]; do
 done
 ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-if [ $VERBOSITY -gt 1 ]; then
+if [ "$VERBOSITY" -gt 1 ]; then
   echo "Resolved script directory: $ROOT_DIR"
 fi
 
@@ -21,20 +21,35 @@ else
   echo "Installing .gitconfig ..."
   cp -v "${ROOT_DIR}/gitconfig.template" "${HOME}/.gitconfig"
 
-  USER_FULLNAME=$(getent passwd $USER | cut -d ':' -f 5 | cut -d ',' -f 1)
-  USER_DOMAIN=$(hostname -d)
-  USER_EMAIL="${USER}@${USER_DOMAIN}"
-
   err=0
-  if ! git config --global user.name "${USER_FULLNAME}"; then
-    err=1; echo >&2 "WARNING: Failed to set global user name."
+  USER_FULLNAME=$(getent passwd "$USER" | cut -d ':' -f 5 | cut -d ',' -f 1)
+  if [ -z "${USER_FULLNAME}" ]; then
+    USER_FULLNAME="${USER}"
   fi
-  if ! git config --global user.email "${USER_EMAIL}"; then
-    err=1; echo >&2 "WARNING: Failed to set global user email."
+  if [ -n "${USER_FULLNAME}" ]; then
+    if ! git config --global user.name "${USER_FULLNAME}"; then
+      err=1; echo >&2 "WARNING: Failed to set global user name."
+    fi
+  else
+    err=1; echo >&2 "WARNING: Failed to determine current user's name; cannot configure user.name property."
+  fi
+
+  if ! USER_DOMAIN=$(hostname -d); then
+    echo >&2 "ERROR: Local hostname does not appear to have a configured domain name (hostname -d)."
+  fi
+  if [ -n "${USER_DOMAIN}" ]; then
+    USER_EMAIL="${USER}@${USER_DOMAIN}"
+    if ! git config --global user.email "${USER_EMAIL}"; then
+      err=1; echo >&2 "WARNING: Failed to set global user email."
+    fi
+  else
+    err=1; echo >&2 "WARNING: Failed to determine local domain name; cannot configure user e-mail."
   fi
 
   if [ "${err}" -ne 1 ]; then
     echo "Configured global Git identity: user.name='${USER_FULLNAME}', user.email='${USER_EMAIL}'"
+  else
+    err=0; echo >&2 "WARNING: Failed to configure one or more user properties in ~/.gitconfig file."
   fi
 fi
 if [ -e "$HOME/.gitattributes" ]; then
@@ -103,7 +118,8 @@ echo "Found ${#missing[@]} missing package(s)."
 # See if apt-get is available
 if hash apt-get 2>/dev/null; then
   echo "Attempting to install via apt-get ..."
-  if ! sudo apt-get install $packages; then
+  apt_command="sudo apt-get install $packages"
+  if ! ${apt_command}; then
     echo >&2 "ERROR: Failed to install missing packages."
     exit 1
   fi
