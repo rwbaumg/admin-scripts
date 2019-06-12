@@ -11,7 +11,7 @@ while [ -h "$SOURCE" ]; do
 done
 ROOT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-if [ "$VERBOSITY" -gt 1 ]; then
+if [[ "$VERBOSITY" -gt 1 ]]; then
   echo "Resolved script directory: $ROOT_DIR"
 fi
 
@@ -113,19 +113,22 @@ for ((idx=0;idx<=$((${#missing[@]}-1));idx++)); do
     packages="${pkg}"
   fi
 done
-echo "Found ${#missing[@]} missing package(s)."
 
-# See if apt-get is available
-if hash apt-get 2>/dev/null; then
-  echo "Attempting to install via apt-get ..."
-  apt_command="sudo apt-get install $packages"
-  if ! ${apt_command}; then
-    echo >&2 "ERROR: Failed to install missing packages."
-    exit 1
+if [ "${#missing[@]}" -gt 0 ]; then
+  echo "Found ${#missing[@]} missing package(s)."
+
+  # See if apt-get is available
+  if hash apt-get 2>/dev/null; then
+    echo "Attempting to install via apt-get ..."
+    apt_command="sudo apt-get install $packages"
+    if ! ${apt_command}; then
+      echo >&2 "ERROR: Failed to install missing packages."
+      exit 1
+    fi
+  else
+    echo "For example, to install missing packages using apt-get run:"
+    echo "sudo apt-get install ${packages}"
   fi
-else
-  echo "For example, to install missing packages using apt-get run:"
-  echo "sudo apt-get install ${packages}"
 fi
 
 exit 0
