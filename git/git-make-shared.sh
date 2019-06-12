@@ -22,7 +22,7 @@ pushd()
 
 popd()
 {
-  if [ $(dirs -p -v | wc -l) -gt 1 ]; then
+  if [ "$(dirs -p -v | wc -l)" -gt 1 ]; then
     command popd "$@" > /dev/null
   fi
 }
@@ -41,26 +41,26 @@ exit_script()
 
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
-    if [ $exit_code -eq 0 ]; then
-      echo "INFO: $@"
+    if [ "$exit_code" -eq 0 ]; then
+      echo "INFO: $*"
     else
-      echo "ERROR: $@" 1>&2
+      echo "ERROR: $*" 1>&2
     fi
   fi
 
   # Print 'aborting' string if exit code is not 0
-  [ $exit_code -ne 0 ] && echo "Aborting script..."
+  [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
   # pop back to start directory
   popd
 
-  exit $exit_code
+  exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     This script sets up a bare Git repository for shared usage.
@@ -87,7 +87,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -112,7 +112,7 @@ test_path()
   # test directory argument
   local arg="$1"
 
-  test_arg $arg
+  test_arg "$arg"
 
   if [ ! -d "$arg" ]; then
     usage "Specified directory does not exist."
@@ -132,7 +132,7 @@ test_user_arg()
   local arg="$1"
   local argv="$2"
 
-  test_arg $arg $argv
+  test_arg "$arg" "$argv"
 
   if [ -z "$argv" ]; then
     argv="$arg"
@@ -149,7 +149,7 @@ test_group_arg()
   local arg="$1"
   local argv="$2"
 
-  test_arg $arg $argv
+  test_arg "$arg" "$argv"
 
   if [ -z "$argv" ]; then
     argv="$arg"
@@ -251,9 +251,9 @@ if [ "$DRY_RUN" = "false" ]; then
   check_root
 fi
 
-pushd $GIT_DIR
+pushd "$GIT_DIR"
 
-if [ $(git rev-parse --is-bare-repository) = "false" ]; then
+if [ "$(git rev-parse --is-bare-repository)" = "false" ]; then
   usage "Specified directory is not a bare Git repository: $GIT_DIR"
 fi
 
@@ -308,9 +308,9 @@ if [ -n "$GIT_HEAD" ]; then
     echo "Setting head to $GIT_HEAD ..."
   fi
   if [ "$DRY_RUN" = "true" ]; then
-    echo git symbolic-ref HEAD refs/heads/$GIT_HEAD
+    echo "git symbolic-ref HEAD refs/heads/$GIT_HEAD"
   else
-    git symbolic-ref HEAD refs/heads/$GIT_HEAD
+    git symbolic-ref HEAD "refs/heads/$GIT_HEAD"
   fi
 fi
 
@@ -333,14 +333,14 @@ fi
 if [ "$DRY_RUN" = "true" ]; then
   echo "chown -R $VERBOSE $GIT_USER:$GIT_GROUP ."
 else
-  chown -R $VERBOSE $GIT_USER:$GIT_GROUP .
+  chown -R $VERBOSE "$GIT_USER":"$GIT_GROUP" .
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
   echo "popd"
 fi
 
-popd
+popd "$@"
 
 if [ $VERBOSITY -gt 0 ]; then
   echo "Finished."

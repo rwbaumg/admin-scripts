@@ -43,8 +43,8 @@ fi
 # git handling for etckeeper (check if /etc/.git exists)
 if hash git 2>/dev/null; then
   pushd "${ROOT}" > /dev/null 2>&1
-  if $(git rev-parse --is-inside-work-tree > /dev/null 2>&1); then
-    if [[ "$(git status --porcelain -- ${FILE}|grep '^(M| M)')" != "" ]]; then
+  if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    if [[ "$(git status --porcelain -- "${FILE}"|grep '^(M| M)')" != "" ]]; then
       # commit pending changes
       git add --all "${FILE}"
       git commit -m "$MESSAGE"

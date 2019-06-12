@@ -28,23 +28,23 @@ exit_script()
     re='[[:alnum:]]'
     if echo "$@" | grep -iqE "$re"; then
         echo
-        if [ $exit_code -eq 0 ]; then
-            echo "INFO: $@"
+        if [ "$exit_code" -eq 0 ]; then
+            echo "INFO: $*"
         else
-            echo "ERROR: $@" 1>&2
+            echo "ERROR: $*" 1>&2
         fi
     fi
 
     # Print 'aborting' string if exit code is not 0
-    [ $exit_code -ne 0 ] && echo "Aborting script..."
+    [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
-    exit $exit_code
+    exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     Push Git refs to another remote.
@@ -74,7 +74,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -194,7 +194,7 @@ fi
 
 # combine git flags
 GIT_EXTRA_ARGS="$GIT_VERBOSE $GIT_FORCE $GIT_DRY_RUN"
-EXCLUDE_REFS_KEY=$(echo ${EXCLUDE_REFS[@]}|tr " " "|")
+EXCLUDE_REFS_KEY=$(echo "${EXCLUDE_REFS[@]}"|tr " " "|")
 
 # print options
 if [ $VERBOSITY -gt 1 ]; then
@@ -220,7 +220,7 @@ fi
 # to notify the user and abort before proceeding
 
 # check remotes
-if ! git ls-remote $SOURCE_REMOTE > /dev/null 2>&1; then
+if ! git ls-remote "$SOURCE_REMOTE" > /dev/null 2>&1; then
   if [ "$GIT_FORCE" == "--force" ]; then
     echo >&2 "WARNING: Working copy doesn't have a source remote named '$SOURCE_REMOTE'."
   else
@@ -228,7 +228,7 @@ if ! git ls-remote $SOURCE_REMOTE > /dev/null 2>&1; then
     exit 1
   fi
 fi
-if ! git ls-remote $TARGET_REMOTE > /dev/null 2>&1; then
+if ! git ls-remote "$TARGET_REMOTE" > /dev/null 2>&1; then
   echo >&2 "Working copy doesn't have a target remote named '$TARGET_REMOTE'. Aborting."
   exit 1
 fi
@@ -241,14 +241,14 @@ GIT_SVN_TAGS=$(git branch -r | grep "\s$SOURCE_REMOTE\/tags\/[a-zA-Z0-9\._-]*$" 
 # print processed refs
 if [ $VERBOSITY -gt 1 ]; then
   if  [ -n "${GIT_REFS[*]}" ]; then
-    echo "INFO: The following branches were found in $SOURCE_REMOTE: $(echo ${GIT_REFS[@]}|tr " " "|")"
+    echo "INFO: The following branches were found in $SOURCE_REMOTE: $(echo "${GIT_REFS[@]}"|tr " " "|")"
   else
     echo "INFO: No branches were found in $SOURCE_REMOTE"
   fi
 fi
 if [ $VERBOSITY -gt 1 ]; then
   if  [ -n "${GIT_SVN_TAGS[*]}" ]; then
-    echo "INFO: The following SVN tags were found in $SOURCE_REMOTE: $(echo ${GIT_SVN_TAGS[@]}|tr " " "|")"
+    echo "INFO: The following SVN tags were found in $SOURCE_REMOTE: $(echo "${GIT_SVN_TAGS[@]}"|tr " " "|")"
   else
     echo "INFO: No SVN tags were found in $SOURCE_REMOTE"
   fi
@@ -256,7 +256,7 @@ fi
 
 # push all branches (excluding filtered)
 for remote_ref in $GIT_REFS; do
-  remote_name=$(echo $remote_ref | sed -e "s/$SOURCE_REMOTE\///")
+  remote_name=$(echo "$remote_ref" | sed -e "s/$SOURCE_REMOTE\///")
 
   if [ "${ALL_REMOTES}" == "true" ]; then
     for r in $(get_remotes); do
@@ -267,7 +267,8 @@ for remote_ref in $GIT_REFS; do
         echo "Pushing $remote_name -> $r ..."
       fi
 
-      git push $GIT_EXTRA_ARGS $r $remote_ref:refs/heads/$remote_name
+      GIT_COMMAND="git push $GIT_EXTRA_ARGS $r $remote_ref:refs/heads/$remote_name"
+      ${GIT_COMMAND}
     done
   else
     if [ $VERBOSITY -gt 0 ]; then
@@ -277,7 +278,8 @@ for remote_ref in $GIT_REFS; do
       echo "Pushing $remote_name -> $TARGET_REMOTE ..."
     fi
 
-    git push $GIT_EXTRA_ARGS $TARGET_REMOTE $remote_ref:refs/heads/$remote_name
+    GIT_COMMAND="git push $GIT_EXTRA_ARGS $TARGET_REMOTE $remote_ref:refs/heads/$remote_name"
+    ${GIT_COMMAND}
   fi
 done
 
@@ -292,7 +294,7 @@ if [ "$CONVERT_SVN_TAGS" = "true" ] && [ -n "$GIT_SVN_TAGS" ]; then
   fi
   for svn_tag in $GIT_SVN_TAGS; do
     # get svn tag name
-    tag_name=$(echo $svn_tag | sed -e "s/$SOURCE_REMOTE\/tags\///")
+    tag_name=$(echo "$svn_tag" | sed -e "s/$SOURCE_REMOTE\/tags\///")
 
     if [ $VERBOSITY -gt 1 ]; then
       echo "Processing SVN tag: $tag_name ($svn_tag) ..."
@@ -306,13 +308,13 @@ if [ "$CONVERT_SVN_TAGS" = "true" ] && [ -n "$GIT_SVN_TAGS" ]; then
       else
         # convert the svn branch to a git tag
         # note: git-tag doesn't support --verbose or --dry-run
-        GIT_AUTHOR_NAME="$(git log -1 --pretty=format:%an $svn_tag)" \
-        GIT_AUTHOR_EMAIL="$(git log -1 --pretty=format:%ae $svn_tag)" \
-        GIT_AUTHOR_DATE="$(git log -1 --pretty=format:%ad $svn_tag)" \
-        GIT_COMMITTER_NAME="$(git log -1 --pretty=format:%cn $svn_tag)" \
-        GIT_COMMITTER_EMAIL="$(git log -1 --pretty=format:%ce $svn_tag)" \
-        GIT_COMMITTER_DATE="$(git log -1 --pretty=format:%cd $svn_tag)" \
-        git tag -a -m "$(git log -1 --pretty=format:%s%n%b $svn_tag)" $tag_name refs/remotes/origin/tags/$tag_name
+        GIT_AUTHOR_NAME="$(git log -1 --pretty=format:%an "$svn_tag")" \
+        GIT_AUTHOR_EMAIL="$(git log -1 --pretty=format:%ae "$svn_tag")" \
+        GIT_AUTHOR_DATE="$(git log -1 --pretty=format:%ad "$svn_tag")" \
+        GIT_COMMITTER_NAME="$(git log -1 --pretty=format:%cn "$svn_tag")" \
+        GIT_COMMITTER_EMAIL="$(git log -1 --pretty=format:%ce "$svn_tag")" \
+        GIT_COMMITTER_DATE="$(git log -1 --pretty=format:%cd "$svn_tag")" \
+        git tag -a -m "$(git log -1 --pretty=format:%s%n%b "$svn_tag")" "$tag_name" refs/remotes/origin/tags/"$tag_name"
       fi
     else
       # this is a dry run, just print a message if verbose enough
@@ -334,14 +336,16 @@ if [ "$SKIP_TAGS" != "true" ] && git show-ref --tags > /dev/null 2>&1; then
         echo "Pushing tags to remote '$r' ..."
       #fi
 
-      git push $GIT_EXTRA_ARGS $GIT_PRUNE $r +refs/tags/*:refs/tags/*
+      GIT_COMMAND="git push $GIT_EXTRA_ARGS $GIT_PRUNE $r"
+      ${GIT_COMMAND} +refs/tags/*:refs/tags/*
     done
   else
     if [ $VERBOSITY -gt 0 ]; then
       echo "Pushing tags to remote '$TARGET_REMOTE' ..."
     fi
 
-    git push $GIT_EXTRA_ARGS $GIT_PRUNE $TARGET_REMOTE +refs/tags/*:refs/tags/*
+    GIT_COMMAND="git push $GIT_EXTRA_ARGS $GIT_PRUNE $TARGET_REMOTE"
+    ${GIT_COMMAND} +refs/tags/*:refs/tags/*
   fi
 
   # todo: could filter through tags if we wanted to...
@@ -359,7 +363,7 @@ if [ -n "$GIT_PRUNE" ]; then
       fi
 
       # prune remote refs
-      git remote prune $r $GIT_DRY_RUN
+      git remote prune "$r" $GIT_DRY_RUN
     done
   else
     if [ $VERBOSITY -gt 0 ]; then
@@ -367,7 +371,7 @@ if [ -n "$GIT_PRUNE" ]; then
     fi
 
     # prune remote refs
-    git remote prune $TARGET_REMOTE $GIT_DRY_RUN
+    git remote prune "$TARGET_REMOTE" $GIT_DRY_RUN
   fi
 fi
 

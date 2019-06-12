@@ -24,12 +24,12 @@ if [ ! -e "$GIT_DIR" ]; then
   exit 1
 fi
 
-if ! $(git -C "$GIT_DIR" rev-parse); then
+if ! git -C "$GIT_DIR" rev-parse; then
   echo >&2 "Directory does not appear to be a valid Git repository: $DIR"
   exit 1
 fi
 
-pushd "$GIT_DIR" 2>&1 >/dev/null
+pushd "$GIT_DIR" /dev/null 2>&1
 
 echo "Authors for $GIT_DIR:"
 
@@ -39,6 +39,6 @@ git log --pretty=full \
   | sort \
   | uniq
 
-popd 2>&1 >/dev/null
+popd /dev/null 2>&1
 
 exit 0

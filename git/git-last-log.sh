@@ -10,8 +10,8 @@ LOG_COUNT=50
 
 # check if an argument was provided
 if [ $# -gt 0 ]; then
-  if [[ "$@" =~ ^-?[0-9]+$ ]]; then
-    LOG_COUNT=$@
+  if [[ "$*" =~ ^-?[0-9]+$ ]]; then
+    LOG_COUNT=$*
   else
     echo >&2 "ERROR: Argument must be a valid number."
     exit 1
@@ -33,25 +33,25 @@ DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 GIT_DIR=$(pwd)
 
-if [ "$(dirname $0)" = "$GIT_DIR" ]; then
+if [ "$(dirname "$0")" = "$GIT_DIR" ]; then
   echo >&2 "This script must be run from within a valid Git repository."
   exit 1
 fi
 
-if ! $(git -C "$GIT_DIR" rev-parse); then
+if ! git -C "$GIT_DIR" rev-parse; then
   echo >&2 "Directory does not appear to be a valid Git repository: $DIR"
   exit 1
 fi
 
-pushd "$GIT_DIR" 2>&1 >/dev/null
+pushd "$GIT_DIR" /dev/null 2>&1
 
 # git log -n $LOG_COUNT --format="%h %s"
-git log -n $LOG_COUNT \
+git log -n "$LOG_COUNT" \
         --graph \
         --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' \
         --abbrev-commit \
         --date=relative
 
-popd 2>&1 >/dev/null
+popd /dev/null 2>&1
 
 exit 0

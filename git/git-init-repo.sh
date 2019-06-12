@@ -21,7 +21,7 @@ pushd()
 
 popd()
 {
-  if [ $(dirs -p -v | wc -l) -gt 1 ]; then
+  if [ "$(dirs -p -v | wc -l)" -gt 1 ]; then
     command popd "$@" > /dev/null
   fi
 }
@@ -40,23 +40,23 @@ exit_script()
 
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
-    if [ $exit_code -eq 0 ]; then
-      echo "INFO: $@"
+    if [ "$exit_code" -eq 0 ]; then
+      echo "INFO: $*"
     else
-      echo "ERROR: $@" 1>&2
+      echo "ERROR: $*" 1>&2
     fi
   fi
 
   # Print 'aborting' string if exit code is not 0
-  [ $exit_code -ne 0 ] && echo "Aborting script..."
+  [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
-  exit $exit_code
+  exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     This script creates a new bare Git repository.
@@ -90,7 +90,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -115,7 +115,7 @@ test_path()
   # test directory argument
   local arg="$1"
 
-  test_arg $arg
+  test_arg "$arg"
 
   if [ -e "$arg" ]; then
     usage "Specified directory already exists."
@@ -128,7 +128,7 @@ test_user_arg()
   local arg="$1"
   local argv="$2"
 
-  test_arg $arg $argv
+  test_arg "$arg" "$argv"
 
   if [ -z "$argv" ]; then
     argv="$arg"
@@ -145,7 +145,7 @@ test_group_arg()
   local arg="$1"
   local argv="$2"
 
-  test_arg $arg $argv
+  test_arg "$arg" "$argv"
 
   if [ -z "$argv" ]; then
     argv="$arg"
@@ -164,7 +164,7 @@ test_owner_permission() {
   local needs_root="false"
 
   # default values if arguments not specified
-  if [ -z "$desired_used" ]; then
+  if [ -z "$desired_user" ]; then
     desired_user="$GIT_USER"
   fi
   if [ -z "$desired_group" ]; then
@@ -197,7 +197,7 @@ test_owner_permission() {
   if [ $VERBOSITY -gt 1 ]; then
     echo "Testing group permission..."
   fi
-  if ! groups $(whoami) | grep "\b$desired_group\b" &>/dev/null; then
+  if ! groups "$(whoami)" | grep "\b$desired_group\b" &>/dev/null; then
     if [ $VERBOSITY -gt 1 ]; then
       echo "WARNING: $(whoami) not a member of $desired_group; root permission required."
     fi
@@ -206,7 +206,7 @@ test_owner_permission() {
 
   # test path permissions
   if [ "$needs_root" != "true" ] && [ -n "$target_path" ] && [ -d "$target_path" ]; then
-    STAT_INFO=( $(stat -c "0%a %G %U" -L $target_path) )
+    STAT_INFO=( $(stat -c "0%a %G %U" -L "$target_path") )
     local path_perm=${STAT_INFO[0]}
     local path_group=${STAT_INFO[1]}
     local path_user=${STAT_INFO[2]}
@@ -215,19 +215,19 @@ test_owner_permission() {
       echo "INFO: Octal permissions for $target_path : $path_perm"
     fi
 
-    if ((($path_perm & 0020) != 0)); then
+    if (((path_perm & 0020) != 0)); then
       # Some group has write access.
       # test path group permission
       if [ $VERBOSITY -gt 1 ]; then
         echo "INFO: Checking if we are a member of path group $path_group ..."
       fi
-      if ! groups $(whoami) | grep "\b$path_group\b" &>/dev/null; then
+      if ! groups "$(whoami)" | grep "\b$path_group\b" &>/dev/null; then
         if [ $VERBOSITY -gt 1 ]; then
           echo "WARNING: $(whoami) not a member of $path_group; root permission required."
         fi
         needs_root="true"
       fi
-    elif ((($path_perm & 0200) != 0)); then
+    elif (((path_perm & 0200) != 0)); then
       # The owner has write access.
       # Does the user own the file?
       if [ $VERBOSITY -gt 1 ]; then
@@ -374,11 +374,11 @@ fi
 
 # print options
 if [ $VERBOSITY -gt 1 ]; then
-  printf "%-16s = %s\n" "GIT REPOSITORY" ${GIT_DIR}
-  printf "%-16s = %s\n" "DESIRED OWNER" ${GIT_USER}
-  printf "%-16s = %s\n" "DESIRED GROUP" ${GIT_GROUP}
-  printf "%-16s = %s\n" "GIT EXTRA ARGS" ${GIT_EXTRA_ARGS}
-  printf "%-16s = %s\n" "SCRIPT VERBOSITY" ${VERBOSITY}
+  printf "%-16s = %s\n" "GIT REPOSITORY" "${GIT_DIR}"
+  printf "%-16s = %s\n" "DESIRED OWNER" "${GIT_USER}"
+  printf "%-16s = %s\n" "DESIRED GROUP" "${GIT_GROUP}"
+  printf "%-16s = %s\n" "GIT EXTRA ARGS" "${GIT_EXTRA_ARGS}"
+  printf "%-16s = %s\n" "SCRIPT VERBOSITY" "${VERBOSITY}"
 fi
 
 # perform final checks
@@ -399,14 +399,15 @@ fi
 
 if [ "$DRY_RUN" = "true" ]; then
   # print out commands without running anything
-  echo mkdir $VERBOSE -p "$GIT_DIR"
-  echo git init --bare $GIT_EXTRA_ARGS "$GIT_DIR"
+  echo "mkdir $VERBOSE -p \"$GIT_DIR\""
+  echo "git init --bare $GIT_EXTRA_ARGS \"$GIT_DIR\""
 else
   # create directory
   mkdir $VERBOSE -p "$GIT_DIR"
 
   # init the repository
-  if ! git init --bare $GIT_EXTRA_ARGS "$GIT_DIR"; then
+  GIT_COMMAND="git init --bare $GIT_EXTRA_ARGS"
+  if ! ${GIT_COMMAND} "$GIT_DIR"; then
     exit_script 1 "Failed to init Git repository."
   fi
 fi
@@ -416,8 +417,8 @@ if [ -n "$GIT_HEAD" ]; then
     echo "Setting head to $GIT_HEAD ..."
   fi
   pushd "$GIT_DIR"
-  git symbolic-ref HEAD refs/heads/$GIT_HEAD
-  popd
+  git symbolic-ref HEAD refs/heads/"$GIT_HEAD"
+  popd "$@"
 fi
 
 if [ "$ALLOW_NONFF" = "true" ]; then
@@ -426,13 +427,13 @@ if [ "$ALLOW_NONFF" = "true" ]; then
   fi
   pushd "$GIT_DIR"
   git config receive.denynonfastforwards false
-  popd
+  popd "$@"
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
-  echo chown $VERBOSE -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
+  echo chown $VERBOSE -R "$GIT_USER":"$GIT_GROUP" "$GIT_DIR"
 else
-  chown $VERBOSE -R $GIT_USER:$GIT_GROUP "$GIT_DIR"
+  chown $VERBOSE -R "$GIT_USER":"$GIT_GROUP" "$GIT_DIR"
 fi
 
 # set file permissions
@@ -445,9 +446,9 @@ if [ "$MAKE_SHARED" = "true" ]; then
     echo "find $GIT_DIR/ -type d | xargs chmod $VERBOSE $SHARED_DIR_MASK"
     echo "find $GIT_DIR/ -type d | xargs chmod $VERBOSE g+s"
   else
-    find $GIT_DIR/ -type f -print0 | xargs -0 chmod $VERBOSE $SHARED_FILE_MASK
-    find $GIT_DIR/ -type d -print0 | xargs -0 chmod $VERBOSE $SHARED_DIR_MASK
-    find $GIT_DIR/ -type d -print0 | xargs -0 chmod $VERBOSE g+s
+    find "$GIT_DIR"/ -type f -print0 | xargs -0 chmod $VERBOSE $SHARED_FILE_MASK
+    find "$GIT_DIR"/ -type d -print0 | xargs -0 chmod $VERBOSE $SHARED_DIR_MASK
+    find "$GIT_DIR"/ -type d -print0 | xargs -0 chmod $VERBOSE g+s
   fi
 fi
 
