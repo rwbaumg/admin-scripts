@@ -5,4 +5,6 @@ hash dpkg 2>/dev/null || { echo >&2 "You need to install dpkg. Aborting."; exit 
 hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
 
 dpkg --get-selections > installed_packages.log
-apt-key exportall > repositories.keys
+apt-key exportall > repositories.keys 2>/dev/null
+
+exit 0
