@@ -15,23 +15,23 @@ exit_script()
 
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
-    if [ $exit_code -eq 0 ]; then
-      echo "INFO: $@"
+    if [ "$exit_code" -eq 0 ]; then
+      echo "INFO: $*"
     else
-      echo "ERROR: $@" 1>&2
+      echo "ERROR: $*" 1>&2
     fi
   fi
 
   # Print 'aborting' string if exit code is not 0
-  [ $exit_code -ne 0 ] && echo "Aborting script..."
+  [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
-  exit $exit_code
+  exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     This script watches a process and displayed used files using lsof.
@@ -52,7 +52,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -84,7 +84,7 @@ test_number()
   fi
 
   re='^[0-9]+$'
-  if ! [[ $argv =~ $re ]] ; then
+  if ! [[ "$argv" =~ $re ]] ; then
     usage "Argument must be numeric"
   fi
 }
@@ -94,9 +94,9 @@ test_pid()
   # test pid argument
   local arg="$1"
 
-  test_arg $arg
+  test_arg "$arg"
 
-  if ! ps -p $arg > /dev/null; then
+  if ! ps -p "$arg" > /dev/null; then
     usage "Specified PID not found."
   fi
 }
