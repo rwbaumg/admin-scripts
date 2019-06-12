@@ -37,23 +37,23 @@ exit_script()
 
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
-    if [ $exit_code -eq 0 ]; then
-      echo "INFO: $@"
+    if [ "$exit_code" -eq 0 ]; then
+      echo "INFO: $*"
     else
-      echo "ERROR: $@" 1>&2
+      echo "ERROR: $*" 1>&2
     fi
   fi
 
   # Print 'aborting' string if exit code is not 0
-  [ $exit_code -ne 0 ] && echo "Aborting script..."
+  [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
-  exit $exit_code
+  exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << "EOF"
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << "EOF"
     USAGE
 
     Edit a configuration settings across multiple files in a directory using grep.
@@ -84,7 +84,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -133,24 +133,24 @@ test_number_arg()
   fi
 
   re='^[0-9]+$'
-  if ! [[ $argv =~ $re ]] ; then
+  if ! [[ "$argv" =~ $re ]] ; then
     usage "Option for argument $arg must be numeric."
   fi
 }
 
-VERBOSE=""
 VERBOSITY=0
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOSE="-v"
-  fi
-}
+#VERBOSE=""
+#check_verbose()
+#{
+#  if [ $VERBOSITY -gt 1 ]; then
+#    VERBOSE="-v"
+#  fi
+#}
 
+#argc=$#
 [ $# -gt 0 ] || usage
 
 i=1
-argc=$#
 TARGET=""
 TARGET_DIR=""
 GREP_RECURSIVE="false"
@@ -180,7 +180,7 @@ while [ $# -gt 0 ]; do
     ;;
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       i=$((i+1))
       shift
     ;;
@@ -204,9 +204,9 @@ while [ $# -gt 0 ]; do
         usage "Cannot specify multiple search locations."
       fi
       test_path_arg "$1"
-      TARGET="$(basename $1)"
+      TARGET="$(basename "$1")"
       if [ ! -d "${1}" ]; then
-        TARGET_DIR="$(dirname $1)"
+        TARGET_DIR="$(dirname "$1")"
       else
         TARGET_DIR="${1}"
       fi
@@ -232,7 +232,7 @@ if [ -z "${TARGET_STRING}" ]; then
   usage "Must specify a target string to search for."
 fi
 if [ -z "${CONTEXT_REGEX}" ]; then
-  if [ ${CONTEXT_LINES} -eq ${DEFAULT_CTX_LINES} ]; then
+  if [ "${CONTEXT_LINES}" -eq ${DEFAULT_CTX_LINES} ]; then
     CONTEXT_LINES=1
   fi
   GREP_CTX_OPTS=""
@@ -246,7 +246,7 @@ fi
 pushd "${TARGET_DIR}" > /dev/null 2>&1
 
 GREP_COMMAND="grep ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} ${CONTEXT_REGEX} ${GREP_LOCATION} -A${CONTEXT_LINES}"
-GREP_RESULTS=$(grep ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} ${CONTEXT_REGEX} ${GREP_LOCATION} -A${CONTEXT_LINES})
+GREP_RESULTS=$(${GREP_COMMAND})
 if [ -n "${TARGET}" ] && [ ! -d "${TARGET}" ]; then
   GREP_COMMAND="${GREP_COMMAND} | grep \"${TARGET}\""
   GREP_RESULTS=$(echo "${GREP_RESULTS}" | grep "${TARGET}")
@@ -259,7 +259,7 @@ if [ $VERBOSITY -gt 0 ]; then
   echo "Grep command  : ${GREP_COMMAND}"
 fi
 
-IFS=$'\n'; for l in $(echo "${GREP_RESULTS}" | grep ${TARGET_STRING} \
+IFS=$'\n'; for l in $(echo "${GREP_RESULTS}" | grep "${TARGET_STRING}" \
   | grep -v -P "(\-|\:)[0-9]+(\-|\:)([\s]+)?\#" \
   | sed -r "s/\-([0-9]+)\-${TARGET_STRING}/\:\1\:${TARGET_STRING}/" \
   | awk -F: '{ printf "+%s %s\n", $2, $1 }'); do ${PRE_CMD} bash -c "${EDIT_COMMAND} ${l}"; done

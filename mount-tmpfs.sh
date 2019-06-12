@@ -18,23 +18,23 @@ exit_script()
 
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
-    if [ $exit_code -eq 0 ]; then
-      echo >&2 "INFO: $@"
+    if [ "$exit_code" -eq 0 ]; then
+      echo >&2 "INFO: $*"
     else
-      echo "ERROR: $@" 1>&2
+      echo "ERROR: $*" 1>&2
     fi
   fi
 
   # Print 'aborting' string if exit code is not 0
-  [ $exit_code -ne 0 ] && echo >&2 "Aborting script..."
+  [ "$exit_code" -ne 0 ] && echo >&2 "Aborting script..."
 
-  exit $exit_code
+  exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" -e "s|DEFAULT_SIZE|${SIZE_MB}|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" -e "s|DEFAULT_SIZE|${SIZE_MB}|" << EOF
     USAGE
 
     Mount temporary storage to the specified location.
@@ -50,13 +50,14 @@ usage()
 
      -s, --size <mb>       The desired size (in megabytes).
                            Defaults to DEFAULT_SIZEMB.
+     -r, --random          Create and use a random mountpoint folder.
 
      -v, --verbose         Make the script more verbose.
      -h, --help            Prints this usage.
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -81,14 +82,14 @@ test_path()
   # test directory argument
   local arg="$1"
 
-  test_arg $arg
+  test_arg "$arg"
 
   if [ ! -d "$arg" ]; then
     usage "Specified directory does not exist."
   fi
 
   if find "$arg" -mindepth 1 -print -quit 2>/dev/null | grep -q .; then
-    usage "The directory '$(readlink -m $arg)' is not empty."
+    usage "The directory '$(readlink -m "$arg")' is not empty."
   fi
 }
 
@@ -104,11 +105,11 @@ test_number_arg()
   fi
 
   re='^[0-9]+$'
-  if ! [[ $argv =~ $re ]]; then
+  if ! [[ "$argv" =~ $re ]]; then
     usage "Value is not a valid number: '$argv'."
   fi
 
-  if ! [ $argv -gt 0 ]; then
+  if ! [ "$argv" -gt 0 ]; then
     usage "The specified value is less than the minimum (1)."
   fi
 }
@@ -124,6 +125,13 @@ while [ $# -gt 0 ]; do
       test_number_arg "$1" "$2"
       shift
       SIZE_MB=$1
+      shift
+    ;;
+    -r|--random)
+      if [ -n "${MOUNTPOINT}" ]; then
+        usage "Cannot specify a mount-point while using --random."
+      fi
+      MOUNTPOINT="$(mktemp -d --tmpdir tmpfs.$$.XXXXXXXXXX)"
       shift
     ;;
     -v|--verbose)
@@ -144,6 +152,10 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+if [ -z "${MOUNTPOINT}" ]; then
+  usage "No mountpoint was specified."
+fi
+
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root." >&2
@@ -151,7 +163,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 FREE_RAM=$(awk '/MemFree/ { printf "%i\n", $2/1024 }' /proc/meminfo)
-SAFE_SIZE=$((${FREE_RAM}-$((${FREE_RAM}/10))))
+SAFE_SIZE=$((FREE_RAM-(FREE_RAM/10)))
 
 if [ $VERBOSITY -gt 0 ]; then
   echo "Mountpoint : ${MOUNTPOINT}"
@@ -164,7 +176,7 @@ fi
 #if [ ${FREE_RAM} -lt 500 ]; then
 #  exit_script 1 "Not enough available memory (free memory: ${FREE_RAM}m)."
 #fi
-if [ ${SIZE_MB} -gt ${SAFE_SIZE} ]; then
+if [ "${SIZE_MB}" -gt ${SAFE_SIZE} ]; then
   usage "The requested size (${SIZE_MB}m) is too large for the available memory (${SAFE_SIZE}m)."
 fi
 
@@ -175,7 +187,7 @@ if [ $VERBOSITY -gt 0 ]; then
   MOUNT_EXTRA_ARGS="-v"
 fi
 
-if ! mount ${MOUNT_EXTRA_ARGS} -t tmpfs tmpfs ${MOUNTPOINT} -o size=${SIZE_MB}m; then
+if ! mount ${MOUNT_EXTRA_ARGS} -t tmpfs tmpfs "${MOUNTPOINT}" -o size="${SIZE_MB}m"; then
   exit_script 1 "Failed to mount tmpfs storage."
 fi
 

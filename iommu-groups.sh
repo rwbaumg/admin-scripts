@@ -9,12 +9,12 @@ LOGFILE=/var/log/kern.log
 #    lspci -nns "${d##*/}"
 #done;
 
-IOMMU_GROUPS=$(cat $LOGFILE | grep iommu | grep group | awk '{print $14}' | uniq)
+IOMMU_GROUPS=$(grep iommu "${LOGFILE}" | grep group | awk '{print $14}' | uniq)
 
 for d in $IOMMU_GROUPS; do
-  GROUP_DEVS=$(cat $LOGFILE | grep iommu | grep "group $d" | awk '{print $11}' | uniq)
+  GROUP_DEVS=$(grep iommu "${LOGFILE}" | grep "group $d" | awk '{print $11}' | uniq)
   for gd in $GROUP_DEVS; do
-    DESCR=$(lspci -nn -s $gd)
+    DESCR=$(lspci -nn -s "$gd")
     echo "group $d device $DESCR"
   done
 done;

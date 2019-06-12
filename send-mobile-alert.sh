@@ -57,23 +57,23 @@ exit_script()
     re='[[:alnum:]]'
     if echo "$@" | grep -iqE "$re"; then
         echo
-        if [ $exit_code -eq 0 ]; then
-            echo "INFO: $@"
+        if [ "$exit_code" -eq 0 ]; then
+            echo "INFO: $*"
         else
-            echo "ERROR: $@" 1>&2
+            echo "ERROR: $*" 1>&2
         fi
     fi
 
     # Print 'aborting' string if exit code is not 0
-    [ $exit_code -ne 0 ] && echo "Aborting script..."
+    [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
-    exit $exit_code
+    exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" \
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" \
                        -e "s|MMS_GATEWAY|$MMS_GATEWAY|" \
                        -e "s|TXT_GATEWAY|$TXT_GATEWAY|" \
                        -e "s|SMTP_SERVER|$SMTP_SERVER|" \
@@ -107,7 +107,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$@"
 }
 
 test_arg()
@@ -180,7 +180,7 @@ case "$1" in
         # before trying to send (the MMS gateway will just scrub the
         # attachment otherwise)
         filesize=$(du -k "$ATTACHMENT" | cut -f 1)
-        if [ $filesize -ge $ATTACHMENT_MAX_SIZE ]; then
+        if [ "$filesize" -ge $ATTACHMENT_MAX_SIZE ]; then
           if [ $VERBOSITY -gt 0 ]; then
             echo >&2 "WARNING: Specified attachment is too large"
           fi
@@ -191,10 +191,13 @@ case "$1" in
             fi
 
             # calculate required bitrate to compress video to supported size
+            # for example, if the max. size is 1MB, then the total number of bits
+            # in the file must not exceed 1048576. this simply divides the length
+            # of the video (in seconds) by the total allowed bits to calculate
+            # the target bitrate in bits/second.
             duration=$($FFMPEG_BIN -i "$ATTACHMENT" 2>&1 | grep Duration | cut -d ' ' -f 4 | cut -d '.' -f 1)
             len_s=$(date +'%s' -d "$duration")
-            bitrate=$(((($ATTACHMENT_MAX_SIZE / 1024) * 1024 * 1024) / len_s * 8))
-            # bitrate=$(((($ATTACHMENT_MAX_SIZE * 1024) / len_s) * 8))
+            bitrate=$((((ATTACHMENT_MAX_SIZE / 1024) * 1024 * 1024) / len_s))
             if [ $VERBOSITY -gt 0 ]; then
               echo "Calculated a required birate of $bitrate for video length of $len_s second(s)."
             fi
@@ -312,3 +315,5 @@ else
   -S smtp-use-starttls \
   "$MOBILE@$TXT_GATEWAY"
 fi
+
+exit_script 0
