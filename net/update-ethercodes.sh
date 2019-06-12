@@ -17,7 +17,7 @@ grep '(base 16)' oui.txt | cut -f1 -d' ' > mac.address
 
 # Parse the address data for arpwatch
 perl -pe 's/^(([^0].)|0(.))(([^0].)|0(.))(([^0].)|0(.))/\2\3:\5\6:\8\9/' mac.address > tmp.address
-tr "[A-Z]" "[a-z]" < tmp.address > mac.address
+tr "A-Z" "a-z" < tmp.address > mac.address
 
 # Paste the parsed data into the arpwatch file
 paste mac.address mac.manufacturer > ethercodes.dat
