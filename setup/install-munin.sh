@@ -52,7 +52,7 @@ APT_ARG="--verbose-versions --yes"
 ETCKEEPER_COMMIT="true"
 
 # Update the signing key regardless of whether or not its installed
-UPDATE_KEY="false"
+#UPDATE_KEY="false"
 
 # Uncomment to run script when the package is already installed
 #FORCE_INSTALL="true"
@@ -177,7 +177,7 @@ check_etckeeper()
     if git -C "/etc" rev-parse > /dev/null 2>&1; then
       # check /etc/apt for modifications
       # if there are changes, commit them
-      if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/${PKG_NAME}|grep '^(M| M)')" != "" ]]; then
+      if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/"${PKG_NAME}"|grep '^(M| M)')" != "" ]]; then
         if [ "${ETCKEEPER_COMMIT}" != "true" ]; then
           echo >&2 "WARNING: Uncommitted changes under version control: /etc/apt"
           echo >&2 "WARNING: You may want to enable automatic handling with --enable-etckeeper"

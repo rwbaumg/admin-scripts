@@ -106,7 +106,7 @@ sudo update-alternatives --verbose --install /usr/local/bin/gpg gnupg /usr/bin/g
 
 if [ ! -e "$HOME/.ssh/config" ]; then
   echo "Installing example .ssh/config ..."
-  echo "${USER_SSH_CFG}" > $HOME/.ssh/config
+  echo "${USER_SSH_CFG}" > "$HOME/.ssh/config"
 fi
 
 echo "Installing base configuration /etc/ssh/sshd_config ..."
@@ -133,7 +133,7 @@ if [ -e "/etc/rsyslog.d/" ]; then
   fi
 
   if [ ! -e "/etc/logrotate.d/sshdusers" ]; then
-    if ! sudo bash -c 'echo "${LOGROTATE_CFG}" > /etc/logrotate.d/sshdusers'; then
+    if ! sudo bash -c "echo ${LOGROTATE_CFG} > /etc/logrotate.d/sshdusers"; then
       echo >&2 "WARNING: Failed to install logrotate configuration for sshdusers logging."
     fi
   else

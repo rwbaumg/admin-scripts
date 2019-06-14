@@ -8,11 +8,11 @@
 set -e  # Fail on first error
 
 # Useful global variables that users may wish to reference
-SCRIPT_ARGS="$@"
-SCRIPT_NAME="$0"
-SCRIPT_NAME="${SCRIPT_NAME#\./}"
-SCRIPT_NAME="${SCRIPT_NAME##/*/}"
-SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
+export SCRIPT_ARGS="$*"
+export SCRIPT_NAME="$0"
+export SCRIPT_NAME="${SCRIPT_NAME#\./}"
+export SCRIPT_NAME="${SCRIPT_NAME##/*/}"
+export SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
 
 # This should probably be the right way - didn't have time to experiment though
 # declare -r INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
@@ -122,16 +122,16 @@ log_campfire() {
     {
         \"message\": {
             \"type\":\"TextMessage\",
-            \"body\":\"$@\"
+            \"body\":\"$*\"
         }
     }"
 
     curl                                                            \
         --write-out "\r\n"                                          \
-        --user ${CAMPFIRE_API_AUTH_TOKEN}:X                         \
+        --user "${CAMPFIRE_API_AUTH_TOKEN}:X"                       \
         --header 'Content-Type: application/json'                   \
         --data "${campfire_message}"                                \
-        ${CAMPFIRE_NOTIFICATION_URL}
+        "${CAMPFIRE_NOTIFICATION_URL}"
 
     return $?;
 }

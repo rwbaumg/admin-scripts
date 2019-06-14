@@ -17,12 +17,12 @@ fi
 
 USB_DEVICE="$1"
 
-if [ ! -e /sys/bus/pci/drivers/$USB_DRIVER/$USB_DEVICE ]; then
+if [ ! -e "/sys/bus/pci/drivers/$USB_DRIVER/$USB_DEVICE" ]; then
   echo "The specified USB device could not be found." >&2
   exit 1
 fi
 
-echo Resetting USB device /sys/bus/pci/drivers/$USB_DRIVER/$USB_DEVICE ...
+echo "Resetting USB device /sys/bus/pci/drivers/$USB_DRIVER/$USB_DEVICE ..."
 
-echo -n $USB_DEVICE | tee /sys/bus/pci/drivers/$USB_DRIVER/unbind
-echo -n $USD_DEVICE | tee /sys/bus/pci/drivers/$USB_DRIVER/bind
+echo -n "$USB_DEVICE" | tee "/sys/bus/pci/drivers/$USB_DRIVER/unbind"
+echo -n "$USD_DEVICE" | tee "/sys/bus/pci/drivers/$USB_DRIVER/bind"

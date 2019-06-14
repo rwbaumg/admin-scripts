@@ -13,14 +13,14 @@ DSA_BITS=1024
 COMMENT=""
 
 # Colors
-ESC_SEQ="\x1b["
-COL_RESET=$ESC_SEQ"39;49;00m"
-COL_RED=$ESC_SEQ"31;01m"
-COL_GREEN=$ESC_SEQ"32;01m"
-COL_YELLOW=$ESC_SEQ"33;01m"
-COL_BLUE=$ESC_SEQ"34;01m"
-COL_MAGENTA=$ESC_SEQ"35;01m"
-COL_CYAN=$ESC_SEQ"36;01m"
+export ESC_SEQ="\x1b["
+export COL_RESET=$ESC_SEQ"39;49;00m"
+export COL_RED=$ESC_SEQ"31;01m"
+export COL_GREEN=$ESC_SEQ"32;01m"
+export COL_YELLOW=$ESC_SEQ"33;01m"
+export COL_BLUE=$ESC_SEQ"34;01m"
+export COL_MAGENTA=$ESC_SEQ"35;01m"
+export COL_CYAN=$ESC_SEQ"36;01m"
 
 printf "$COL_GREEN%s$COL_RESET\n" "First-time key generation for SSH daemon"
 printf "$COL_CYAN%s$COL_RESET\n" "NOTE: This will not replace existing keys!"

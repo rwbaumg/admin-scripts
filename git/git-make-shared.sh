@@ -333,7 +333,7 @@ fi
 if [ "$DRY_RUN" = "true" ]; then
   echo "chown -R $VERBOSE $GIT_USER:$GIT_GROUP ."
 else
-  chown -R $VERBOSE "$GIT_USER":"$GIT_GROUP" .
+  chown -R $VERBOSE "$GIT_USER:$GIT_GROUP" .
 fi
 
 if [ "$DRY_RUN" = "true" ]; then

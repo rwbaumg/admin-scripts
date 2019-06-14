@@ -12,11 +12,11 @@ if [[ -z "$1" ]]; then
   exit 1
 fi
 
-TZ_NAME=$(cat $ZONE_TAB | grep -i "$1" | awk '{print $3}')
+TZ_NAME=$(grep -i "$1" "$ZONE_TAB" | awk '{print $3}')
 if [[ -z "$TZ_NAME" ]]; then
   echo "ERROR: Failed to find timezone for '$1'" >&2
   exit 1
 fi
 
-echo $TZ_NAME | sudo tee /etc/timezone
+echo "$TZ_NAME" | sudo tee /etc/timezone
 sudo dpkg-reconfigure --frontend noninteractive tzdata

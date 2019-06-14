@@ -323,6 +323,6 @@ include "@PKGDATADIR@/*.nanorc"
 #set multibuffer
 EOF
 
-echo "${NANORC}" > ${HOME}/.nanorc
+echo "${NANORC}" > "${HOME}/.nanorc"
 echo "Installed ${HOME}/.nanorc for current user $USER."
 exit 0

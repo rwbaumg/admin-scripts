@@ -30,7 +30,7 @@ fi
 hash curl 2>/dev/null || { echo >&2 "You need to install curl. Aborting."; exit 1; }
 
 # Check for configured image command
-hash ${IMG_CMD} 2>/dev/null || { echo >&2 "You need to install ${IMG_CMD}. Aborting."; exit 1; }
+hash "${IMG_CMD}" 2>/dev/null || { echo >&2 "You need to install ${IMG_CMD}. Aborting."; exit 1; }
 
 TOP_URL=$(curl ${WALLPAPER_RSS_URL} \
             | grep -Eo 'https:[^&]+(jpg|jpeg|png)' \
@@ -47,7 +47,7 @@ echo "Current top-rated wallpaper: ${TOP_URL}"
 
 if [ -n "${IMG_CMD}${CMD_ARGS}" ]; then
   echo "Image processing command: ${IMG_CMD} ${CMD_ARGS}"
-  echo ${TOP_URL} | xargs ${IMG_CMD} ${CMD_ARG}
+  echo "${TOP_URL}" | xargs "${IMG_CMD}" "${CMD_ARG}"
   exit $?
 fi
 

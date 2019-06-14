@@ -431,9 +431,9 @@ if [ "$ALLOW_NONFF" = "true" ]; then
 fi
 
 if [ "$DRY_RUN" = "true" ]; then
-  echo chown $VERBOSE -R "$GIT_USER":"$GIT_GROUP" "$GIT_DIR"
+  echo chown $VERBOSE -R "$GIT_USER:$GIT_GROUP" "$GIT_DIR"
 else
-  chown $VERBOSE -R "$GIT_USER":"$GIT_GROUP" "$GIT_DIR"
+  chown $VERBOSE -R "$GIT_USER:$GIT_GROUP" "$GIT_DIR"
 fi
 
 # set file permissions

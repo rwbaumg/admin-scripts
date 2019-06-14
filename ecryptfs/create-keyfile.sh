@@ -2,12 +2,12 @@
 # creates a new keyfile
 
 # Load configuration
-CONFIG=$(dirname $0)/config.sh
+CONFIG=$(dirname "$0")/config.sh
 if ! [ -e "${CONFIG}" ]; then
   echo >&2 "ERROR: Missing configuration file '${CONFIG}'."
   exit 1
 fi
-source ${CONFIG}
+source "${CONFIG}"
 
 if [ -e "${KEYFILE}" ]; then
   echo >&2 "ERROR: Key file '${KEYFILE}' already exists."

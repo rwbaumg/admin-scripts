@@ -48,7 +48,7 @@ echo "$(tput setaf 3)Waiting for report...$(tput sgr0)"
 while true; do
   response=$(curl -X POST 'https://www.virustotal.com/vtapi/v2/file/report' --form apikey=$API_KEY --form resource="$vt_hash" 2>/dev/null)
 
-  if [ "$(echo -n "$response"|grep -o '"response_code": 1'| wc -l)" -eq 1 ]; then
+  if [ "$(echo -n "$response"|grep -co '"response_code": 1')" -eq 1 ]; then
     # scan finished; display report
     echo "$(tput setaf 2)Displaying report...$(tput sgr0)"
 

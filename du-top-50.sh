@@ -23,7 +23,7 @@ fi
 trap cleanup EXIT INT TERM
 cleanup() {
   if [ -n "$SCRIPT_PID" ]; then
-    kill $SCRIPT_PID
+    kill "$SCRIPT_PID"
   fi
   exit $?
 }
@@ -32,19 +32,16 @@ run_spinner()
 {
   local msg="$1"
   local delay=0.5
-  local i=1;
   local SP='\|/-';
   while [ "$SPIN" == "true" ]
   do
-    printf "\b\r[${SP:i++%${#SP}:1}] $msg"
+    printf "\b\r[%s] %s" "${SP:i++%${#SP}:1}" "${msg}"
     sleep $delay;
   done
 }
 
 start_spinner()
 {
-  local arg="$1"
-
   SPIN="true"
   run_spinner "$1" &
   SCRIPT_PID=$!
@@ -71,10 +68,10 @@ fi
 
 pushd "${INPUT_PATH}" > /dev/null 2>&1
 
-OUTPUT=$((du -shx ./.[^.]* 2>/dev/null ; du -shx ./[^.]* 2>/dev/null) \
-           | sed "s/\.\//${INPUT_PATH_ESCAPED}\//g" \
-           | LC_ALL=C sort -k2 | sort -rh \
-           | head -50)
+RAW=$(du -shx ./.[^.]* 2>/dev/null ; du -shx ./[^.]* 2>/dev/null)
+OUTPUT=$(echo "${RAW}" | sed "s/\.\//${INPUT_PATH_ESCAPED}\//g" \
+                       | LC_ALL=C sort -k2 | sort -rh \
+                       | head -50)
 
 popd > /dev/null 2>&1
 
