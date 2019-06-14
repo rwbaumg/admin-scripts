@@ -6,6 +6,13 @@
 
 hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
 
-sudo apt-get $@ update && \
-sudo apt-get $@ dist-upgrade && \
-sudo apt-get $@ autoremove
+BASE_COMMAND="sudo apt-get $*"
+
+if ! ${BASE_COMMAND} update && \
+     ${BASE_COMMAND} dist-upgrade && \
+     ${BASE_COMMAND} autoremove; then
+  echo >&2 "ERROR: System update failed."
+  exit 1
+fi
+
+exit 0
