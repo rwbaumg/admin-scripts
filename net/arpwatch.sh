@@ -12,7 +12,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # check for arpwatch database
-if ! ls ${ARP_DB} 1> /dev/null 2>&1; then
+if ! ls "${ARP_DB}" 1> /dev/null 2>&1; then
   echo >&2 "ERROR: Could not find arpwatch database(s) '${ARP_DB}'."
   exit 1
 fi
@@ -27,6 +27,8 @@ fi
 #done
 
 # Get list of IP addresses in arpwatch database
-cat ${ARP_DB} | awk -F'\t' '{printf "%-18s %-20s %s\n", $2, $1, $4}' | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq
+awk -F'\t' '{printf "%-18s %-20s %s\n", $2, $1, $4}' "${ARP_DB}" \
+  | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 \
+  | uniq
 
 exit $?

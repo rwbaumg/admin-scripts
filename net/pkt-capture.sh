@@ -18,4 +18,4 @@ else
 fi
 
 echo "Capturing $1 to '$OUTPUT' ..."
-tcpdump $OPTS -w "$OUTPUT" -i $1
+tcpdump "$OPTS" -w "$OUTPUT" -i "$1"

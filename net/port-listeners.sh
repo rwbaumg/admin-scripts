@@ -4,6 +4,9 @@
 # get the port number
 port=$1
 
+# configure headers
+no_headers=0
+
 # check for required arguments
 if [[ -z "$1" ]]; then
   echo "Usage: $0 <port>" >&2
@@ -30,6 +33,10 @@ if [[ -z "$pid" ]]; then
   exit 1
 fi
 
-ps -eo user,pid,command --sort=pid | grep -e "$pid" -e "USER" | grep --invert-match grep
+if [ "${no_headers}" -eq 1 ]; then
+  ps -o user,pid,command --sort=pid --pid "${pid//$'\n'/ }" --no-headers
+else
+  ps -o user,pid,command --sort=pid --pid "${pid//$'\n'/ }"
+fi
 
 exit 0

@@ -10,4 +10,4 @@ if [[ -z "$1" ]]; then
 fi
 
 # note: compression is enabled using -C
-yes | pv | ssh -C $1 "cat > /dev/null"
+yes | pv | ssh -C "$1" "cat > /dev/null"

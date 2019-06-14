@@ -12,7 +12,7 @@ auth_key=""
 log_file=""
 record_name=""
 zone_name=""
-config_file=$(dirname $0)/cf.cfg
+config_file=$(dirname "$0")/cf.cfg
 
 if [ -e "$config_file" ]; then
   source "$config_file"
@@ -70,7 +70,7 @@ exit_script()
 
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
-    if [ $exit_code -eq 0 ]; then
+    if [ "$exit_code" -eq 0 ]; then
       echo "INFO: $*"
       log "$*"
     else
@@ -80,7 +80,7 @@ exit_script()
   fi
 
   # Print 'aborting' string if exit code is not 0
-  if [ $exit_code -ne 0 ]; then
+  if [ "$exit_code" -ne 0 ]; then
     message="Aborting script..."
     echo "$message"
     log "$message"
@@ -88,13 +88,13 @@ exit_script()
     log "Script completed successfully."
   fi
 
-  exit $exit_code
+  exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     Update a CloudFlare DNS record using v4 API
@@ -124,7 +124,7 @@ usage()
 
 EOF
 
-    exit_script $*
+    exit_script "$@"
 }
 
 test_arg()
@@ -158,7 +158,7 @@ test_ip_arg()
 
 check_verbose()
 {
-  if [ $VERBOSITY -gt 2 ]; then
+  if [ "$VERBOSITY" -gt 2 ]; then
     VERBOSE="-v"
   fi
 }
@@ -258,7 +258,7 @@ if [ -z "$record_name" ]; then
   usage "No record specified."
 fi
 if [ -z "$zone_name" ]; then
-  zone_name=$(echo $record_name | grep -o '[^.]*\.[^.]*$')
+  zone_name=$(echo "$record_name" | grep -o '[^.]*\.[^.]*$')
 fi
 
 if [ -z "$auth_email" ]; then
@@ -278,14 +278,14 @@ log "Updating DNS record for $record_name ..."
 
 # print options
 if [ $VERBOSITY -gt 0 ]; then
-  printf "%-16s = %s\n" "AUTH. E-MAIL" ${auth_email}
-  printf "%-16s = %s\n" "AUTH. KEY" ${auth_key}
-  printf "%-16s = %s\n" "ZONE NAME" ${zone_name}
-  printf "%-16s = %s\n" "RECORD NAME" ${record_name}
+  printf "%-16s = %s\n" "AUTH. E-MAIL" "${auth_email}"
+  printf "%-16s = %s\n" "AUTH. KEY" "${auth_key}"
+  printf "%-16s = %s\n" "ZONE NAME" "${zone_name}"
+  printf "%-16s = %s\n" "RECORD NAME" "${record_name}"
 fi
 
 # get current A record IP
-registered_ip=$(dig +short $record_name @$wan_dns)
+registered_ip=$(dig +short "$record_name" @$wan_dns)
 if ! valid_ip "$registered_ip"; then
   exit_script 1 "Failed to resolve IP for $record_name"
 fi
@@ -307,8 +307,8 @@ if [ -z "$requested_ip" ]; then
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
-  printf "%-16s = %s\n" "REQUESTED IP" ${requested_ip}
-  printf "%-16s = %s\n" "REGISTERED IP" ${registered_ip}
+  printf "%-16s = %s\n" "REQUESTED IP" "${requested_ip}"
+  printf "%-16s = %s\n" "REGISTERED IP" "${registered_ip}"
 fi
 
 if [ "$FORCE_UPDATE" != "true" ] && [ "$requested_ip" == "$registered_ip" ]; then
@@ -326,8 +326,8 @@ if [ -z "$record_identifier" ]; then
 fi
 
 if [ $VERBOSITY -gt 1 ]; then
-  printf "%-16s = %s\n" "ZONE ID" ${zone_identifier}
-  printf "%-16s = %s\n" "RECORD ID" ${record_identifier}
+  printf "%-16s = %s\n" "ZONE ID" "${zone_identifier}"
+  printf "%-16s = %s\n" "RECORD ID" "${record_identifier}"
 fi
 
 update=$(curl $VERBOSE -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records/$record_identifier" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json" --data "{\"id\":\"$zone_identifier\",\"type\":\"A\",\"name\":\"$record_name\",\"content\":\"$requested_ip\"}")

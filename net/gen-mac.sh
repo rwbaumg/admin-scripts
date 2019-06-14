@@ -16,7 +16,7 @@ exit_script()
 
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
-    if [ $exit_code -eq 0 ]; then
+    if [ "$exit_code" -eq 0 ]; then
       echo "INFO: $*"
     else
       echo "ERROR: $*" 1>&2
@@ -24,15 +24,15 @@ exit_script()
   fi
 
   # Print 'aborting' string if exit code is not 0
-  [ $exit_code -ne 0 ] && echo "Aborting script..."
+  [ "$exit_code" -ne 0 ] && echo "Aborting script..."
 
-  exit $exit_code
+  exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     Generates either a random or deterministic MAC address.
@@ -59,7 +59,7 @@ usage()
 
 EOF
 
-    exit_script $*
+    exit_script "$@"
 }
 
 test_arg()
@@ -90,7 +90,7 @@ test_prefix()
   fi
 
   re='^([0-9a-f][0-9a-f])$'
-  if ! $(echo "$1" | grep -q -P "$re"); then
+  if ! echo "$1" | grep -q -P "$re"; then
     usage "Invalid prefix: $arg"
   fi
 
@@ -100,19 +100,19 @@ test_prefix()
   fi
 }
 
-VERBOSE=""
 VERBOSITY=0
 
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOSE="-v"
-  fi
-}
+#VERBOSE=""
+#check_verbose()
+#{
+#  if [ $VERBOSITY -gt 1 ]; then
+#    VERBOSE="-v"
+#  fi
+#}
 
 PREFIX="88"
-FQDN=""
 RNDSEED="false"
+# FQDN=""
 
 # process arguments
 [ $# -gt 0 ] || usage
@@ -139,7 +139,7 @@ while [ $# -gt 0 ]; do
     ;;
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -h|--help)
@@ -175,6 +175,6 @@ fi
 
 MACADDR=$(echo "$SEED"|sha1sum|sed "s/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/${PREFIX}:\1:\2:\3:\4:\5/")
 
-echo $MACADDR
+echo "$MACADDR"
 
 exit_script 0

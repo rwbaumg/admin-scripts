@@ -33,8 +33,8 @@ function valid_ip()
     return $stat
 }
 
-if valid_ip $REMOTE_IP; then
-  $CURL_BIN ipinfo.io/$REMOTE_IP/json
+if valid_ip "$REMOTE_IP"; then
+  $CURL_BIN "ipinfo.io/$REMOTE_IP/json"
 else
   echo "Invalid IP: $REMOTE_IP"
   exit 1

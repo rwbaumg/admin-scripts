@@ -23,7 +23,7 @@ ISUP_REGEX="^200$"
 CURL_REQUEST="GET"
 
 # perform the request
-RESPONSE=$(curl -s --head --request GET ${TARGET_URL})
+RESPONSE=$(curl -s --head --request "${CURL_REQUEST}" "${TARGET_URL}")
 RESPONSE_CODE=$(echo -n "${RESPONSE}" | grep -Po '^(?:HTTP/[012\.]+\s)[0-9]+\s' | awk '{ print $2 }')
 
 echo "Test website  : ${TARGET_URL}"

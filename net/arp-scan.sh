@@ -40,9 +40,9 @@ fi
 
 # get the interface for scanning
 IFACE_HOST="0x19e.net"
-IFACE_NAME=$(ip -4 route get $(getent ahosts $IFACE_HOST | awk '{ print $1; exit}') | grep -Po '(?<=dev )(\S+)')
+IFACE_NAME=$(ip -4 route get "$(getent ahosts $IFACE_HOST | awk '{ print $1; exit}')" | grep -Po '(?<=dev )(\S+)')
 
 # perform the scan
-arp-scan -l --interface $IFACE_NAME
+arp-scan -l --interface "$IFACE_NAME"
 
 exit 0

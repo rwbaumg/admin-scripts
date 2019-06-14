@@ -26,7 +26,7 @@ IPTABLES_ACTION="DROP"
 
 # set the lock file. this file will be removed after the block is lifted.
 LOCKDIR=/tmp
-LOCKFILE="$LOCKDIR"/dos-"$REMOTE_IP"
+LOCKFILE="$LOCKDIR/dos-$REMOTE_IP"
 
 # Test an IP address for validity:
 # Usage:
@@ -56,8 +56,8 @@ function valid_ip()
 # Unblock offending IP after 2 hours through the 'at' command (see 'man at' for further details)
 # Remove lock file for future checks
 
-if valid_ip $REMOTE_IP; then
-  $IPTABLES -I INPUT -s $REMOTE_IP -j $IPTABLES_ACTION
+if valid_ip "$REMOTE_IP"; then
+  $IPTABLES -I INPUT -s "$REMOTE_IP" -j $IPTABLES_ACTION
   echo "iptables -D INPUT -s $REMOTE_IP -j $IPTABLES_ACTION" | at now + $BLOCK_TIME_HOURS hours
   rm -f "$LOCKFILE"
   echo "iptables rule added to $IPTABLES_ACTION $REMOTE_IP for the next $BLOCK_TIME_HOURS hour(s)"
