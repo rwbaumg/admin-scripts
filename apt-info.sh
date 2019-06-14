@@ -95,7 +95,7 @@ function print_pkg_info()
     return 1
   fi
   if [ -z "${apt_cache_src_arch}" ]; then
-    echo "WARNING: APT cache does not specify an architecture."
+    echo >&2 "WARNING: APT cache does not specify an architecture."
     return 1
   elif [ "${dpkg_arch}" != "all" ] && [ "${apt_cache_src_arch}" != "${dpkg_s_arch}" ]; then
     echo >&2 "WARNING: Cached architecture '${apt_cache_src_arch}' does not match expected value of '${dpkg_arch}'."
