@@ -36,7 +36,7 @@ pwd
 # 2nd sed: replace higher level folder names with dashes
 # 3rd sed: indent graph three spaces
 # 4th sed: replace first dash with a vertical bar
-find ./ -type d ! -path "./.*" | grep -vP '^(\s+)?\.\/$' \
+find ./ -type d ! -path "./.*" | sort | grep -vP '^(\s+)?\.\/$' \
    | sed -e 's/\/$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
 
 # check if no folders
