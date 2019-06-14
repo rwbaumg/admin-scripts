@@ -64,7 +64,7 @@ function print_pkg_info()
   apt_cache_src_arch=$(echo "${apt_cache_srcinfo}" | awk -F' ' '{ print $4 }')
 
   es_src_url=$(echo "${apt_cache_src_url}" | sed -e 's/http\:\/\///g' -e 's/\//_/g')
-  es_src_repo=$(echo "${apt_cache_src_repo}" | sed -e 's/\//_/g')
+  es_src_repo="${apt_cache_src_repo/\//_}"
 
   if ! echo "${apt_cache_file}" | grep -q "${es_src_repo}"; then
     echo >&2 "ERROR: Cache file name is missing APT repository identifier."
