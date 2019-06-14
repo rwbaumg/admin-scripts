@@ -20,5 +20,5 @@ if [ ${COUNT} -ge ${MAX_TRIES} ]; then
   exit 1
 fi
 
-echo ${SERIAL}
+echo "${SERIAL}"
 exit 0

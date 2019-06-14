@@ -17,6 +17,8 @@ CSR_PATH="$1"
 NAMEOPT="dump_nostr,utf8,multiline,show_type"
 
 # Print the CSR
-openssl req -noout -text -nameopt ${NAMEOPT} -in "$1"
+if ! openssl req -noout -text -nameopt ${NAMEOPT} -in "$CSR_PATH"; then
+  exit 1
+fi
 
-exit $?
+exit 0

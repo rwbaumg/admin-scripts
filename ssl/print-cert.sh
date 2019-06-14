@@ -13,6 +13,6 @@ fi
 FILE=$(readlink -m "$1")
 
 echo "File: $FILE"
-openssl x509 -in $FILE -noout -text
+openssl x509 -in "$FILE" -noout -text
 
 exit 0

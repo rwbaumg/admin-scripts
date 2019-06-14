@@ -15,7 +15,7 @@ exit_script()
 
   re='[[:alnum:]]'
   if echo "$@" | grep -iqE "$re"; then
-    if [ $exit_code -eq 0 ]; then
+    if [ "$exit_code" -eq 0 ]; then
       echo >&2 "INFO: $*"
     else
       echo "ERROR: $*" 1>&2
@@ -23,15 +23,15 @@ exit_script()
   fi
 
   # Print 'aborting' string if exit code is not 0
-  [ $exit_code -ne 0 ] && echo >&2 "Aborting script..."
+  [ "$exit_code" -ne 0 ] && echo >&2 "Aborting script..."
 
-  exit $exit_code
+  exit "$exit_code"
 }
 
 usage()
 {
     # Prints out usage and exit.
-    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename $0)|" << EOF
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
     This script scans for expired certificates.
@@ -51,7 +51,7 @@ usage()
 
 EOF
 
-    exit_script $@
+    exit_script "$*"
 }
 
 test_arg()
@@ -76,7 +76,7 @@ test_path()
   # test directory argument
   local arg="$1"
 
-  test_arg $arg
+  test_arg "$arg"
 
   if [ ! -d "$arg" ]; then
     usage "Specified directory does not exist."
@@ -114,20 +114,20 @@ done
 
 if [ $VERBOSITY -gt 0 ]; then
   echo >&2 "Scanning for expired or expiring certificates in $SEARCH_DIR ..."
-  if [ $EXPIRE_TIME -gt 0 ]; then
+  if [ "$EXPIRE_TIME" -gt 0 ]; then
     echo >&2 "Time-to-expiration: $EXPIRE_TIME sec."
   fi
 fi
 
 found=0
-for cert in $(find "$SEARCH_DIR" -not -empty -type f -name "*.crt" -o -name "*.pem"); do
+for cert in find "$SEARCH_DIR" -not -empty -type f -name "*.crt" -o -name "*.pem"; do
   if [ $VERBOSITY -gt 0 ]; then
     echo >&2 "Checking certificate: $cert"
   fi
-  if ! openssl x509 -noout -checkend $EXPIRE_TIME -in $cert > /dev/null 2>&1;
+  if ! openssl x509 -noout -checkend "$EXPIRE_TIME" -in "$cert" > /dev/null 2>&1;
   then
     (( found ++ ))
-    CERT_SERIAL=$(openssl x509 -in $cert -noout -serial)
+    CERT_SERIAL=$(openssl x509 -in "$cert" -noout -serial)
     echo "$cert ($CERT_SERIAL)"
   fi
 done

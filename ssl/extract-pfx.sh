@@ -132,9 +132,9 @@ list_bundles()
   fi
 
   i=0
-  IFS=$'\n'; for line in $(find ./ -type f -name "*.pfx"); do
+  IFS=$'\n'; for line in find ./ -type f -name "*.pfx"; do
     PFX_FILE="$line"
-    PFX_REL_PATH=$(realpath --relative-to=$(realpath .) ${PFX_FILE})
+    PFX_REL_PATH=$(realpath --relative-to="$(realpath .)" "${PFX_FILE}")
 
     ((i++))
 
@@ -150,23 +150,23 @@ list_bundles()
   fi
 }
 
-CONF_NAME=""
 LIST_MODE="false"
 FORCE_MODE="false"
-EXTRA_ARGS=""
 PFX_FILE=""
 OUTPUT_PATH="$(realpath .)"
 PKEY_OPTS="-nodes"
+#CONF_NAME=""
+#EXTRA_ARGS=""
 
 # process arguments
-argc=0
+#argc=0
 [ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
   case "$1" in
     -o|--output)
       test_path_arg "$1" "$2"
       shift
-      OUTPUT_PATH="$(realpath $1)"
+      OUTPUT_PATH="$(realpath "$1")"
       shift
     ;;
     -l|--list)
@@ -193,7 +193,7 @@ while [ $# -gt 0 ]; do
         usage "Cannot specify multiple PKCS#12 bundles."
       fi
       test_file_arg "$1"
-      PFX_FILE="$(realpath $1)"
+      PFX_FILE="$(realpath "$1")"
       shift
     ;;
   esac
@@ -209,7 +209,7 @@ if [ -z "${PFX_FILE}" ]; then
   usage "No PKCS#12 file specified to extract."
 fi
 
-PFX_REL_PATH=$(realpath --relative-to=$(realpath .) ${PFX_FILE})
+PFX_REL_PATH=$(realpath --relative-to="$(realpath .)" "${PFX_FILE}")
 PFX_FILE_NAME=$(basename "${PFX_FILE}")
 PFX_BASE_NAME="${PFX_FILE_NAME%.*}"
 
@@ -261,7 +261,7 @@ echo "Extracting certificate and private-key from PKCS#12 file './${PFX_REL_PATH
 if [ $VERBOSITY -gt 0 ]; then
   echo "Extracting certificate ..."
 fi
-if ! $(openssl pkcs12 -in "${PFX_FILE}" -nokeys -out "${CRT_OUTPUT}"); then
+if ! openssl pkcs12 -in "${PFX_FILE}" -nokeys -out "${CRT_OUTPUT}"; then
   exit_script 2
 fi
 
@@ -269,7 +269,7 @@ fi
 if [ $VERBOSITY -gt 0 ]; then
   echo "Extracting private-key ..."
 fi
-if ! $(openssl pkcs12 -in "${PFX_FILE}" -nocerts ${PKEY_OPTS} -out "${KEY_OUTPUT}"); then
+if ! openssl pkcs12 -in "${PFX_FILE}" -nocerts ${PKEY_OPTS} -out "${KEY_OUTPUT}"; then
   exit_script 2
 fi
 
