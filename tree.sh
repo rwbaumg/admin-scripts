@@ -36,11 +36,11 @@ pwd
 # 2nd sed: replace higher level folder names with dashes
 # 3rd sed: indent graph three spaces
 # 4th sed: replace first dash with a vertical bar
-ls -R | grep ":$" |   \
-   sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+find ./ -type d ! -path "./.*" | grep -vP '^(\s+)?\.\/$' \
+   | sed -e 's/\/$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
 
 # check if no folders
-if [ $(ls -F -1 | grep "/" | wc -l) = 0 ]; then
+if [ "$(find ./ -type d ! -path "./.*" | wc -l)" -le 1 ]; then
   echo "   -> no sub-directories"
 fi
 
