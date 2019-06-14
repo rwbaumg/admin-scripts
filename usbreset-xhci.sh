@@ -25,4 +25,6 @@ fi
 echo "Resetting USB device /sys/bus/pci/drivers/$USB_DRIVER/$USB_DEVICE ..."
 
 echo -n "$USB_DEVICE" | tee "/sys/bus/pci/drivers/$USB_DRIVER/unbind"
-echo -n "$USD_DEVICE" | tee "/sys/bus/pci/drivers/$USB_DRIVER/bind"
+echo -n "$USB_DEVICE" | tee "/sys/bus/pci/drivers/$USB_DRIVER/bind"
+
+exit 0
