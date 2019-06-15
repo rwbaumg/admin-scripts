@@ -44,12 +44,12 @@ echo >&2 "--"
 # To get the interface:
 # grep -Po '(?<=IN\=)[^\s]+(?=\s)'
 
-IFS=$'\n'; for src in $(grep -ni "DPT=${PORT}" "${LOGFILE}" | grep -P "(?<=IN\=)([^\s]+)?${IFACE/\./\\.}([^\s]+)?(?=\s)" | grep -Po '(?<=SRC\=)([0-9]+(\.)?){1,4}' | uniq -c | sort -rn); do
+IFS=$'\n'; for src in $(grep -ni "DPT=${PORT}" "${LOGFILE}" | grep -P "(?<=IN\\=)([^\\s]+)?${IFACE/\./\\.}([^\\s]+)?(?=\\s)" | grep -Po '(?<=SRC\=)([0-9]+(\.)?){1,4}' | uniq -c | sort -rn); do
   count=$(echo "${src}" | awk -F' ' '{ print $1 }')
   ip=$(echo "${src}" | awk -F' ' '{ print $2 }')
   if [ -n "$ip" ]; then
     host=$(get_hostname "$ip")
-    printf "%s \t %-20s %s\n" "$count" "$ip" "$host"
+    printf "%s \\t %-20s %s\\n" "$count" "$ip" "$host"
   fi
 done
 
