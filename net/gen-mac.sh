@@ -52,7 +52,7 @@ usage()
      -s, --seed <value>    Specify the seed to use for generation.
      -p, --prefix <value>  Specify the single-byte prefix for the
                            generated address (must be even).
-                           Default: \x88
+                           Default: \\x88
 
      -v, --verbose         Make the script more verbose.
      -h, --help            Prints this usage.
@@ -173,7 +173,7 @@ if [ $VERBOSITY -gt 0 ]; then
   echo "Seed: $SEED"
 fi
 
-MACADDR=$(echo "$SEED"|sha1sum|sed "s/^\(..\)\(..\)\(..\)\(..\)\(..\).*$/${PREFIX}:\1:\2:\3:\4:\5/")
+MACADDR=$(echo "$SEED"|sha1sum|sed "s/^\\(..\\)\\(..\\)\\(..\\)\\(..\\)\\(..\\).*$/${PREFIX}:\\1:\\2:\\3:\\4:\\5/")
 
 echo "$MACADDR"
 

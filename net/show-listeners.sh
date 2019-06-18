@@ -27,7 +27,7 @@ function get_lsof_output()
     pid=$(echo "$line" | awk '{print $1}')
     con=$(echo "$line" | awk '{print $2}')
     cmd=$(ps -p "$pid" -o args --no-headers)
-    out=$(printf "%-30s %-10s %s\n" "$con" "$pid" "$cmd" | sed '/^\s*$/d')
+    out=$(printf "%-30s %-10s %s\\n" "$con" "$pid" "$cmd" | sed '/^\s*$/d')
     if [ -n "$out" ]; then
       echo "$out"
     fi
@@ -40,8 +40,8 @@ OUTPUT=$(get_lsof_output)
 
 # print header
 if [ "${NO_HEADER}" != 1 ]; then
-  printf "%-30s %-10s %s\n" "CONNECTION" "PID" "COMMAND"
-  # printf "=%.0s" {1..90}; printf "\n"
+  printf "%-30s %-10s %s\\n" "CONNECTION" "PID" "COMMAND"
+  # printf "=%.0s" {1..90}; printf "\\n"
 fi
 
 echo "${OUTPUT}" | LC_ALL=C sort -t: -k2n | uniq

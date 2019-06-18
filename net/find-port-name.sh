@@ -1,6 +1,11 @@
 #!/bin/bash
 #./update-port-list
 
+if [ -z "$1" ]; then
+  echo >&2 "Usage: $0 <port>"
+  exit 1
+fi
+
 PORTS_MAP_FILE="$(dirname "$0")/service-names-port-numbers.csv"
 DOWNLOAD_URL="http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.csv"
 
@@ -43,6 +48,6 @@ fi
 # Name only
 grep -v "IANA assigned" "${PORTS_MAP_FILE}" | grep -P '^[^\s]' | grep ",," \
      | awk  -F"," '("$5" != "[John_Fake]") && (length($1) > 0) && (length($2) > 0) && (length($3) > 0) {printf("%-40s %s/%s\n", $1, $2, $3)}' \
-     | grep -i -P "(^|\s)$1(\s|$)"
+     | grep -i -P "(^|\\s)$1(\\s|$)"
 
 exit 0

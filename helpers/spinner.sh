@@ -30,14 +30,14 @@ function _spinner() {
     local on_success="DONE"
     local on_fail="FAIL"
     #local white="\e[1;37m"
-    local green="\e[1;32m"
-    local red="\e[1;31m"
-    local nc="\e[0m"
+    local green="\\e[1;32m"
+    local red="\\e[1;31m"
+    local nc="\\e[0m"
 
     case $1 in
         start)
             # calculate the column where spinner and status msg will be displayed
-            let column="$(tput cols)-${#2}-8"
+            column=$(($(tput cols)-${#2}-8))
             # display message and position the cursor in $column column
             echo -ne "${2}"
             printf "%${column}s"
@@ -49,7 +49,7 @@ function _spinner() {
 
             while :
             do
-                printf "\b%s" "${sp:i++%${#sp}:1}"
+                printf "\\b%s" "${sp:i++%${#sp}:1}"
                 sleep "$delay"
             done
             ;;
@@ -62,7 +62,7 @@ function _spinner() {
             kill "$3" > /dev/null 2>&1
 
             # inform the user uppon success or failure
-            echo -en "\b["
+            echo -en "\\b["
             if [[ $2 -eq 0 ]]; then
                 echo -en "${green}${on_success}${nc}"
             else

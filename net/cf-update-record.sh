@@ -15,6 +15,9 @@ zone_name=""
 config_file=$(dirname "$0")/cf.cfg
 
 if [ -e "$config_file" ]; then
+  # The directive below prevents shellcheck from complaining about not knowing where to load
+  # the config file from. All variables should be accounted for locally.
+  # shellcheck source=/dev/null
   source "$config_file"
 fi
 
@@ -37,7 +40,7 @@ function valid_ip()
   if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
     OIFS=$IFS
     IFS='.'
-    ip=($ip)
+    ip=("$ip")
     IFS=$OIFS
     [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
     && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
@@ -50,7 +53,7 @@ function valid_hostname()
 {
   local host=$1
 
-  if [[ $host =~ ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$ ]]; then
+  if [[ $host =~ ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$ ]]; then
     return 0
   fi
   return 1
@@ -248,6 +251,9 @@ done
 
 if [ "$USER_CONFIG" == "true" ]; then
   if [ -e "$config_file" ]; then
+    # The directive below prevents shellcheck from complaining about not knowing where to load
+    # the config file from. All variables should be accounted for locally.
+    # shellcheck source=/dev/null
     source "$config_file"
   else
     exit_script 1 "Config file not found: $config_file"
@@ -278,10 +284,10 @@ log "Updating DNS record for $record_name ..."
 
 # print options
 if [ $VERBOSITY -gt 0 ]; then
-  printf "%-16s = %s\n" "AUTH. E-MAIL" "${auth_email}"
-  printf "%-16s = %s\n" "AUTH. KEY" "${auth_key}"
-  printf "%-16s = %s\n" "ZONE NAME" "${zone_name}"
-  printf "%-16s = %s\n" "RECORD NAME" "${record_name}"
+  printf "%-16s = %s\\n" "AUTH. E-MAIL" "${auth_email}"
+  printf "%-16s = %s\\n" "AUTH. KEY" "${auth_key}"
+  printf "%-16s = %s\\n" "ZONE NAME" "${zone_name}"
+  printf "%-16s = %s\\n" "RECORD NAME" "${record_name}"
 fi
 
 # get current A record IP
@@ -307,8 +313,8 @@ if [ -z "$requested_ip" ]; then
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
-  printf "%-16s = %s\n" "REQUESTED IP" "${requested_ip}"
-  printf "%-16s = %s\n" "REGISTERED IP" "${registered_ip}"
+  printf "%-16s = %s\\n" "REQUESTED IP" "${requested_ip}"
+  printf "%-16s = %s\\n" "REGISTERED IP" "${registered_ip}"
 fi
 
 if [ "$FORCE_UPDATE" != "true" ] && [ "$requested_ip" == "$registered_ip" ]; then
@@ -326,14 +332,14 @@ if [ -z "$record_identifier" ]; then
 fi
 
 if [ $VERBOSITY -gt 1 ]; then
-  printf "%-16s = %s\n" "ZONE ID" "${zone_identifier}"
-  printf "%-16s = %s\n" "RECORD ID" "${record_identifier}"
+  printf "%-16s = %s\\n" "ZONE ID" "${zone_identifier}"
+  printf "%-16s = %s\\n" "RECORD ID" "${record_identifier}"
 fi
 
 update=$(curl $VERBOSE -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records/$record_identifier" -H "X-Auth-Email: $auth_email" -H "X-Auth-Key: $auth_key" -H "Content-Type: application/json" --data "{\"id\":\"$zone_identifier\",\"type\":\"A\",\"name\":\"$record_name\",\"content\":\"$requested_ip\"}")
 
 if [[ $update == *"\"success\":false"* ]]; then
-  message="API UPDATE FAILED. DUMPING RESULTS:\n$update"
+  message="API UPDATE FAILED. DUMPING RESULTS:\\n$update"
   echo -e "$message"
   log "$message"
   exit 1

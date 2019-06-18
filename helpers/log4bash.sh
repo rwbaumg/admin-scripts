@@ -45,12 +45,12 @@ then
     declare -r LOG_WARN_COLOR=""
     declare -r LOG_DEBUG_COLOR=""
 else
-    declare -r LOG_DEFAULT_COLOR="\033[0m"
-    declare -r LOG_ERROR_COLOR="\033[1;31m"
-    declare -r LOG_INFO_COLOR="\033[1m"
-    declare -r LOG_SUCCESS_COLOR="\033[1;32m"
-    declare -r LOG_WARN_COLOR="\033[1;33m"
-    declare -r LOG_DEBUG_COLOR="\033[1;34m"
+    declare -r LOG_DEFAULT_COLOR="\\033[0m"
+    declare -r LOG_ERROR_COLOR="\\033[1;31m"
+    declare -r LOG_INFO_COLOR="\\033[1m"
+    declare -r LOG_SUCCESS_COLOR="\\033[1;32m"
+    declare -r LOG_WARN_COLOR="\\033[1;33m"
+    declare -r LOG_DEBUG_COLOR="\\033[1;34m"
 fi
 
 # This function scrubs the output of any control characters used in colorized output
@@ -58,7 +58,7 @@ fi
 # text will come out the other side!
 prepare_log_for_nonterminal() {
     # Essentially this strips all the control characters for log colors
-    sed "s/[[:cntrl:]]\[[0-9;]*m//g"
+    sed "s/[[:cntrl:]]\\[[0-9;]*m//g"
 }
 
 log() {
@@ -127,7 +127,7 @@ log_campfire() {
     }"
 
     curl                                                            \
-        --write-out "\r\n"                                          \
+        --write-out "\\r\\n"                                          \
         --user "${CAMPFIRE_API_AUTH_TOKEN}:X"                       \
         --header 'Content-Type: application/json'                   \
         --data "${campfire_message}"                                \

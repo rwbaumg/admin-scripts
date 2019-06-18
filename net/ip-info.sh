@@ -6,7 +6,7 @@ if [[ -z "$1" ]]; then
   exit 1
 fi
 
-CURL_BIN=$(which curl)
+CURL_BIN=$(command -v curl)
 REMOTE_IP=$1
 
 # Test an IP address for validity:
@@ -22,10 +22,7 @@ function valid_ip()
     local  stat=1
 
     if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-        OIFS=$IFS
-        IFS='.'
-        ip=($ip)
-        IFS=$OIFS
+        IFS="." read -r -a ip <<< "$ip"
         [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 \
             && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
         stat=$?
