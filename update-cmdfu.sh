@@ -84,10 +84,15 @@ echo "Remote server responded with code ${SERVER_RESPONSE_CODE}; pulling data...
 echo "cURL Command: '${CURL_BASE_COMMAND} \"${CMDFU_REQUEST_URL}/${CMDFU_CMDRANGE}\"'"
 echo "Downloading from URL: '${CMDFU_REQUEST_URL}' ..."
 
-if ! ${CURL_BASE_COMMAND} -o "${OUTPUT_FILE}" "${CMDFU_REQUEST_URL}/${CMDFU_CMDRANGE}"; then
+if ! RESPONSE=$(${CURL_BASE_COMMAND} "${CMDFU_REQUEST_URL}/${CMDFU_CMDRANGE}"); then
   echo >&2 "ERROR: An error was encounterd while retrieving a response from the server ('${CMDFU_DNS_NAME}')."
   exit 1
 fi
+if [ -z "${RESPONSE}" ]; then
+  echo >&2 "ERROR: Server response was null."
+  exit 1
+fi
 
+echo "${RESPONSE}" > "${OUTPUT_FILE}"
 echo "Saved results to '$(readlink -f "${OUTPUT_FILE}")'."
 exit 0
