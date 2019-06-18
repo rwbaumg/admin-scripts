@@ -13,13 +13,13 @@ fi
 
 function grep_table()
 {
-  IFS=$'\n'; for line in $(grep "iptables dropped:" "$LOGPATTERN"); do
+  grep "iptables dropped:" "$LOGPATTERN" | while read -r line; do
     src=$(echo "${line}" | grep -Po '(?<=SRC=)([0-9]{1,3}[\.]){3}[0-9]{1,3}(?=\s)')
-    dst=$(echo "${line}" | grep -Po '(?<=DST=)([0-9]{1,3}[\.]){3}[0-9]{1,3}(?=\s)')
-    mac=$(echo "${line}" | grep -Po '(?<=MAC=)([0-9a-fA-F][0-9a-fA-F]:){5,15}([0-9a-fA-F][0-9a-fA-F])(?=\s)')
     dpt=$(echo "${line}" | grep -Po '(?<=DPT=)[0-9]+(?=\s)')
-    inface=$(echo "${line}" | grep -Po '(?<=IN=)[A-Za-z0-9\._-]+(?=\s)')
     proto=$(echo "${line}" | grep -Po '(?<=PROTO=)[A-Za-z]+(?=\s)')
+    # dst=$(echo "${line}" | grep -Po '(?<=DST=)([0-9]{1,3}[\.]){3}[0-9]{1,3}(?=\s)')
+    # mac=$(echo "${line}" | grep -Po '(?<=MAC=)([0-9a-fA-F][0-9a-fA-F]:){5,15}([0-9a-fA-F][0-9a-fA-F])(?=\s)')
+    # inface=$(echo "${line}" | grep -Po '(?<=IN=)[A-Za-z0-9\._-]+(?=\s)')
 
     printf "%-15s\\t%s/%s\\n" "$src" "$dpt" "$proto"
     # printf "%-15s -> %-15s \\t %s/%s\\n" "$src" "$dst" "$dpt" "$proto"
