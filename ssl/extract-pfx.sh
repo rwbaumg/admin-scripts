@@ -132,7 +132,7 @@ list_bundles()
   fi
 
   i=0
-  IFS=$'\n'; for line in find ./ -type f -name "*.pfx"; do
+  IFS=$'\n'; for line in $(find ./ -type f -name "*.pfx"); do
     PFX_FILE="$line"
     PFX_REL_PATH=$(realpath --relative-to="$(realpath .)" "${PFX_FILE}")
 
