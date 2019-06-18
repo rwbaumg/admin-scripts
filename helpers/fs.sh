@@ -1,28 +1,32 @@
 #!/usr/bin/env bash
 # Date/time helpers
 
-function formatSize() {
+function formatSizeBc() {
   local size="$1"
 
   if [ -z "$size" ]; then
     size=0
   fi
 
+  local scale=2
   if hash bc 2>/dev/null; then
-    if [ "$size" -ge 1048576 ]; then
-      # size=$(echo $((size/1048576)))gb
-      size=$(echo "scale=2;$size/1048576"| bc)"gB"
+    if [ "$size" -ge 1099511627776 ]; then
+      size=$(echo "scale=$scale;$size/1099511627776"| bc)" TB"
+    elif [ "$size" -ge 1073741824 ]; then
+      size=$(echo "scale=$scale;$size/1073741824"| bc)" GB"
+    elif [ "$size" -ge 1048576 ]; then
+      size=$(echo "scale=$scale;$size/1048576" | bc)" MB"
     elif [ "$size" -ge 1024 ]; then
-      # size=$(echo $((size/1024)))mb
-      size=$(echo "scale=2;$size/1024" | bc)"mB"
+      size=$(echo "scale=$scale;$size/1024" | bc)" KB"
     else
-      size=$size"kB"
+      size=$size" B"
     fi
   else
-    size=$size"kB"
+    size=$size" B"
   fi
 
   echo "$size"
+  return 0
 }
 
 function getSizeString() {
@@ -48,7 +52,8 @@ function getSizeString() {
         s="kMGTEPZY";
         while (x>=1000 && length(s)>1)
             {x/=1024; s=substr(s,2)}
-        return int(x+0.5) substr(s,1,1)
+        return sprintf("%.2f", x) " " substr(s,1,1) "B"
+        # return int(x+0.5) substr(s,1,1)
     }
     {sub(/^[0-9]+/, human($1)); print}'
 
