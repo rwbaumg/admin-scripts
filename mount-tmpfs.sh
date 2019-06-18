@@ -118,7 +118,7 @@ MOUNTPOINT=""
 VERBOSITY=0
 
 # process arguments
-[ $# -gt 0 ] || usage
+#[ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
   case "$1" in
     -s|--size)
