@@ -1,13 +1,16 @@
 #!/bin/bash
 # curl https://www.commandlinefu.com/commands/browse/sort-by-votes/plaintext/"[0-2499:25]" | grep -v _curl_ > comfu.txt
 
+OUTPUT_FILE="cmdfu.txt"
+
 CMDFU_PROTOCOL="https"
 CMDFU_DNS_NAME="www.commandlinefu.com"
 CMDFU_BASE_URL="/commands/browse/sort-by-votes/plaintext"
 CMDFU_CMDRANGE="[0-2499:25]"
 
 HTTP_REQUEST="GET"
-REQUEST_ARGS="-s"
+REQUEST_ARGS="--compressed -s"
+# REQUEST_ARGS="--compressed --progress-bar"
 
 CURL_BASE_COMMAND="curl ${REQUEST_ARGS} --request ${HTTP_REQUEST}"
 CMDFU_REQUEST_URL="${CMDFU_PROTOCOL}://${CMDFU_DNS_NAME}/${CMDFU_BASE_URL}"
@@ -77,26 +80,14 @@ if ! check_response_code "${SERVER_RESPONSE_CODE}"; then
   exit 1
 fi
 
-echo "Remote server is up; pulling data..."
-echo "Downloading from URL: '${CMDFU_REQUEST_URL}' ..."
+echo "Remote server responded with code ${SERVER_RESPONSE_CODE}; pulling data..."
 echo "cURL Command: '${CURL_BASE_COMMAND} \"${CMDFU_REQUEST_URL}/${CMDFU_CMDRANGE}\"'"
+echo "Downloading from URL: '${CMDFU_REQUEST_URL}' ..."
 
-if ! RESPONSE_RAW=$(${CURL_BASE_COMMAND} "${CMDFU_REQUEST_URL}/${CMDFU_CMDRANGE}"); then
+if ! ${CURL_BASE_COMMAND} -o "${OUTPUT_FILE}" "${CMDFU_REQUEST_URL}/${CMDFU_CMDRANGE}"; then
   echo >&2 "ERROR: An error was encounterd while retrieving a response from the server ('${CMDFU_DNS_NAME}')."
   exit 1
 fi
-if [ -z "${RESPONSE_RAW}" ]; then
-  echo >&2 "ERROR: Server response was null."
-  exit 1
-fi
 
-RESPONSE_CODE=$(echo -n "${RESPONSE_RAW}" | grep -Po '^(?:HTTP/[012\.]+\s)[0-9]+\s' | awk '{ print $2 }')
-if ! check_response "${RESPONSE_CODE}"; then
-  exit 1
-fi
-# echo "Raw response: '${RESPONSE_RAW}'"
-
-CMDFU_RESULTS=$(echo "${RESPONSE_RAW}" | grep -v "_curl_")
-echo "${CMDFU_RESULTS}" > comfu.txt
-echo "Saved results to '$(readlink -f comfu.txt)'."
+echo "Saved results to '$(readlink -f "${OUTPUT_FILE}")'."
 exit 0
