@@ -4,6 +4,9 @@
 hash openssl 2>/dev/null || { echo >&2 "You need to install openssl. Aborting." exit 1; }
 
 # Load configuration
+# The directive below prevents shellcheck from complaining about not knowing where to load
+# the config file from. All variables should be accounted for locally.
+# shellcheck source=/dev/null
 if ! source "$(dirname "$0")"/config.sh; then
   echo >&2 "ERROR: Failed to load configuration file."
   exit 1

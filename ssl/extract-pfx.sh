@@ -131,12 +131,9 @@ list_bundles()
     echo "Listing PKCS#12 bundles contained in $(realpath .) ..."
   fi
 
-  i=0
-  IFS=$'\n'; for line in $(find ./ -type f -name "*.pfx"); do
+  find ./ -type f -name "*.pfx" | while read -r line; do
     PFX_FILE="$line"
     PFX_REL_PATH=$(realpath --relative-to="$(realpath .)" "${PFX_FILE}")
-
-    ((i++))
 
     if [ $VERBOSITY -gt 0 ]; then
       echo "PKCS#12 Bundle: ./${PFX_REL_PATH}"
@@ -144,10 +141,6 @@ list_bundles()
       echo "./${PFX_REL_PATH}"
     fi
   done
-
-  if [ $VERBOSITY -gt 0 ]; then
-    echo "Found $i PKCS#12 bundle(s) in $(realpath .)"
-  fi
 }
 
 LIST_MODE="false"
