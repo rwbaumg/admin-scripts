@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 # Networking helpers
 
-function valid_url()
-{
-  url="$1"
-  if [ -z "${url}" ]; then
-    echo >&2 "No URL string was specified."
-    exit 1
-  fi
+function valid_url() {
+    url="$1"
+    if [ -z "${url}" ]; then
+        echo >&2 "No URL string was specified."
+        exit 1
+    fi
 
-  hash wget 2>/dev/null || { echo >&2 "You need to install wget. Aborting."; exit 1; }
-  if wget -q "${url}" -O /dev/null; then
-    return 0
-  fi
+    hash wget 2>/dev/null || { echo >&2 "You need to install wget. Aborting."; exit 1; }
+    if wget -q "${url}" -O /dev/null; then
+        return 0
+    fi
 
-  return 1
+    return 1
 }
 
 # Test an IP address for validity:
@@ -24,8 +23,7 @@ function valid_url()
 #   OR
 #      if valid_ip IP_ADDRESS; then echo good; else echo bad; fi
 #
-function valid_ip()
-{
+function valid_ip() {
     local  ip=$1
     local  stat=1
 
@@ -44,34 +42,32 @@ function valid_ip()
     return $stat
 }
 
-function valid_hostname()
-{
-  local host="$1"
-  if [ -z "${host}" ]; then
-    echo >&2 "ERROR Hostname cannot be null."
+function valid_hostname() {
+    local host="$1"
+    if [ -z "${host}" ]; then
+        echo >&2 "ERROR Hostname cannot be null."
+        return 1
+    fi
+
+    if [[ "$host" =~ ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$ ]]; then
+        return 0
+    fi
+
     return 1
-  fi
-
-  if [[ "$host" =~ ^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$ ]]; then
-    return 0
-  fi
-
-  return 1
 }
 
-function get_hostname()
-{
-  local ip="$1"
-  if [ -z "$ip" ]; then
-    echo >&2 "ERROR: IP address cannot be null."
-    return 1
-  fi
+function get_hostname() {
+    local ip="$1"
+    if [ -z "$ip" ]; then
+        echo >&2 "ERROR: IP address cannot be null."
+        return 1
+    fi
 
-  hash nslookup 2>/dev/null || { echo >&2 "You need to install dnsutils in order to resolve hostnames. Aborting."; exit 1; }
-  if ! hostname=$(nslookup "${ip}" | grep -Po '(?<=name\s\=\s).*(?=\.)'); then
-    return 1
-  fi
+    hash nslookup 2>/dev/null || { echo >&2 "You need to install dnsutils in order to resolve hostnames. Aborting."; exit 1; }
+    if ! hostname=$(nslookup "${ip}" | grep -Po '(?<=name\s\=\s).*(?=\.)'); then
+        return 1
+    fi
 
-  echo "${hostname}"
-  return 0
+    echo "${hostname}"
+    return 0
 }

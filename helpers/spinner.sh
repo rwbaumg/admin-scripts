@@ -77,7 +77,7 @@ function _spinner() {
     esac
 }
 
-function start_spinner {
+function start_spinner() {
     # $1 : msg to display
     _spinner "start" "${1}" &
     # set global spinner pid
@@ -85,7 +85,7 @@ function start_spinner {
     disown
 }
 
-function stop_spinner {
+function stop_spinner() {
     # $1 : command exit status
     _spinner "stop" "$1" "$_sp_pid"
     unset _sp_pid
