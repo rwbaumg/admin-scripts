@@ -41,7 +41,7 @@ free -m | awk 'NR==2{printf "Memory Usage:\t%s MB / %s MB (%.f%%)\n", $3,$2,$3*1
 printf "Disk Usage:\n"
 df -h | awk '{ printf("%s %s %s %s %s\n", $6, $1, $3, $2, $5); }' \
   | grep -v "Mounted" | grep -vP '^\/(dev|run|sys)' \
-  | awk '{ printf("  - %-14s on\t %-8s: %-6s / %-6s (%s)\n", $2, $1, $3, $4, $5); }'
+  | awk '{ printf("  - %-14s on\t %-14s: %-6s / %-6s (%s)\n", $2, $1, $3, $4, $5); }'
 # df -h | awk '$NF=="/"{printf "Disk Usage:\t%d GB /%d GB (%s)\n", $3,$2,$5}'
 
 # NOTE: ps returns value in kB
