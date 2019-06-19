@@ -5,6 +5,10 @@
 # Licensed under the MIT license
 # http://github.com/fredpalmer/log4bash
 #--------------------------------------------------------------------------------------------------
+# Modified source for 0x19e Networks
+# Copyright (c) Robert W. Baumgartner
+#--------------------------------------------------------------------------------------------------
+
 set -e  # Fail on first error
 
 # Useful global variables that users may wish to reference
@@ -12,11 +16,15 @@ export SCRIPT_ARGS="$*"
 export SCRIPT_NAME="$0"
 export SCRIPT_NAME="${SCRIPT_NAME#\./}"
 export SCRIPT_NAME="${SCRIPT_NAME##/*/}"
-export SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
+
+SCRIPT_BASE_DIR="$(cd "$( dirname "$0")" && pwd )"
+export SCRIPT_BASE_DIR
 
 # This should probably be the right way - didn't have time to experiment though
 # declare -r INTERACTIVE_MODE="$([ tty --silent ] && echo on || echo off)"
-declare -r INTERACTIVE_MODE=$([ "$(uname)" == "Darwin" ] && echo "on" || echo "off")
+# RAW_INTERACTIVE_MODE=$([ "$(uname)" == "Darwin" ] && echo "on" || echo "off")
+RAW_INTERACTIVE_MODE=$(tty --silent && echo "on" || echo "off")
+declare -r INTERACTIVE_MODE="${RAW_INTERACTIVE_MODE}"
 
 #--------------------------------------------------------------------------------------------------
 # Begin Help Section
@@ -100,11 +108,11 @@ log_debug()     { log "$1" "DEBUG" "${LOG_DEBUG_COLOR}"; }
 log_captains()  {
     if type -P figlet >/dev/null;
     then
-        figlet -f computer -w 120 "$1";
+        figlet -f standard -w 120 "$1";
     else
         log "$1";
     fi
-    
+
     log_speak "$1";
 
     return 0;
