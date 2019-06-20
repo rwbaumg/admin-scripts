@@ -21,7 +21,7 @@ if echo "${IMG_CMD}" | grep -Po '\s'; then
   echo >&2 "ERROR: Invalid image command: '${IMG_CMD}'"
   exit 1
 fi
-if [ -z "${IMG_CMD}" ] && [ -n "${CMD_ARGS}" ]; then
+if [ -z "${IMG_CMD}" ] && [ -n "${CMD_ARG}" ]; then
   echo >&2 "ERROR: Image command arguments configured without base command."
   exit 1
 fi
@@ -45,8 +45,8 @@ fi
 
 echo "Current top-rated wallpaper: ${TOP_URL}"
 
-if [ -n "${IMG_CMD}${CMD_ARGS}" ]; then
-  echo "Image processing command: ${IMG_CMD} ${CMD_ARGS}"
+if [ -n "${IMG_CMD}${CMD_ARG}" ]; then
+  echo "Image processing command: ${IMG_CMD} ${CMD_ARG}"
   echo "${TOP_URL}" | xargs "${IMG_CMD}" "${CMD_ARG}"
   exit $?
 fi

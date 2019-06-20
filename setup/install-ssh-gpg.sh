@@ -3,7 +3,7 @@
 
 echo "Installing OpenSSH & GnuPG and initial configurations...."
 
-read -d ''  LOGROTATE_CFG << EOF
+read -r -d ''  LOGROTATE_CFG << EOF
 /var/log/sshdusers.log
 {
         weekly
@@ -16,7 +16,7 @@ read -d ''  LOGROTATE_CFG << EOF
 }
 EOF
 
-read -d ''  USER_SSH_CFG << EOF
+read -r -d ''  USER_SSH_CFG << EOF
 # configure gpg agent forwarding
 # RemoteForward <remote> <local>
 

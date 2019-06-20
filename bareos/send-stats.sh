@@ -31,6 +31,7 @@ export TIMESTAMP="${DT_STAMP}"
 
 CONFIG_PATH="${CWD}/${CFG_NAME}"
 if [ -e "${CONFIG_PATH}" ]; then
+  # shellcheck source=/dev/null
   source "${CONFIG_PATH}"
 fi
 

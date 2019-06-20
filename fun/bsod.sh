@@ -24,4 +24,4 @@ echo
 echo
 echo
 echo -ne "\033[999B"
-read
+read -r

@@ -57,6 +57,7 @@ BACKUP_CHANGED="false"
 SHOULD_SEND_MAIL="false"
 
 if [ -e "${BACKUP_CONFIG_FILE}" ]; then
+  # shellcheck source=/dev/null
   source "${BACKUP_CONFIG_FILE}"
 fi
 

@@ -1,4 +1,3 @@
-
 #!/bin/bash
 # Create a simple .nanorc in the current user's home if one does
 # not already exist.
@@ -8,7 +7,7 @@ if [ -e "${HOME}/.nanorc" ] && [ -s "${HOME}/.nanorc" ]; then
     exit 1
 fi
 
-read -d '' NANORC << EOF
+read -r -d '' NANORC << EOF
 ## [ 0x19e Networks ]
 ##
 ## Sample initialization file for GNU nano.

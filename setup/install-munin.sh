@@ -160,15 +160,15 @@ check_protocol()
 
 check_etckeeper()
 {
-  if [ -z "${PKG_NAME}" ]; then
+  if [ -z "${pkg_name}" ]; then
     echo >&2 "WARNING: Package name is undefined; skipping etckeeper handling."
   fi
   if [[ $EUID -ne 0 ]]; then
     echo >&2 "WARNING: Must run as root to commit /etc changes."
     return
   fi
-  if [ ! -e "/etc/${PKG_NAME}" ]; then
-    echo >&2 "WARNING: The folder /etc/${PKG_NAME} does not exist."
+  if [ ! -e "/etc/${pkg_name}" ]; then
+    echo >&2 "WARNING: The folder /etc/${pkg_name} does not exist."
     return
   fi
 
@@ -177,7 +177,7 @@ check_etckeeper()
     if git -C "/etc" rev-parse > /dev/null 2>&1; then
       # check /etc/apt for modifications
       # if there are changes, commit them
-      if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/"${PKG_NAME}"|grep '^(M| M)')" != "" ]]; then
+      if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/"${pkg_name}"|grep '^(M| M)')" != "" ]]; then
         if [ "${ETCKEEPER_COMMIT}" != "true" ]; then
           echo >&2 "WARNING: Uncommitted changes under version control: /etc/apt"
           echo >&2 "WARNING: You may want to enable automatic handling with --enable-etckeeper"
@@ -186,7 +186,7 @@ check_etckeeper()
         echo "Auto-commit changes to /etc/apt (directory under version control) ..."
         pushd /etc > /dev/null 2>&1
         sudo git add --all /etc/apt
-        sudo git commit -v -m "apt: add ${PKG_NAME} package source"
+        sudo git commit -v -m "apt: add ${pkg_name} package source"
         popd > /dev/null 2>&1
       fi
     fi
@@ -202,13 +202,13 @@ install_key_from_url()
   fi
 
   # check if the key is already installed
-  KEY_RW=$(wget -qO - "${KEY_URL}")
+  KEY_RW=$(wget -qO - "${key_url}")
   if [ -z "${KEY_RW}" ]; then
-    echo >&2 "Failed to retrieve signing key from ${KEY_URL}"
+    echo >&2 "Failed to retrieve signing key from ${key_url}"
     exit 1
   fi
   if ! echo "${KEY_RW}" | gpg --list-packets > /dev/null 2>&1; then
-    echo >&2 "Invalid key returned from URL ${KEY_URL}"
+    echo >&2 "Invalid key returned from URL ${key_url}"
     exit 1
   fi
 
@@ -230,7 +230,7 @@ install_key_from_url()
   fi
 
   # add the release key
-  echo "Retrieve signing key from ${KEY_URL} ..."
+  echo "Retrieve signing key from ${key_url} ..."
 
   if [ $VERBOSITY -gt 0 ]; then
   echo "Key identifier     : ${KEY_ID}"

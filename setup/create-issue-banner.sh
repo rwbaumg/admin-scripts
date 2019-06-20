@@ -59,6 +59,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 echo -e '\e[H\e[2J' > /etc/issue
+# shellcheck disable=2129
 echo -e '\e[1;33;40m' >> /etc/issue
 echo '  ___       ___      __  ___            ___ ' >> /etc/issue
 echo -e ' |  _|     / _ \\\    /_ |/ _ \\\  \e[1;31m\\s\e[1;33;40m   |_  |' >> /etc/issue
