@@ -19,7 +19,7 @@ export COL_MAGENTA=$ESC_SEQ"35;01m"
 export COL_CYAN=$ESC_SEQ"36;01m"
 
 printf "$COL_RED%.0s-$COL_RESET" {1..30}; echo
-cut -f1 -d: /etc/passwd | while read user; do
+cut -f1 -d: /etc/passwd | while read -r user; do
   OUT=$( crontab -u "$user" -l 2>/dev/null )
   if [[ $OUT ]]; then
     echo -e  "$COL_GREEN crontab for $user $COL_RESET"
