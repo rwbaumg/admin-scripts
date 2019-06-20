@@ -7,13 +7,13 @@ if [[ -z "$*" ]]; then
 fi
 
 CWD=$(pwd)
-CMD="LD_LIBRARY_PATH=${CWD} $*"
+CMD="$*"
 
 if [[ "$VERBOSE" =~ 1|true ]] || [[ "$VERBOSITY" -gt 0 ]]; then
-  echo "LD_LIBRARY_PATH=${CWD}" >&2
+  echo "LD_LIBRARY_PATH=${CWD} bash -c \"${CMD}\"" >&2
 fi
 
-if ! bash -c "${CMD}"; then
+if ! LD_LIBRARY_PATH="${CWD}" bash -c "${CMD}"; then
   exit 1
 fi
 
