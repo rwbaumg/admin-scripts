@@ -14,6 +14,11 @@ if [ $# -gt 0 ]; then
   fi
 fi
 
+if [ -z "$PID" ]; then
+  echo >&2 "Usage: $0 <pid>"
+  exit 1
+fi
+
 # check if pid is running
 if ! $(ps -p $PID > /dev/null); then
   echo "The specified PID is not valid."
