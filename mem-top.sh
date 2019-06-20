@@ -15,7 +15,13 @@ if [ $# -gt 0 ]; then
   fi
 fi
 
+# print header
 ps -axo ${PS_OUTPUT} | head -n1
-ps --no-headers -axo ${PS_OUTPUT} | sort -rnk +${PS_MEM_CN} | head -n"${OUTPUT_CN}"
 
-exit $?
+# print output
+if ! OUTPUT=$(ps --no-headers -axo ${PS_OUTPUT} | sort -rnk +${PS_MEM_CN}); then
+  exit 1
+fi
+
+echo "${OUTPUT}" | head -n"${OUTPUT_CN}"
+exit 0
