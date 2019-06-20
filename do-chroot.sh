@@ -40,9 +40,13 @@ for sn in $($SCHROOT_BIN -l -a|grep "session:"|awk -F: '{print $2}'); do
 done
 if [[ -z "$SESSION" ]]; then
   echo "Creating new schroot session for '$SCHROOT_NAME' ..."
-  SESSION=$(schroot --begin-session -c $SCHROOT_NAME)
+  SESSION=$(schroot --begin-session -c "$SCHROOT_NAME")
 fi
 echo "Using schroot session '$SESSION' ..."
 
 echo "Running command '$CMD_ARGS' ..."
-$SCHROOT_BIN --directory / --run-session -c "$SESSION" $CMD_ARGS
+if ! $SCHROOT_BIN --directory / --run-session -c "$SESSION" "$CMD_ARGS"; then
+  exit 1
+fi
+
+exit 0
