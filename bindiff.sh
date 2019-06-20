@@ -4,8 +4,8 @@
 hash diff 2>/dev/null || { echo >&2 "You need to install diff (diffutils). Aborting."; exit 1; }
 hash hexdump 2>/dev/null || { echo >&2 "You need to install hexdump (bsdmainutils). Aborting."; exit 1; }
 
-HEXDUMP_ARGS="-C"
-DIFFCMD_ARGS="--color"
+export HEXDUMP_ARGS="-C"
+export DIFFCMD_ARGS="--color"
 
 FILE1="$1"
 FILE2="$2"

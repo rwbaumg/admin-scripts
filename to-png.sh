@@ -89,15 +89,15 @@ test_path_arg()
   fi
 }
 
-VERBOSE=""
 VERBOSITY=0
 
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOSE="-v"
-  fi
-}
+#VERBOSE=""
+#check_verbose()
+#{
+#  if [ $VERBOSITY -gt 1 ]; then
+#    VERBOSE="-v"
+#  fi
+#}
 
 OUTPUT="out.png"
 FORCE="false"
@@ -117,7 +117,7 @@ while [ $# -gt 0 ]; do
     ;;
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -h|--help)
@@ -137,6 +137,10 @@ fi
 
 INPUT=$(cat)
 
-echo -e "$INPUT" | convert label:@- $OUTPUT
+echo -e "$INPUT" | convert label:@- "$OUTPUT"
+
+if [ $VERBOSITY -gt 0 ]; then
+  echo "Saved PNG to '$OUTPUT'"
+fi
 
 exit_script 0

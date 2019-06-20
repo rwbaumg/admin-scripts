@@ -15,6 +15,6 @@ fi
 echo "Sending kill signal to zombie PIDs..."
 echo "PIDs: $ZOMBIE_PIDS"
 
-kill $ZOMBIE_PIDS
+kill "$ZOMBIE_PIDS"
 
 exit 0

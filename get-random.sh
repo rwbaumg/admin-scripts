@@ -8,4 +8,4 @@ dd if=/dev/urandom bs=1 count=256 > /tmp/random_data
 RANDOM_HASH=$(sha512sum -b /tmp/random_data | awk '{ print $1 }')
 rm $TMP_FILE
 
-echo $RANDOM_HASH
+echo "$RANDOM_HASH"

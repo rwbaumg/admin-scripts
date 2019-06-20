@@ -3,6 +3,6 @@
 
 STAMP=$(date '+%Y%m%d%H%M%S')
 
-echo $STAMP
+echo "$STAMP"
 
 exit 0

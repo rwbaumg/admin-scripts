@@ -74,7 +74,7 @@ check_verbose()
 [ $# -gt 0 ] || usage
 
 i=1
-argc=$#
+#argc="$#"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -145,7 +145,7 @@ echo "Renaming files matching '*$criteria*' under '$location' ..."
 # note: was using $* before argument parsing implementation changed
 find "$location" -type f -name "*$criteria*" -print0 | while IFS= read -r -d '' file; do
   src="$file"
-  tgt=$(echo $file | sed -e "s/$re_match/$replace/")
+  tgt=$(sed -e "s/$re_match/$replace/" "$file")
   if [ "$src" != "$tgt" ]; then
      mv $VERBOSE "$src" "$tgt"
   fi

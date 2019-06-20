@@ -375,8 +375,8 @@ OSSL()
 
 	cd openssl-1.0.1g/
 	echo "Building OpenSSL"
-	./config no-zlib 2>&1 >> /dev/null
-	make 2>&1 >> /dev/null
+	./config no-zlib >> /dev/null 2>&1
+	make >> /dev/null 2>&1
 	echo "Running OpenSSL test"
  	./apps/openssl speed rsa4096 -multi $nproc
 
@@ -553,7 +553,7 @@ p7zip()
 
 	echo "Building p7zip"
 	cd $appbase
-	make 2>&1 >> /dev/null
+	make >> /dev/null 2>&1
 
 	echo "Starting 7zip benchmark, this will take a while"
 	bin/7za b >> output.txt

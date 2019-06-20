@@ -10,6 +10,6 @@ fi
 
 TODAY=$(date +"%Y-%m-%d")
 
-find / -name '*' -printf '%u:%g %m %p\n' > permissions-backup-${TODAY}.txt
+find / -name '*' -printf '%u:%g %m %p\n' > "permissions-backup-${TODAY}.txt"
 
 exit 0

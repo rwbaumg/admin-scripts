@@ -10,7 +10,7 @@ echo "Updating extensions in $1 ..."
 echo "Converting $2 -> $3"
 
 for f in *.$2; do
-  mv -v "$f" "$(basename "$f" .$2).$3"
+  mv -v "$f" "$(basename "$f" ."$2").$3"
 done
 
 exit 0

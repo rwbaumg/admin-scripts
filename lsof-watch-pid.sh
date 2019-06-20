@@ -108,15 +108,15 @@ check_root() {
   fi
 }
 
-VERBOSE=""
 VERBOSITY=0
 
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOSE="-v"
-  fi
-}
+#VERBOSE=""
+#check_verbose()
+#{
+#  if [ $VERBOSITY -gt 1 ]; then
+#    VERBOSE="-v"
+#  fi
+#}
 
 PID=""
 INTERVAL=10
@@ -127,7 +127,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -n|--interval)
@@ -149,6 +149,8 @@ done
 
 check_root
 
-watch -n $INTERVAL --differences lsof -p $PID
+if ! watch -n "$INTERVAL" --differences lsof -p "$PID"; then
+  exit_script 1
+fi
 
 exit_script 0

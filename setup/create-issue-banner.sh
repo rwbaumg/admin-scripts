@@ -59,24 +59,35 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 echo -e '\e[H\e[2J' > /etc/issue
-# shellcheck disable=2129
 echo -e '\e[1;33;40m' >> /etc/issue
+# shellcheck disable=2129
 echo '  ___       ___      __  ___            ___ ' >> /etc/issue
+# shellcheck disable=2129
 echo -e ' |  _|     / _ \\\    /_ |/ _ \\\  \e[1;31m\\s\e[1;33;40m   |_  |' >> /etc/issue
+# shellcheck disable=2129
 echo ' | |      | | | |_  _| | (_) |___        | |' >> /etc/issue
+# shellcheck disable=2129
 echo ' | |      | | | \\ \\/ / |\\__, / _ \\       | |' >> /etc/issue
+# shellcheck disable=2129
 echo ' | |      | |_| |>  <| |  / /  __/       | |' >> /etc/issue
+# shellcheck disable=2129
 echo ' | |_      \\___//_/\\_\\_| /_/ \\___|      _| |' >> /etc/issue
+# shellcheck disable=2129
 echo -e ' |___|  \e[1;32m\\r\e[1;33;40m  |___|' >> /etc/issue
+# shellcheck disable=2129
 echo -e '\e[0m' >> /etc/issue
 
+# shellcheck disable=2129
 echo -e '\e[1;39m\d \\t \e[1;39m::\e[1;39m \l' >> /etc/issue
+# shellcheck disable=2129
 echo '' >> /etc/issue
 
 # fortune=$(/usr/games/fortune linux linuxcookie | /usr/games/cowsay -n)
 # echo -e '\e[1;31m' + $fortune + '\e[0m' >> /etc/issue
 
+# shellcheck disable=2129
 echo -e '\e[1;31mWelcome \e[1;39mto \e[1;34m\\n' >> /etc/issue
+# shellcheck disable=2129
 echo -e '\e[0m' >> /etc/issue
 
 # echo '' >> /etc/issue

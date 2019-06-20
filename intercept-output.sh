@@ -126,15 +126,15 @@ check_root() {
   fi
 }
 
-VERBOSE=""
 VERBOSITY=0
 
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOSE="-v"
-  fi
-}
+#VERBOSE=""
+#check_verbose()
+#{
+#  if [ $VERBOSITY -gt 1 ]; then
+#    VERBOSE="-v"
+#  fi
+#}
 
 PID=""
 
@@ -144,7 +144,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
+      #check_verbose
       shift
     ;;
     -h|--help)
@@ -167,7 +167,7 @@ if [ $VERBOSITY -gt 0 ]; then
   echo "Intercepting $PID ..."
 fi
 
-strace -ff -e trace=write -e write=1,2 -p $PID
+strace -ff -e trace=write -e write=1,2 -p "$PID"
 
 # more user-friendly?
 #strace -ff -e write=1,2 -s 1024 -p PID  2>&1 \

@@ -7,13 +7,13 @@ USE_SPINNER=0
 hash perf 2>/dev/null || { echo >&2 "The perf command is missing; you need to install linux-tools-common and/or linux-tools-generic. Aborting."; exit 1; }
 hash sudo 2>/dev/null || { echo >&2 "You need to install sudo. Aborting."; exit 1; }
 
-if [[ ${USE_SPINNER} -eq 1 ]] && [ ! -e "$(dirname $0)/helpers/spinner.sh" ]; then
+if [[ ${USE_SPINNER} -eq 1 ]] && [ ! -e "$(dirname "$0")/helpers/spinner.sh" ]; then
   echo >&2 "WARNING: Cannot find spinner source file: ./helpers/spinner.sh"
   USE_SPINNER=0
 fi
 
 if [[ ${USE_SPINNER} -eq 1 ]]; then
-  if ! source $(dirname $0)/helpers/spinner.sh; then
+  if ! source "$(dirname "$0")/helpers/spinner.sh"; then
     echo >&2 "WARNING: Failed to include spinner source file: ./helpers/spinner.sh"
     USE_SPINNER=0
   fi
@@ -38,7 +38,7 @@ else
   echo -n       "Recording performance data for ${REC_SECONDS} seconds ... "
 fi
 
-if ! $(sudo perf record -g -a sleep ${REC_SECONDS} > /dev/null 2>&1); then
+if ! sudo perf record -g -a sleep ${REC_SECONDS} > /dev/null 2>&1; then
   if [[ ${USE_SPINNER} -eq 1 ]]; then stop_spinner 1; else echo "done."; fi
   echo >&2 "ERROR: Failed to record performance data."
   exit 1

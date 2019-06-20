@@ -936,7 +936,7 @@ echo ""
 
 # We couldnt find a suitable wget, so tell the user to upload manually.
 else
-	mv -f $FILE $NFILE || exit 1
+	mv -f "$FILE" "$NFILE" || exit 1
 	KEEP_OUTPUT="yes"
 	if [[ -z $DIALOG ]]
 	then

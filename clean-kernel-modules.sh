@@ -2,7 +2,7 @@
 # create a script to clean kernel modules
 # the current kernel is excluded for posterity
 
-TMP=*
+TMP="*"
 if [[ -n "$1" ]]; then
   TMP=$1
 fi

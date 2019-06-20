@@ -18,10 +18,10 @@ check_core_id()
     exit 1
   fi
 
-  core=$((${core}-1))
+  core=$((core-1))
 
   if [ ! -e "/sys/bus/cpu/devices/cpu${core}" ]; then
-    echo >&2 "ERROR: '$((${core}+1))' is not a valid CPU core number."
+    echo >&2 "ERROR: '$((core+1))' is not a valid CPU core number."
     exit 1
   fi
 }

@@ -16,6 +16,6 @@ if [ $# -gt 0 ]; then
 fi
 
 ps -axo ${PS_OUTPUT} | head -n1
-ps --no-headers -axo ${PS_OUTPUT} | sort -rnk +${PS_MEM_CN} | head -n${OUTPUT_CN}
+ps --no-headers -axo ${PS_OUTPUT} | sort -rnk +${PS_MEM_CN} | head -n"${OUTPUT_CN}"
 
 exit $?

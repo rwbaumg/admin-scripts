@@ -10,4 +10,4 @@ if [[ -z "$1" ]]; then
 fi
 
 # grep the index file for the specified term
-zgrep -i $1 /usr/share/doc/RFC/rfc-index.txt.gz || echo "No subject found for $1"
+zgrep -i "$1" /usr/share/doc/RFC/rfc-index.txt.gz || echo "No subject found for $1"

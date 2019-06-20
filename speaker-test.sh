@@ -29,13 +29,15 @@ reportInterruptedDevice() (
 )
 trap reportInterruptedDevice SIGINT
 
-for pcmDevice in ${pcmDevs[@]};do
+for pcmDevice in "${pcmDevs[@]}";do
   currentlyTesting="$pcmDevice"
 
   printf 'TESTING device "%s"\n' "$pcmDevice"
-  speaker-test --channels 2 --device $pcmDevice -t wav &&
-    printf '\nFAILED testing device "%s"\n\n' "$pcmDevice" ||
+  if ! speaker-test --channels 2 --device "$pcmDevice" -t wav; then
+    printf '\nFAILED testing device "%s"\n\n' "$pcmDevice"
+  else
     printf '\nFINSHED testing device "%s"\n\n' "$pcmDevice"
+  fi
 done
 currentlyTesting=''
 

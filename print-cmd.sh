@@ -16,12 +16,12 @@ if ! [[ $PID =~ $re ]] ; then
 fi
 
 # valid PIDs start at one
-if [ $PID -lt 1 ]; then
+if [ "$PID" -lt 1 ]; then
   echo >&2 "ERROR: '$PID' is less than 1 and is not a valid PID."
   exit 1
 fi
 
 # print the full command line of the specified process
-ps --no-headers -up $PID |  awk '{ s = ""; for (i = 11; i <= NF; i++) s = s $i " "; print s }'
+ps --no-headers -up "$PID" |  awk '{ s = ""; for (i = 11; i <= NF; i++) s = s $i " "; print s }'
 
 exit 0

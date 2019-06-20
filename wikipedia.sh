@@ -17,13 +17,13 @@ fi
 LANG="en"
 
 # convert spaces to underscores
-var=$(echo $* | sed 's/ /_/g')
+var=$(echo "$*" | sed 's/ /_/g')
 
 # retrieve wiki data
-wiki_data=$(curl -s "https://"$LANG".wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&titles="$var"&redirects" | jq '.query.pages | to_entries[0] | .value.extract')
+wiki_data=$(curl -s "https://$LANG.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&titles=$var&redirects" | jq '.query.pages | to_entries[0] | .value.extract')
 
 # eliminate quotes characters
-data=$(echo $wiki_data | sed 's/\\\"/"/g')
+data=$(echo "$wiki_data" | sed 's/\\\"/"/g')
 
 if [[ $data = "null" ]]; then
   echo >&2 "ERROR: No data to fetch."
@@ -32,7 +32,7 @@ fi
 
 # print result
 url=https://en.wikipedia.org/wiki/$var
-echo -e ${data:1:${#data}-2}"\n"
-echo "See more on "$url
+echo -e "${data:1:${#data}-2}\n"
+echo "See more on $url"
 
 exit 0

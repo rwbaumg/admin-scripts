@@ -12,4 +12,4 @@ GROUP_NAME="$1"
 
 MEMBERS=$(awk -F':' "/^$GROUP_NAME/{print $4}" /etc/group)
 
-echo $MEMBERS
+echo "$MEMBERS"
