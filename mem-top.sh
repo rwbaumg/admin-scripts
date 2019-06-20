@@ -7,8 +7,8 @@ PS_MEM_CN=4
 
 # check if an argument was provided
 if [ $# -gt 0 ]; then
-  if [[ "$@" =~ ^-?[0-9]+$ ]]; then
-    OUTPUT_CN=$@
+  if [[ "$*" =~ ^-?[0-9]+$ ]]; then
+    OUTPUT_CN=$*
   else
     echo >&2 "ERROR: Argument must be a valid number."
     exit 1

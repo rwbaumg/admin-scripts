@@ -8,7 +8,7 @@
 TOP_COUNT=20
 
 # Parse command history
-HISTORY=$(cat ~/.bash_history | grep "$1")
+HISTORY=$(grep "$1" ~/.bash_history)
 TOTAL=$(echo "$HISTORY" | wc -l)
 UNIQUE=$(echo "$HISTORY" | sort | uniq -c)
 TOP_CMD=$(echo "$UNIQUE" | sort -rh | head -${TOP_COUNT})

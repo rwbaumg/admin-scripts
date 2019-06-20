@@ -25,28 +25,28 @@ function formatSizeBc() {
         size=$size" B"
     fi
 
-    echo "$size"
+    echo -n "$size"
     return 0
 }
 
 function getSizeString() {
     if [ -z "$1" ]; then
-        echo "NULL"
+        echo -n "NULL"
         return 1
     fi
 
     re='^[0-9]+$'
     if ! [[ $1 =~ $re ]] ; then
-        echo "NaN"
+        echo -n "NaN"
         return 1
     fi
 
     if [ "$1" -lt 1000 ]; then
-        echo "${1} bytes"
+        echo -n "${1} bytes"
         return 0
     fi
 
-    echo "$1" |  awk '
+    echo -n "$1" |  awk '
         function human(x) {
             if (x<1000) {return x} else {x/=1024}
             s="kMGTEPZY";

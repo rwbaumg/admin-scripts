@@ -9,7 +9,7 @@ if [ -z "${NO_SPINNER}" ]; then
 fi
 
 if [ -n "$1" ]; then
-  if [ ! -d "$@" ]; then
+  if [ ! -d "$*" ]; then
     echo >&2 "usage: $0 [directory]"
     exit 1
   fi

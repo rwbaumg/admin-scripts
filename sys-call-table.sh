@@ -7,4 +7,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-cat /boot/System.map-$(uname -r) | grep sys_call_table | cut -d " " -f 1
+grep sys_call_table "/boot/System.map-$(uname -r)" | cut -d " " -f 1
+
+exit 0

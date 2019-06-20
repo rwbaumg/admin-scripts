@@ -10,7 +10,7 @@ if [[ -z "$1" ]]; then
 fi
 
 # TODO: Validate paste id using regex
-PASTE_ID=$(echo "$1" | tr -d [:cntrl:][:punct:][:space:])
+PASTE_ID=$(echo "$1" | tr -d "[:cntrl:][:punct:][:space:]")
 if [[ -z "$PASTE_ID" ]]; then
   echo "Fatal: Filtered paste id is null." >&2
   exit 1

@@ -20,5 +20,5 @@ fi
 echo "${RAW}" > "${OUTPUT}"
 
 echo >&2 "Saved hardware report to $(basename ${OUTPUT})"
-echo "$(readlink -f ${OUTPUT})"
+readlink -f "${OUTPUT}"
 exit 0

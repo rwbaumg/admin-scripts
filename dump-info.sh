@@ -12,7 +12,7 @@
  grep MemTotal /proc/meminfo | uniq -c; \
  ifconfig | grep 'inet addr'; \
  echo; \
- wget --output-document=/dev/null http://speedtest.wdc01.softlayer.com/downloads/test10.zip 2>&1 >/dev/null | grep --before-context=5 saved; \
+ wget --output-document=/dev/null http://speedtest.wdc01.softlayer.com/downloads/test10.zip /dev/null 2>&1 | grep --before-context=5 saved; \
  echo; \
  if hash finger 2>/dev/null; then finger root; fi; \
  lsof -i) | uniq

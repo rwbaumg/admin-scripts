@@ -12,8 +12,8 @@ pcmDevs="$(
   aplay --list-pcms |
     grep --invert-match --extended-regexp '^[[:space:]]' |
     grep --invert-match --extended-regexp '^(default|null|pulse)' |
-    while IFS=, read record _; do echo "$record"; done |
-    while IFS=: read label cardKeyValue; do
+    while IFS=, read -r record _; do echo "$record"; done |
+    while IFS=: read -r label cardKeyValue; do
       card="${cardKeyValue/CARD=/}"
       if [ "$card" = Loopback ];then continue;fi
       printf -- '%s:%s\n' "$label" "$card"

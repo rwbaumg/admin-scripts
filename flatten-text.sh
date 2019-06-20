@@ -18,7 +18,7 @@ fi
 # - to remove leading whitespace: sed -e 's/^[ \t]*//'
 # - to remove trailing whitespace: sed 's/[ \t]*$//'
 
-cat $file | sed 's/^[ \t]*//;s/[ \t]*$//' > $file.flat
+sed 's/^[ \t]*//;s/[ \t]*$//' "$file" > $file.flat
 
 echo "Saved file to: $file.flat"
 
