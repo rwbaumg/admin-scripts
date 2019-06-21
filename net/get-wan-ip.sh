@@ -16,7 +16,7 @@ if ! wan_ip=$(ifconfig "${wan_iface}" | grep -Po '(?<=inet\s)[0-9]{1,3}\.[0-9]{1
   err=1
 fi
 if [ "${err}" -ne 0 ] || [ -z "${wan_ip}" ]; then
-  if ifconfig "${wan_iface}" | grep -Po '(?<=inet\saddr:)[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?=\s)'; then
+  if wan_ip=$(ifconfig "${wan_iface}" | grep -Po '(?<=inet\saddr:)[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?=\s)'); then
     err=0
   fi
 fi
