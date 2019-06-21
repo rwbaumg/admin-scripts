@@ -20,7 +20,7 @@ function countdown() {
     done
 }
 
-if ! temp_file=$(mktemp -t screenshot.XXXXXXXXXX)".png"; then
+if ! temp_file=$(mktemp -t screenshot.XXXXXXXXXX.png); then
   echo >&2 "ERROR: Failed to create temporary file for screenshot."
   exit 1
 fi
@@ -35,7 +35,7 @@ fi
 echo -ne "Scanning for barcodes .......\r";
 
 err=0
-if ! zbarimg -q "${temp_file}"; then
+if ! results=$(zbarimg -q "${temp_file}"); then
   err=1
 fi
 
@@ -43,8 +43,13 @@ if [ -e "${temp_file}" ]; then
   rm -f "${temp_file}"
 fi
 
+# HACK: Clear the entire line.
+echo -ne "\r                             \r"
+
 if [ "${err}" -ne 0 ]; then
+  echo >&2 "No barcodes detected."
   exit 1
 fi
 
+echo "${results}"
 exit 0
