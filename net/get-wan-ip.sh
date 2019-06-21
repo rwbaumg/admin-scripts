@@ -11,12 +11,20 @@ if [ -z "${wan_iface}" ]; then
   exit 1
 fi
 
-if ! ifconfig "${wan_iface}" \
-         | grep 'inet addr:' \
-         | cut -d: -f2 \
-         | awk '{ print $1}'; then
+err=0
+if ! wan_ip=$(ifconfig "${wan_iface}" | grep -Po '(?<=inet\s)[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?=\s)'); then
+  err=1
+fi
+if [ "${err}" -ne 0 ] || [ -z "${wan_ip}" ]; then
+  if ifconfig "${wan_iface}" | grep -Po '(?<=inet\saddr:)[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?=\s)'; then
+    err=0
+  fi
+fi
+
+if [ "${err}" -ne 0 ] || [ -z "${wan_ip}" ]; then
   echo >&2 "ERROR: Failed to resolve IP address for interface '${wan_iface}'."
   exit 1
 fi
 
+echo "${wan_ip}"
 exit 0
