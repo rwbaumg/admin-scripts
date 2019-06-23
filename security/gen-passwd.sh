@@ -2,7 +2,7 @@
 # generates a random password
 # uses /dev/random to ensure good random numbers
 
-RNG_DEV="/dev/random"
+RNG_DEV="/dev/urandom"
 
 # Strong passwords should be at least this long
 DEFAULT_LENGTH="20"
