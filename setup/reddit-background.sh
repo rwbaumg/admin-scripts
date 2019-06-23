@@ -2,6 +2,10 @@
 # Gets a URL to the top-rated desktop on Reddit
 # and performs optional processing, such as setting
 # the current background.
+#
+# To get only the URL, without displaying the image and store it in a variable use:
+#   REDDIT_URL=$(NO_DISPLAY=1 ./reddit-background.sh 2>/dev/null)
+#   echo $REDDIT_URL
 
 WALLPAPER_RSS_URL="https://www.reddit.com/r/wallpapers.rss"
 
@@ -15,6 +19,9 @@ if [ -n "${IMAGE_COMMAND}" ]; then
 fi
 if [ -n "${IMAGE_COMMAND_ARGS}" ]; then
   CMD_ARG="${IMAGE_COMMAND_ARGS}"
+fi
+if [ -z "${NO_DISPLAY}" ]; then
+  NO_DISPLAY="false"
 fi
 
 if echo "${IMG_CMD}" | grep -Po '\s'; then
@@ -30,12 +37,15 @@ fi
 hash curl 2>/dev/null || { echo >&2 "You need to install curl. Aborting."; exit 1; }
 
 # Check for configured image command
-hash "${IMG_CMD}" 2>/dev/null || { echo >&2 "You need to install ${IMG_CMD}. Aborting."; exit 1; }
+# hash "${IMG_CMD}" 2>/dev/null || { echo >&2 "You need to install ${IMG_CMD}. Aborting."; exit 1; }
 
-TOP_URL=$(curl ${WALLPAPER_RSS_URL} \
-            | grep -Eo 'https:[^&]+(jpg|jpeg|png)' \
-            | grep -v  thumb \
-            | head -1)
+if ! TOP_URL=$(curl -s "${WALLPAPER_RSS_URL}" 2>/dev/null \
+                 | grep -Eo 'https:[^&]+(jpg|jpeg|png)' \
+                 | grep -v  thumb \
+                 | head -1); then
+  echo >&2 "ERROR: Request to '${WALLPAPER_RSS_URL}' failed."
+  exit 1
+fi
 
 if [ -z "${TOP_URL}" ]; then
   echo >&2 "ERROR: Failed to determine URL for top-rated Reddit image."
@@ -43,12 +53,16 @@ if [ -z "${TOP_URL}" ]; then
   exit 1
 fi
 
-echo "Current top-rated wallpaper: ${TOP_URL}"
+echo -n >&2 "Current top-rated wallpaper: "
+echo "${TOP_URL}"
 
-if [ -n "${IMG_CMD}${CMD_ARG}" ]; then
-  echo "Image processing command: ${IMG_CMD} ${CMD_ARG}"
-  echo "${TOP_URL}" | xargs "${IMG_CMD}" "${CMD_ARG}"
-  exit $?
+if hash "${IMG_CMD}" 2>/dev/null && [[ ! "${NO_DISPLAY}" =~ ^(true|t|1) ]]; then
+  if [ -n "${IMG_CMD}${CMD_ARG}" ]; then
+    if ! echo "${TOP_URL}" | xargs "${IMG_CMD}" "${CMD_ARG}" 2>/dev/null; then
+      echo >&2 "ERROR: Failed to display background image using '${IMG_CMD}' command."
+      exit 1
+    fi
+  fi
 fi
 
 exit 0
