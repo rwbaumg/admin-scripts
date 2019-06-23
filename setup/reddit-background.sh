@@ -39,11 +39,19 @@ hash curl 2>/dev/null || { echo >&2 "You need to install curl. Aborting."; exit 
 # Check for configured image command
 # hash "${IMG_CMD}" 2>/dev/null || { echo >&2 "You need to install ${IMG_CMD}. Aborting."; exit 1; }
 
-if ! TOP_URL=$(curl -s "${WALLPAPER_RSS_URL}" 2>/dev/null \
-                 | grep -Eo 'https:[^&]+(jpg|jpeg|png)' \
+if ! CURL_OUT=$(curl -s "${WALLPAPER_RSS_URL}" 2>/dev/null); then
+  echo >&2 "ERROR: Request to '${WALLPAPER_RSS_URL}' failed."
+  exit 1
+fi
+if echo "${CURL_OUT}" | grep -q "whoa there, pardner"; then
+  echo >&2 "ERROR: Rate-limited."
+  exit 1
+fi
+
+if ! TOP_URL=$(echo "${CURL_OUT}" | grep -Eo 'https:[^&]+(jpg|jpeg|png)' \
                  | grep -v  thumb \
                  | head -1); then
-  echo >&2 "ERROR: Request to '${WALLPAPER_RSS_URL}' failed."
+  echo >&2 "ERROR: Failed to extract top URL from response."
   exit 1
 fi
 
