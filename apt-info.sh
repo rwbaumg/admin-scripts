@@ -22,7 +22,8 @@ function print_pkg_info()
     exit 1
   fi
 
-  dpkg_meta=$(dpkg -l | grep -Po "^(?:ii(\s+))${pkg_name}(\:[^\s]*)?(?:\s+).*(?:\s+).*(?:\s+)")
+  dpkg_name=$(echo "${pkg_name}" | sed -e 's/\+/\\+/g' -e 's/\-/\\-/g' -e 's/\[/\\[/g' -e 's/\]/\\]/g')
+  dpkg_meta=$(dpkg -l | grep -Po "^(?:ii(\s+))${dpkg_name}(\:[^\s]*)?(?:\s+).*(?:\s+).*(?:\s+)")
   dpkg_name=$(echo "${dpkg_meta}" | awk -F' ' '{ print $2 }')
   dpkg_version=$(echo "${dpkg_meta}" | awk -F' ' '{ print $3 }')
   dpkg_arch=$(echo "${dpkg_meta}" | awk -F' ' '{ print $4 }')
