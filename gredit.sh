@@ -204,7 +204,6 @@ while [ $# -gt 0 ]; do
         usage "Cannot specify multiple search locations."
       fi
       test_path_arg "$1"
-      TARGET="$(basename "$1")"
       if [ ! -d "${1}" ]; then
         TARGET_DIR="$(dirname "$1")"
       else
