@@ -86,28 +86,10 @@ if [ $PINENTRY_INST -eq 0 ]; then
   echo >&2 "WARNING: Failed to install any pinentry applications."
 fi
 
-if [ ! -e "$HOME/.gnupg/gpg.conf" ]; then
-  cp -v configs/gnupg/gpg.conf.example "$HOME/.gnupg/gpg.conf"
-fi
-if [ ! -e "$HOME/.gnupg/gpg-agent.conf" ]; then
-  cp -v configs/gnupg/gpg-agent.conf.example "$HOME/.gnupg/gpg-agent.conf"
-fi
-if [ ! -e "$HOME/.gnupg/dirmngr.conf" ]; then
-  cp -v configs/gnupg/dirmngr.conf.example "$HOME/.gnupg/dirmngr.conf"
-fi
-if [ ! -e "$HOME/.gnupg/scdaemon.conf" ]; then
-  cp -v configs/gnupg/scdaemon.conf.example "$HOME/.gnupg/scdaemon.conf"
-fi
-
 # Configure alternative gpg options, defaulting to the newest installed binary
 sudo update-alternatives --verbose --install /usr/local/bin/gpg gnupg /usr/local/bin/gpg2 100
 sudo update-alternatives --verbose --install /usr/local/bin/gpg gnupg /usr/bin/gpg2 50
 sudo update-alternatives --verbose --install /usr/local/bin/gpg gnupg /usr/bin/gpg 10
-
-if [ ! -e "$HOME/.ssh/config" ]; then
-  echo "Installing example .ssh/config ..."
-  echo "${USER_SSH_CFG}" > "$HOME/.ssh/config"
-fi
 
 echo "Installing base configuration /etc/ssh/sshd_config ..."
 if ! sudo cp -v configs/ssh/sshd.config /etc/ssh/sshd_config; then
@@ -142,5 +124,27 @@ if [ -e "/etc/rsyslog.d/" ]; then
 fi
 
 echo "Finished OpenSSH / GnuPG installation checks."
+
+## (Optional) Configure user settings
+
+echo "Configuring user settings for OpenSSH + GnuPG ..."
+
+if [ ! -e "$HOME/.gnupg/gpg.conf" ]; then
+  cp -v configs/gnupg/gpg.conf.example "$HOME/.gnupg/gpg.conf"
+fi
+if [ ! -e "$HOME/.gnupg/gpg-agent.conf" ]; then
+  cp -v configs/gnupg/gpg-agent.conf.example "$HOME/.gnupg/gpg-agent.conf"
+fi
+if [ ! -e "$HOME/.gnupg/dirmngr.conf" ]; then
+  cp -v configs/gnupg/dirmngr.conf.example "$HOME/.gnupg/dirmngr.conf"
+fi
+if [ ! -e "$HOME/.gnupg/scdaemon.conf" ]; then
+  cp -v configs/gnupg/scdaemon.conf.example "$HOME/.gnupg/scdaemon.conf"
+fi
+
+if [ ! -e "$HOME/.ssh/config" ]; then
+  echo "Installing example .ssh/config ..."
+  echo "${USER_SSH_CFG}" > "$HOME/.ssh/config"
+fi
 
 exit 0
