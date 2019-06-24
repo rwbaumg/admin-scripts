@@ -29,8 +29,8 @@ function print_pkg_info()
   dpkg_arch=$(echo "${dpkg_meta}" | awk -F' ' '{ print $4 }')
 
   dpkg_info=$(dpkg -s "${pkg_name}")
-  dpkg_s_version=$(echo "${dpkg_info}" | grep "Version:" | awk -F' ' '{ print $2 }')
-  dpkg_s_arch=$(echo "${dpkg_info}" | grep "Architecture:" | awk -F' ' '{ print $2 }')
+  dpkg_s_version=$(echo "${dpkg_info}" | grep -P "^Version:" | awk -F' ' '{ print $2 }')
+  dpkg_s_arch=$(echo "${dpkg_info}" | grep -P "^Architecture:" | awk -F' ' '{ print $2 }')
 
   if [ "${dpkg_version}" != "${dpkg_s_version}" ]; then
     echo >&2 "ERROR: DPKG version '${dpkg_version}' does not match extracted value of '${dpkg_s_version}'."
