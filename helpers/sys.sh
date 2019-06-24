@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 # General system helpers
 
+# Compare version numbers
+#
+# Usage:
+#    if version_gt "$VERSION" "$MIN_VERSION"; then ...
+#
+function version_gt() { test "$(printf '%s\n' "$@" | sort -bt. -k1,1 -k2,2n -k3,3n -k4,4n -k5,5n | head -n 1)" != "$1"; }
+
 # Execute a command as root (or sudo)
 function do_with_root()
 {
@@ -14,6 +21,37 @@ function do_with_root()
         echo "This script must be run as root." >&2
         exit 1
     fi
+}
+
+# get the root directory this script is running from
+# if the script is called from a symlink, the link is
+# resolved to the absolute path.
+function get_root_dir() {
+  source="${BASH_SOURCE[0]}"
+  # resolve $source until the file is no longer a symlink
+  while [ -h "${source}" ]; do
+    dir=$( cd -P "$( dirname "${source}" )" && pwd )
+    source=$(readlink "${source}")
+    # if $source was a relative symlink, we need to resolve it
+    # relative to the path where the symlink file was located
+    [[ ${source} != /* ]] && source="${dir}/${source}"
+  done
+  dir="$( cd -P "$( dirname "${source}" )" && pwd )"
+  echo "${dir}"
+  return
+}
+
+function is_number() {
+  if [ -z "${1}" ]; then
+    return 1
+  fi
+
+  re='^[0-9]+$'
+  if [[ ${1} =~ $re ]]; then
+    return 0
+  fi
+
+  return 1
 }
 
 function prog_getcap() {

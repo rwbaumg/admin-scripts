@@ -2,8 +2,7 @@
 # Debian packaging helpers
 
 # Check if a package is installed
-function check_installed()
-{
+function check_installed() {
   pkg_name="$1"
   if [ -z "${pkg_name}" ]; then
     echo >&2 "ERROR: Package name not provided to check script."
@@ -16,6 +15,72 @@ function check_installed()
     fi
   fi
 
+  return 1
+}
+
+# Attempt to install a package
+function install_pkg() {
+  pkg_name="$1"
+  if [ -z "${pkg_name}" ]; then
+    echo >&2 "ERROR: Package name not provided to check script."
+    return 1
+  fi
+
+  if check_installed "${pkg_name}"; then
+    # package is already installed
+    # echo "Package '${pkg_name}' is installed."
+    return 0
+  fi
+
+  if hash apt-get 2>/dev/null; then
+    # echo "Updating apt cache..."
+    if ! apt-get update; then
+      echo >&2 "ERROR: Failed to update apt cache."
+      return 1
+    fi
+  fi
+
+  # echo "Installing missing package '${pkg_name}' via apt-get ..."
+  if ! apt-get install -V -y "${pkg_name}"; then
+    echo >&2 "ERROR: Failed to install package '${pkg_name}'."
+    return 1
+  fi
+
+  return 0
+}
+
+# Check if a source repository is enabled
+function is_source_repo_enabled() {
+  source="$1"
+  if [ -z "$source" ]; then
+    echo >&2 "ERROR: Missing source argument to function."
+    return 1
+  fi
+
+  if hash apt-cache 2>/dev/null; then
+    if ! hash lsb_release 2>/dev/null; then
+      echo >&2 "ERROR: Unable to determine OS release (missing lsb_release command)."
+      return 1
+    fi
+
+    os_info="$(lsb_release --short --id --release --codename)"
+    { read -r os_id; read -r os_release; read -r os_codename; } <<< "$os_info"
+
+    if apt-cache policy | grep -q -E "^(\s+)?release\sv=$os_release,o=${os_id},a=$os_codename,n=$os_codename,l=${os_id},c=${source}"; then
+      echo "Package source '${source}' is already enabled."
+      return 0
+    fi
+
+    if add-apt-repository --yes "${source}"; then
+      echo "Enabled package source '${source}'."
+      return 0
+    else
+      echo >&2 "Failed to enable package source '${source}'."
+      return 1
+    fi
+  fi
+
+  echo >&2 "The current operating system lacks a supported package manager."
   return 1
 }
 
