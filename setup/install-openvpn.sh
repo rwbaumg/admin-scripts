@@ -2,7 +2,7 @@
 # Install OpenVPN client on Debian-based system
 # Package list is defined after include_packages() function.
 
-DRY_RUN=1
+DRY_RUN=0
 
 function check_installed() {
   pkg_name="$1"
