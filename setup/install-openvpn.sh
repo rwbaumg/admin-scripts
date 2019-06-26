@@ -104,7 +104,8 @@ function install_packages() {
     cmd_extra="--dry-run"
     echo >&2 "WARNING: DRY RUN"
   fi
-  apt_cmd="apt-get install ${cmd_extra} -V -y ${pkg_names}"
+  apt_cmd="apt-get install ${cmd_extra} -V ${pkg_names}"
+  # apt_cmd="apt-get install ${cmd_extra} -V -y ${pkg_names}"
   if ! do_with_root "${apt_cmd}"; then
     echo >&2 "ERROR: Failed to install '${pkg_names}'."
     return 1
