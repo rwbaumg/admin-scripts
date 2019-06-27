@@ -244,7 +244,7 @@ fi
 
 pushd "${TARGET_DIR}" > /dev/null 2>&1
 
-GREP_COMMAND="grep ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} \"${CONTEXT_REGEX}\" ${GREP_LOCATION} -A${CONTEXT_LINES}"
+GREP_COMMAND="grep -P ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} '${CONTEXT_REGEX}' ${GREP_LOCATION} -A${CONTEXT_LINES}"
 GREP_RESULTS=$(bash -c "${GREP_COMMAND}")
 if [ -n "${TARGET}" ] && [ ! -d "${TARGET}" ]; then
   GREP_COMMAND="${GREP_COMMAND} | grep '${TARGET}'"
@@ -258,7 +258,7 @@ if [ $VERBOSITY -gt 0 ]; then
   echo "Grep command  : ${GREP_COMMAND}"
 fi
 
-IFS=$'\n'; for l in $(echo "${GREP_RESULTS}" | grep "${TARGET_STRING}" \
+IFS=$'\n'; for l in $(echo "${GREP_RESULTS}" | grep -P "${TARGET_STRING}" \
   | grep -v -P "(\-|\:)[0-9]+(\-|\:)([\s]+)?\#" \
   | sed -r "s/\-([0-9]+)\-${TARGET_STRING}/\:\1\:${TARGET_STRING}/" \
   | awk -F: '{ printf "+%s %s\n", $2, $1 }'); do ${PRE_CMD} bash -c "${EDIT_COMMAND} ${l}"; done
