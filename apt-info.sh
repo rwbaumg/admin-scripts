@@ -9,7 +9,7 @@ fi
 
 function get_installed_packages()
 {
-  for pkg in $(dpkg --get-selections | grep install | awk -F' ' '{ print $1 }'); do
+  for pkg in $(dpkg --get-selections | grep -P "(\s)install$" | awk -F' ' '{ print $1 }'); do
     echo "$pkg"
   done
 }
@@ -24,6 +24,11 @@ function print_pkg_info()
 
   dpkg_name=$(echo "${pkg_name}" | sed -e 's/\+/\\+/g' -e 's/\-/\\-/g' -e 's/\[/\\[/g' -e 's/\]/\\]/g')
   dpkg_meta=$(dpkg -l | grep -Po "^(?:ii(\s+))${dpkg_name}(\:[^\s]*)?(?:\s+).*(?:\s+).*(?:\s+)")
+  if [ -z "${dpkg_meta}" ]; then
+    echo >&2 "ERROR: Failed to find DPKG entry for package '${pkg_name}'."
+    exit 1
+  fi
+
   dpkg_name=$(echo "${dpkg_meta}" | awk -F' ' '{ print $2 }')
   dpkg_version=$(echo "${dpkg_meta}" | awk -F' ' '{ print $3 }')
   dpkg_arch=$(echo "${dpkg_meta}" | awk -F' ' '{ print $4 }')
