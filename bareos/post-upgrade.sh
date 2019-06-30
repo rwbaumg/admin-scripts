@@ -86,7 +86,7 @@ fi
 # git handling for etckeeper (check if /etc/.git exists)
 if hash git 2>/dev/null; then
   if git -C "/etc" rev-parse > /dev/null 2>&1; then
-    if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/bareos|grep -E '^(M| M|D| D)')" != "" ]]; then
+    if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/bareos | grep -E '^(M| M|D| D)')" != "" ]]; then
       pushd /etc/bareos > /dev/null 2>&1
       git add --all
       git commit -m "bareos: auto-commit configuration reset."

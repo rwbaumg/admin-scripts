@@ -177,7 +177,7 @@ check_etckeeper()
     if git -C "/etc" rev-parse > /dev/null 2>&1; then
       # check /etc/apt for modifications
       # if there are changes, commit them
-      if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/"${pkg_name}"|grep '^(M| M)')" != "" ]]; then
+      if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- '/etc/${pkg_name}' | grep -E '^(M| M)')" != "" ]]; then
         if [ "${ETCKEEPER_COMMIT}" != "true" ]; then
           echo >&2 "WARNING: Uncommitted changes under version control: /etc/apt"
           echo >&2 "WARNING: You may want to enable automatic handling with --enable-etckeeper"
