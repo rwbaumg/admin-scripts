@@ -16,7 +16,7 @@ no-comments
 no-emit-version
 keyid-format 0xlong
 with-fingerprint
-verify-options show-uid-validity show-policy-urls show-notations show-keyserver-urls 
+verify-options show-uid-validity show-policy-urls show-notations show-keyserver-urls
 list-options show-uid-validity
 require-cross-certification
 max-cert-depth 5
