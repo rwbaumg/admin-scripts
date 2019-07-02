@@ -52,6 +52,6 @@ git log -n "$LOG_COUNT" \
         --abbrev-commit \
         --date=relative
 
-popd /dev/null 2>&1
+popd > /dev/null 2>&1
 
 exit 0

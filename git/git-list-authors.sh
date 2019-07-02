@@ -39,6 +39,6 @@ git log --pretty=full \
   | sort \
   | uniq
 
-popd /dev/null 2>&1
+popd > /dev/null 2>&1
 
 exit 0
