@@ -89,7 +89,7 @@ if ! sudo tripwire --check --interactive; then
 fi
 
 echo "NOTE: Remember to delete un-encrypted configuration files after testing:"
-echo "      `sudo rm /etc/tripwire/twcfg.txt /etc/tripwire/twpol.txt`"
+echo "      sudo rm /etc/tripwire/twcfg.txt /etc/tripwire/twpol.txt"
 echo ""
 echo "Initialization process completed."
 
