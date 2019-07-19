@@ -34,6 +34,10 @@ if [ ! -e "/etc/tripwire/$HOSTNAME-local.key" ]; then
   echo >&2 "ERROR: Missing local key file '/etc/tripwire/$HOSTNAME-local.key'."
   exit 1
 fi
+if ! sudo chmod -v 600 "/etc/tripwire/$HOSTNAME-local.key"; then
+  echo >&2 "ERROR: Failed to set permissions for '/etc/tripwire/$HOSTNAME-local.key'."
+  exit 1
+fi
 fi
 
 err=0
