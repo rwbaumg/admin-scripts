@@ -87,10 +87,13 @@ fi
 # sudo rm /etc/tripwire/twcfg.txt /etc/tripwire/twpol.txt
 
 echo "Tripwire database initialized; running interactive check..."
-if ! sudo tripwire --check --interactive; then
-  echo >&2 "ERROR: Interactive check returned an error; Tripwire might not be configured correctly."
-  exit 1
-fi
+sudo tripwire --check --interactive
+
+# NOTE: Tripwire appears to return non-zero on success
+#if ! sudo tripwire --check --interactive; then
+#  echo >&2 "ERROR: Interactive check returned an error; Tripwire might not be configured correctly."
+#  exit 1
+#fi
 
 echo "NOTE: Remember to delete un-encrypted configuration files after testing:"
 echo "      sudo rm /etc/tripwire/twcfg.txt /etc/tripwire/twpol.txt"
