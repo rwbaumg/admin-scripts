@@ -92,7 +92,7 @@ else
 fi
 
 # give the socket a moment to bind
-sleep 2
+sleep 4
 
 # get the port number
 PORT=""
@@ -123,7 +123,13 @@ if ! [[ $PORT =~ $re ]] ; then
   fi
 fi
 
+display_string="display ${DISPLAY}"
+if [ -z "${DISPLAY}" ]; then
+  echo >&2 "WARNING: Unable to determine display."
+  display_string="unknown display"
+fi
+
 logger -p syslog.info "x11vnc started on display $DISPLAY; listening on 127.0.0.1:$PORT"
-echo "x11vnc started on display $DISPLAY; listening on 127.0.0.1:$PORT"
+echo "x11vnc started on $display_string; listening on 127.0.0.1:$PORT"
 
 exit 0
