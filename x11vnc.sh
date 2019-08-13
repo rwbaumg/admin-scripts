@@ -17,6 +17,9 @@ hash x11vnc 2>/dev/null || { echo >&2 "You need to install x11vnc. Aborting."; e
 # . $(dirname $0)/helpers/log4bash.sh
 # /run/user/122/gdm/Xauthority
 
+# How long to wait for vnc server to start
+SLEEP_SEC=2
+
 HAS_NETCAT="false"
 if hash netstat 2>/dev/null; then
   HAS_NETCAT="true"
@@ -25,18 +28,27 @@ fi
 DEBUG=0
 CURRENT_UID=$(id -u "$USER")
 if [[ $CURRENT_UID == 0 ]]; then
-  logger -p syslog.warn "WARNING: x11vnc found UID==0; forcing gdm UID"
-  echo >&2 "WARNING: x11vnc found UID==0; forcing gdm UID"
-  CURRENT_UID=$(id -u gdm)
+  if ! GDM_UID=$(id -u gdm); then
+    logger -p syslog.error "ERROR: Failed to determine gdm UID."
+    echo >&2 "ERROR: Failed to determine gdm UID."
+    exit 1
+  fi
+  logger -p syslog.warn "WARNING: x11vnc found UID==0; forcing gdm UID ${GDM_UID} ..."
+  echo >&2 "WARNING: x11vnc found UID==0; forcing gdm UID ${GDM_UID} ..."
+  CURRENT_UID="${GDM_UID}"
 fi
 
 CURRENT_USER="$USER"
 if [[ -z "$CURRENT_USER" ]]; then
-  CURRENT_USER=$(getent passwd "$CURRENT_UID" | awk -F: '{ print $1 }')
+  if ! CURRENT_USER=$(getent passwd "$CURRENT_UID" | awk -F: '{ print $1 }'); then
+    logger -p syslog.warn "WARNING: Failed to resolve username for UID ${CURRENT_UID}."
+    echo >&2 "WARNING: Failed to resolve username for UID ${CURRENT_UID}."
+  fi
 fi
 if [[ -z "$CURRENT_USER" ]]; then
   logger -p syslog.error "ERROR: x11vnc could not identify the user to run under."
   echo >&2 "ERROR: x11vnc could not identify the user to run under."
+  exit 1
 fi
 
 AUTH_COOKIE="/run/user/$CURRENT_UID/gdm/Xauthority"
@@ -70,8 +82,8 @@ fi
 PW_OPT=""
 if [[ -e /etc/x11vnc.pass ]]; then
   PW_OPT="-rfbauth /etc/x11vnc.pass"
-  logger -p syslog.info "x11vnc using authentication file /etc/x11vnc.pass"
-  echo >&2 "x11vnc using authentication file /etc/x11vnc.pass"
+  logger -p syslog.info "INFO: x11vnc using authentication file /etc/x11vnc.pass"
+  echo >&2 "INFO: x11vnc using authentication file /etc/x11vnc.pass"
 fi
 
 # note: use -logappend for persistent logging
@@ -87,12 +99,12 @@ if [[ -z "$VNC_PID" ]]; then
   echo >&2 "ERROR: x11vnc failed to start."
   exit 3
 else
-  logger -p syslog.error "Detected x11vnc running on pid $VNC_PID, waiting for socket..."
-  echo >&2 "Detected x11vnc running on pid $VNC_PID, waiting for socket..."
+  logger -p syslog.info "INFO: Detected x11vnc running on pid $VNC_PID, waiting for socket..."
+  echo >&2 "INFO: Detected x11vnc running on pid $VNC_PID, waiting for socket..."
 fi
 
 # give the socket a moment to bind
-sleep 4
+sleep ${SLEEP_SEC}
 
 # get the port number
 PORT=""
