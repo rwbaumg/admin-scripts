@@ -47,7 +47,7 @@ bind() {
 
 usage()
 {
-    echo "Usage: $0 (bind|unbind|info)" >&2
+    echo "Usage: $0 (bind|unbind|info) [driver]" >&2
     exit 3
 }
 
@@ -75,7 +75,9 @@ test_arg()
 case $1 in
   bind)
     test_arg "$2"
-    test_arg "$3"
+    if [ -z "$3" ]; then
+      usage
+    fi
     pci_dev=$2
     driver=$3
     # re-bind device
