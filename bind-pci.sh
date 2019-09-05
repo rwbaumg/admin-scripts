@@ -13,7 +13,7 @@ check_root() {
 unbind() {
   # Unbind a PCI function from its driver as necessary
   if [ ! -e "/sys/bus/pci/devices/$1" ]; then
-    echo "ERROR: Device '$1' does not exist." >&2
+    echo "ERROR: Device '/sys/bus/pci/devices/$1' does not exist." >&2
     exit 1
   fi
   check_root
