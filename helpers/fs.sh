@@ -35,18 +35,20 @@ function getSizeString() {
         return 1
     fi
 
-    re='^[0-9]+$'
+    re='^[0-9]+(\.[0-9]+)?$'
     if ! [[ $1 =~ $re ]] ; then
         echo -n "NaN"
         return 1
     fi
 
-    if [ "$1" -lt 1000 ]; then
-        echo -n "${1} bytes"
+    VALUE=$(awk "BEGIN { print int($1) }")
+
+    if [ $VALUE -lt 1000 ]; then
+        echo -n "${VALUE} bytes"
         return 0
     fi
 
-    echo -n "$1" |  awk '
+    echo -n "$VALUE" |  awk '
         function human(x) {
             if (x<1000) {return x} else {x/=1024}
             s="kMGTEPZY";
