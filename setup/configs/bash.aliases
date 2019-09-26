@@ -11,8 +11,8 @@ alias pu="pushd"
 alias po="popd"
 
 alias dir='ls -ba'
-alias ss="ps -aux"
 alias dot="ls -a1 | grep -P '^\.'"
+alias px="ps -aux"
 alias timestamp='date "+%Y%m%dT%H%M%S"'
 
 # some more ls aliases
