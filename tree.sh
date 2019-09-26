@@ -26,6 +26,11 @@
 #######################################################
 
 if [ "$1" != "" ]; then
+  if [ ! -e "$1" ]; then
+    echo >&2 "ERROR: Path '$1' not found."
+    exit 1
+  fi
+
   #if parameter exists, use as base folder
   cd "$1"
 fi
