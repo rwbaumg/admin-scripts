@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# iperf3
+# netperf
+
+# iperf3 -s -p 8000 -d -V
+# iperf3 -c client1.example.com -p 8000 -t 10 -i 1 -w 17520
+
+# # allow incoming netperf connections
+# sudo iptables -I INPUT -p tcp -m tcp --dport 12865 -j ACCEPT \
+#   && sudo iptables -I INPUT -p udp -m udp --dport 12865 -j ACCEPT
+
+# sudo service netperf start
+# netperf -H nemesis -p 12865 -t TCP_STREAM -P 0 -c -l 10 -- -m 32K -M 32K -s 256K -S 256K
+# netperf -H nemesis -p 12865 -t TCP_RR -c -l 10
+
 # irqbalance
 
 # ethtool -S eth0
