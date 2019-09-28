@@ -6,6 +6,7 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+INC_DESC="false"
 PORTS_MAP_FILE="$(dirname "$0")/service-names-port-numbers.csv"
 DOWNLOAD_URL="http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.csv"
 
@@ -40,14 +41,16 @@ if [ ! -e "${PORTS_MAP_FILE}" ] || [ ! -s "${PORTS_MAP_FILE}" ]; then
   fi
 fi
 
-# Include description
-#grep -v "IANA assigned" "${PORTS_MAP_FILE}" | grep -P '^[^\s]' | grep ",," \
-#     | awk  -F"," '("$5" != "[John_Fake]") && (length($1) > 0) && (length($2) > 0) && (length($3) > 0) {printf("%-40s %-60s %s/%s\n", $1, substr($4, 1, 55), $2, $3)}' \
-#     | grep -i "$1"
-
-# Name only
-grep -v "IANA assigned" "${PORTS_MAP_FILE}" | grep -P '^[^\s]' | grep ",," \
-     | awk  -F"," '("$5" != "[John_Fake]") && (length($1) > 0) && (length($2) > 0) && (length($3) > 0) {printf("%-40s %s/%s\n", $1, $2, $3)}' \
-     | grep -i -P "(^|\\s)$1(\\s|$)"
+if [ "$INC_DESC" == "true" ]; then
+  # Include description
+  grep -v "IANA assigned" "${PORTS_MAP_FILE}" | grep -P '^[^\s]' | grep ",," \
+       | awk  -F"," '("$5" != "[John_Fake]") && (length($1) > 0) && (length($2) > 0) && (length($3) > 0) {printf("%-40s %-60s %s/%s\n", $1, substr($4, 1, 55), $2, $3)}' \
+       | grep -i -P "(^|\\s)$1(\\s|\/tcp|\/udp|$)?"
+else
+  # Name only
+  grep -v "IANA assigned" "${PORTS_MAP_FILE}" | grep -P '^[^\s]' | grep ",," \
+       | awk  -F"," '("$5" != "[John_Fake]") && (length($1) > 0) && (length($2) > 0) && (length($3) > 0) {printf("%-40s %s/%s\n", $1, $2, $3)}' \
+       | grep -i -P "(^|\\s)$1(\\s|\/tcp|\/udp|$)?"
+fi
 
 exit 0
