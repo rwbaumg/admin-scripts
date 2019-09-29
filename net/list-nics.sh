@@ -36,9 +36,13 @@ echo "${NICS}" | while read -r dev; do
       dev_up=1
       shift
     ;;
+    unknown)
+      dev_up=-1
+      shift
+    ;;
     *)
       # unknown state
-      echo >&2 "ERROR: Unknown device state '${dev_state}'."
+      echo >&2 "ERROR: Device '${dev}' state '${dev_state}' is not supported."
       exit 1
     ;;
   esac
