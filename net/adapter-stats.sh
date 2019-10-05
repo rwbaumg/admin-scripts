@@ -1,5 +1,29 @@
 #!/bin/bash
 
+TCP_MEM=$(cat /proc/sys/net/ipv4/tcp_mem)
+
+# The default and maximum amount for the receive socket memory
+RMEM_DEFAULT=$(cat /proc/sys/net/core/rmem_default)
+RMEM_MAX=$(cat /proc/sys/net/core/rmem_max)
+
+# The default and maximum amount for the send socket memory
+WMEM_DEFAULT=$(cat /proc/sys/net/core/wmem_default)
+WMEM_MAX=$(cat /proc/sys/net/core/wmem_max)
+
+# The maximum amount of option memory buffers
+OPTMEM_MAX=$(cat /proc/sys/net/core/optmem_max)
+
+echo "TCP Memory: $TCP_MEM"
+echo
+echo "RMEM (default): $RMEM_DEFAULT"
+echo "RMEM (max.): $RMEM_MAX"
+echo
+echo "WMEM (default): $WMEM_DEFAULT"
+echo "WMEM (max.): $WMEM_MAX"
+echo
+echo "Opt. Memory (max.): $OPTMEM_MAX"
+echo
+
 # iperf3
 # netperf
 
