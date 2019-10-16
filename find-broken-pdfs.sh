@@ -17,9 +17,12 @@ fi
 echo "Searching folder '${SEARCH_DIR}' ..."
 
 find "${SEARCH_DIR}" -type f -name '*.pdf' | while read -r f; do
-  if ! pdfinfo "$f" > /dev/null 2>&1; then
-    echo "Found corrupted PDF file: '$f'"
+  if [ ! -s "$f" ]; then
+    echo "Empty (zero-byte) PDF  : '$f'"
+  elif ! pdfinfo "$f" > /dev/null 2>&1; then
+    echo "Corrupted PDF document : '$f'"
   fi
 done
 
+echo "Finished."
 exit 0
