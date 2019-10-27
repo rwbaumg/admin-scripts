@@ -44,12 +44,12 @@ function getSize() {
   re='^[0-9]+$'
   if ! [[ $1 =~ $re ]] ; then
     echo -n "NaN"
-    return
+    return 1
   fi
 
   if [ "$1" -lt 1000 ]; then
     echo -n "${1} bytes"
-    return
+    return 0
   fi
 
   echo "$1" |  awk '
@@ -68,6 +68,19 @@ BLKID_DESCR=$(blkid "${VOLUME}")
 VOLUME_NAME=$(basename "${VOLUME}")
 VOLUME_TYPE=$(fdisk -l "${VOLUME}" | grep "Disklabel type:" | awk '{ print $3 }')
 
+case ${VOLUME_TYPE} in
+    mbr)
+        echo "Detected Master Boot Record (MBR) partition table format."
+    ;;
+    gpt)
+        echo "Detected GUID Partition Table (GPT) partition table format."
+    ;;
+    *)
+        echo >&2 "ERROR: Unrecognized partition format '${VOLUME_TYPE}'."
+        exit 1
+    ;;
+esac
+
 # Create a new directory for mounting partitions
 MOUNTPOINT="${MOUNTPOINT}/${VOLUME_NAME}"
 if [ -e "${MOUNTPOINT}" ]; then
@@ -77,16 +90,24 @@ fi
 mkdir "${MOUNTPOINT}"
 
 # Print a header with some basic information
-echo "Mounting ${VOLUME} -> ${MOUNTPOINT} ..."
+echo "Mounting ${VOLUME_TYPE} device ${VOLUME} -> ${MOUNTPOINT} ..."
 echo "${BLKID_DESCR}"
 
 # Backup the partition table
 if [ "${VOLUME_TYPE}" == "gpt" ]; then
-  gdisk -l "${VOLUME}" | tail -n+9 > "${MOUNTPOINT}/${VOLUME_NAME}-partitions.gdisk" 2>&1
-  sgdisk --backup="${MOUNTPOINT}/${VOLUME_NAME}-partitions-backup.sgdisk" "${VOLUME}" > /dev/null 2>&1
+  if ! gdisk -l "${VOLUME}" | tail -n+9 > "${MOUNTPOINT}/${VOLUME_NAME}-partitions.gdisk" 2>&1; then
+    echo >&2 "WARNING: Non-zero exit code from gdisk when trying to dump partitions table for device '${VOLUME}'."
+  fi
+  if ! sgdisk --backup="${MOUNTPOINT}/${VOLUME_NAME}-partitions-backup.sgdisk" "${VOLUME}" > /dev/null 2>&1; then
+    echo >&2 "WARNING: Non-zero exit code from sgdisk when trying to backup partitions table for device '${VOLUME}'."
+  fi
 else
-  fdisk -l "${VOLUME}" > "${MOUNTPOINT}/${VOLUME_NAME}-partitions.fdisk" 2>&1
-  sfdisk --dump "${VOLUME}" > "${MOUNTPOINT}/${VOLUME_NAME}-partitions-backup.sfdisk"
+  if ! fdisk -l "${VOLUME}" > "${MOUNTPOINT}/${VOLUME_NAME}-partitions.fdisk" 2>&1; then
+    echo >&2 "WARNING: Non-zero exit code from fdisk when trying to dump partitions table for device '${VOLUME}'."
+  fi
+  if ! sfdisk --dump "${VOLUME}" > "${MOUNTPOINT}/${VOLUME_NAME}-partitions-backup.sfdisk"; then
+    echo >&2 "WARNING: Non-zero exit code from sfdisk when trying to backup partitions table for device '${VOLUME}'."
+  fi
 fi
 
 # NOTE: util-linux 2.26 supports GPT
