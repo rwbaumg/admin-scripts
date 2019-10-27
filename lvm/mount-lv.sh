@@ -43,11 +43,13 @@ fi
 function getSize() {
   re='^[0-9]+$'
   if ! [[ $1 =~ $re ]] ; then
-    echo "NaN"
+    echo -n "NaN"
+    return
   fi
 
   if [ "$1" -lt 1000 ]; then
-    echo "${1} bytes"
+    echo -n "${1} bytes"
+    return
   fi
 
   echo "$1" |  awk '
