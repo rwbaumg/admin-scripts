@@ -18,7 +18,7 @@ hash x11vnc 2>/dev/null || { echo >&2 "You need to install x11vnc. Aborting."; e
 # /run/user/122/gdm/Xauthority
 
 # How long to wait for vnc server to start
-SLEEP_SEC=2
+SLEEP_SEC=3
 
 HAS_NETCAT="false"
 if hash netstat 2>/dev/null; then
@@ -93,6 +93,9 @@ ${VNC_CMD} -auth "$AUTH_COOKIE" \
            -forever \
            -noxdamage > /dev/null 2>&1 &
 
+# give the socket a moment to bind
+sleep ${SLEEP_SEC}
+
 VNC_PID=$(pgrep -f "^[x]11vnc" --euid "$CURRENT_UID")
 if [[ -z "$VNC_PID" ]]; then
   logger -p syslog.error "ERROR: x11vnc failed to start."
@@ -102,9 +105,6 @@ else
   logger -p syslog.info "INFO: Detected x11vnc running on pid $VNC_PID, waiting for socket..."
   echo >&2 "INFO: Detected x11vnc running on pid $VNC_PID, waiting for socket..."
 fi
-
-# give the socket a moment to bind
-sleep ${SLEEP_SEC}
 
 # get the port number
 PORT=""
