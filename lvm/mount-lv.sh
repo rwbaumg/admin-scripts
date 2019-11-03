@@ -75,6 +75,10 @@ case ${VOLUME_TYPE} in
     gpt)
         echo "Detected GUID Partition Table (GPT) partition table format."
     ;;
+    dos)
+        echo >&2 "ERROR: Detected unsupported DOS partition scheme."
+        exit 1
+    ;;
     *)
         echo >&2 "ERROR: Unrecognized partition format '${VOLUME_TYPE}'."
         exit 1
