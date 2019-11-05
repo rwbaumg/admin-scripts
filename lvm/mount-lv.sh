@@ -68,6 +68,11 @@ BLKID_DESCR=$(blkid "${VOLUME}")
 VOLUME_NAME=$(basename "${VOLUME}")
 VOLUME_TYPE=$(fdisk -l "${VOLUME}" | grep "Disklabel type:" | awk '{ print $3 }')
 
+if [ -z "${VOLUME_TYPE}" ]; then
+  echo >&2 "ERROR: Failed to determine partition scheme."
+  exit 1
+fi
+
 case ${VOLUME_TYPE} in
     mbr)
         echo "Detected Master Boot Record (MBR) partition table format."
@@ -76,8 +81,7 @@ case ${VOLUME_TYPE} in
         echo "Detected GUID Partition Table (GPT) partition table format."
     ;;
     dos)
-        echo >&2 "ERROR: Detected unsupported DOS partition scheme."
-        exit 1
+        echo "Detected DOS partition table format."
     ;;
     *)
         echo >&2 "ERROR: Unrecognized partition format '${VOLUME_TYPE}'."
