@@ -19,8 +19,7 @@ if [ ! -e "${DEV_FILE}" ]; then
   exit 1
 fi
 
-if ! NICS=$(cat "${DEV_FILE}" \
-              | tail -n+3 \
+if ! NICS=$(tail -n+3 "${DEV_FILE}" \
               | awk -F: '{ print $1 }' \
               | tr -d ' ' \
               | sort -h \
@@ -31,6 +30,12 @@ if ! NICS=$(cat "${DEV_FILE}" \
 fi
 
 function list_nics() {
+  local filter req_state dev_up dev_path
+  if [ -e "$1" ] && [ "$1" != "*" ]; then
+    filter=1
+    req_state="$1"
+  fi
+
   echo "${NICS}" | while read -r dev; do
     dev_path="/sys/class/net/${dev}/operstate"
     if [ ! -e "${dev_path}" ]; then
@@ -42,11 +47,11 @@ function list_nics() {
     dev_state=$(cat "${dev_path}")
     case "${dev_state}" in
       down)
-        dev_up=0
+        dev_up=1
         shift
       ;;
       up)
-        dev_up=1
+        dev_up=0
         shift
       ;;
       unknown)
@@ -56,20 +61,25 @@ function list_nics() {
       *)
         # unknown state
         echo >&2 "ERROR: Device '${dev}' state '${dev_state}' is not supported."
+        dev_up=-2
         exit 1
       ;;
     esac
 
-    printf "$COL_RESET%-24s : %s\n" "${dev}" "${dev_state}"
+    if [[ ${filter} -ne 1 ]] || [ ${dev_up} -eq "${req_state}" ]; then
+      printf "$COL_RESET%-24s : %s\n" "${dev}" "${dev_state}"
+    fi
   done
+
+  return 0
 }
 
 if [ -n "${DEV_SELECT}" ]; then
-  if ! list_nics | sort -t: -k2 | grep -Ei "${DEV_SELECT}"; then
+  if ! list_nics "*" | sort -t: -k2 | grep -Ei "${DEV_SELECT}"; then
     exit 1
   fi
 else
-  if ! list_nics | sort -t: -k2; then
+  if ! list_nics "*" | sort -t: -k2; then
     exit 1
   fi
 fi

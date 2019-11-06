@@ -20,19 +20,19 @@ if [ -z "$PID" ]; then
 fi
 
 # check if pid is running
-if ! $(ps -p $PID > /dev/null); then
+if ! ps -p "$PID" > /dev/null; then
   echo "The specified PID is not valid."
   exit 1
 fi
 
 i=1;
 SP='\|/-';
-while $(ps -p $PID > /dev/null); do
-	PROC_TIME=$(ps -p $PID -o etime= | awk '{ print $1 }');
-	printf "\b\r[${SP:i++%${#SP}:1}] PID $PID is running ($PROC_TIME)";
+while ps -p "$PID" > /dev/null; do
+	PROC_TIME=$(ps -p "$PID" -o etime= | awk '{ print $1 }');
+	printf "\b\r[%s] PID %s is running (%s)", "${SP:i++%${#SP}:1}", "$PID", "$PROC_TIME";
 	sleep 1;
 done;
 
-printf "\b\rPID $PID has exited after $PROC_TIME\n"
+printf "\b\rPID %s has exited after %s\n", "$PID", "$PROC_TIME";
 
 exit 0

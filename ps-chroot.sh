@@ -17,7 +17,7 @@ MOUNTPOINTS=("/var/lib/schroot/mount" "/var/chroot")
 for chroot in $(schroot -l|awk -F : '{print $2}'); do
   PROCS=""
   for p in $(ps -o pid -A); do
-    LINK=$(readlink /proc/$p/root)
+    LINK=$(readlink "/proc/$p/root")
     for mp in "${MOUNTPOINTS[@]}"; do
       if [[ $LINK == "$mp/$chroot"* ]]; then
         PROCS="$PROCS $p"

@@ -16,8 +16,9 @@ PEER="$1"
 # echo "Writing to file $TMPFILE ..."
 
 for i in $(seq $NUMBER); do
-  nohup netperf -H $PEER -p $PORT -t TCP_MAERTS -P 0 -c -l $DURATION -- -m 32K -M 32K -s 256K -S 256K >> $TMPFILE &
-  nohup netperf -H $PEER -p $PORT -t TCP_STREAM -P 0 -c -l $DURATION -- -m 32K -M 32K -s 256K -S 256K >> $TMPFILE &
+  echo "Starting netperf stream: $i"
+  nohup netperf -H "$PEER" -p $PORT -t TCP_MAERTS -P 0 -c -l $DURATION -- -m 32K -M 32K -s 256K -S 256K >> "$TMPFILE" &
+  nohup netperf -H "$PEER" -p $PORT -t TCP_STREAM -P 0 -c -l $DURATION -- -m 32K -M 32K -s 256K -S 256K >> "$TMPFILE" &
 done
 
 if ! wait; then
@@ -29,7 +30,7 @@ fi
 echo "Finished."
 echo
 
-echo "Total result: $(cat "$TMPFILE" | awk '{sum += $5} END{print sum}') Mb/s"
+echo "Total result: $(awk '{sum += $5} END{print sum}' "$TMPFILE") Mb/s"
 rm "$TMPFILE"
 
 exit 0

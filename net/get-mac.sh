@@ -8,7 +8,7 @@ printf "\n  MAC address OUI checker \n\n"
 
 # Error messages
 fatal_error() {
-        printf "  Usage: perl $0 \n\n";
+        printf "  Usage: perl %s \n\n", "$0"
 
         printf "  MAC can be submitted as: \n"
         printf "                001122334455 \n"
@@ -40,19 +40,19 @@ OUI=${OUI//[^0-9A-F]/}
 
 # Get OUI from MAC
 if OUI=$(echo "$OUI" | grep -Eo '^([0-9A-F]{6})'); then
-    printf "  Checking OUI: $OUI \n";
+    printf "  Checking OUI: %s \n", "$OUI";
 else
     fatal_error
 fi
 
 if match=$(grep "(base 16)" "${ouifile}" | grep "${OUI}"); then
     if company=$(echo "${match}" | grep -Po '(?<=\(base\s16\))(?:\s+)[^$]+' | sed -e 's/^[\s\t\r\n\b]*//' -e 's/[\s\t\r\n\b]*$//'); then
-        printf "  Found OUI: $OUI - $company \n\n";
+        printf "  Found OUI: %s - $company \n\n", "$OUI";
         exit 0
     fi
 fi
 
 # Show if OUI was not found
-printf "  Could not find OUI: $OUI \n\n";
+printf "  Could not find OUI: %s \n\n", "$OUI";
 
 exit 1

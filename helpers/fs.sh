@@ -43,7 +43,7 @@ function getSizeString() {
 
     VALUE=$(awk "BEGIN { print int($1) }")
 
-    if [ $VALUE -lt 1000 ]; then
+    if [ "$VALUE" -lt 1000 ]; then
         echo -n "${VALUE} bytes"
         return 0
     fi

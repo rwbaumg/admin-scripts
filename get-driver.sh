@@ -16,8 +16,6 @@ if [ $# != "1" ] ; then
 	exit 1
 fi
 
-DEV=$1
-
 if test -e "$1"; then
 	DEVPATH=$1
 else
@@ -35,7 +33,7 @@ echo "looking at sysfs device: $DEVPATH"
 
 if test -L "$DEVPATH"; then
 	# resolve class device link to device directory
-	DEVPATH=$(readlink -f $DEVPATH)
+	DEVPATH=$(readlink -f "$DEVPATH")
 	echo "resolve link to: $DEVPATH"
 fi
 
@@ -44,11 +42,11 @@ if test -d "$DEVPATH"; then
 	PARENT="$DEVPATH";
 	while test "$PARENT" != "/"; do
 		if test -L "$PARENT/device"; then
-			DEVPATH=$(readlink -f $PARENT/device)
+			DEVPATH=$(readlink -f "$PARENT/device")
 			echo "follow 'device' link to parent: $DEVPATH"
 			break
 		fi
-		PARENT=$(dirname $PARENT)
+		PARENT=$(dirname "$PARENT")
 	done
 fi
 
@@ -57,19 +55,19 @@ while test "$DEVPATH" != "/"; do
 	DRIVER=
 	MODULEPATH=
 	MODULE=
-	if test -e $DEVPATH/driver; then
-		DRIVERPATH=$(readlink -f $DEVPATH/driver)
-		DRIVER=$(basename $DRIVERPATH)
+	if test -e "$DEVPATH/driver"; then
+		DRIVERPATH=$(readlink -f "$DEVPATH/driver")
+		DRIVER=$(basename "$DRIVERPATH")
 		echo -n "found driver: $DRIVER"
-		if test -e $DRIVERPATH/module; then
-			MODULEPATH=$(readlink -f $DRIVERPATH/module)
-			MODULE=$(basename $MODULEPATH)
+		if test -e "$DRIVERPATH/module"; then
+			MODULEPATH=$(readlink -f "$DRIVERPATH/module")
+			MODULE=$(basename "$MODULEPATH")
 			echo -n " from module: $MODULE"
 		fi
 		echo
 	fi
 
-	DEVPATH=$(dirname $DEVPATH)
+	DEVPATH=$(dirname "$DEVPATH")
 done
 
 exit 0

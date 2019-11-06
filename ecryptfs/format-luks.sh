@@ -8,6 +8,7 @@ if ! [ -e "${CONFIG}" ]; then
   echo >&2 "ERROR: Missing configuration file '${CONFIG}'."
   exit 1
 fi
+# shellcheck source=/dev/null
 source "${CONFIG}"
 
 if [ ! -e "${STORAGE}" ]; then

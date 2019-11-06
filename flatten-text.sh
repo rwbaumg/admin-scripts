@@ -8,7 +8,7 @@ if [ -z "$file" ]; then
   exit 1
 fi
 
-if ! [ ! -s "$file" ] | [ "$(file --mime-type $file | grep -Po 'text/')" == "text/" ]; then
+if ! [ ! -s "$file" ] | [ "$(file --mime-type "$file" | grep -Po 'text/')" == "text/" ]; then
   echo "File is not a valid text file: $file"
   exit 1
 fi
@@ -18,7 +18,7 @@ fi
 # - to remove leading whitespace: sed -e 's/^[ \t]*//'
 # - to remove trailing whitespace: sed 's/[ \t]*$//'
 
-sed 's/^[ \t]*//;s/[ \t]*$//' "$file" > $file.flat
+sed 's/^[ \t]*//;s/[ \t]*$//' "$file" > "$file.flat"
 
 echo "Saved file to: $file.flat"
 

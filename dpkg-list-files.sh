@@ -7,5 +7,5 @@ if [[ ! -f "$DEBFILE" ]]; then
   exit 1
 fi
 
-dpkg -c $DEBFILE | awk '{ print $6 }' | sort
+dpkg -c "$DEBFILE" | awk '{ print $6 }' | sort
 exit 0

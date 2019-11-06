@@ -14,7 +14,7 @@ fi
 MAC=$(echo "${1}" | awk '{ print toupper($0) }')
 MAC=${MAC//[^0-9A-F]/}
 
-if ! key=$(echo -n '${MAC}' \
+if ! key=$(echo -n "${MAC}" \
             | xxd -r -p \
             | openssl dgst -sha1 -mac HMAC -macopt hexkey:8544E3B47ECA58F9583043F8 \
             | awk '{print $2}' \

@@ -10,7 +10,7 @@ fi
 
 function getList()
 {
-  for f in $(find "${ICONS_PATH}" -type f); do
+  find "${ICONS_PATH}" -type f | while read -r f; do
     ico=$(basename "$f")
     echo "${ico%.*}"
   done

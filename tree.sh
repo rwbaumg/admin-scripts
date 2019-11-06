@@ -32,7 +32,7 @@ if [ "$1" != "" ]; then
   fi
 
   #if parameter exists, use as base folder
-  cd "$1"
+  cd "$1" || { echo >&2 "ERROR: Failed to change directory to path '$1'."; exit 1; }
 fi
 
 pwd

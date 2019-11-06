@@ -13,6 +13,7 @@ if [[ ${USE_SPINNER} -eq 1 ]] && [ ! -e "$(dirname "$0")/helpers/spinner.sh" ]; 
 fi
 
 if [[ ${USE_SPINNER} -eq 1 ]]; then
+  # shellcheck source=/dev/null
   if ! source "$(dirname "$0")/helpers/spinner.sh"; then
     echo >&2 "WARNING: Failed to include spinner source file: ./helpers/spinner.sh"
     USE_SPINNER=0
