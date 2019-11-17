@@ -23,6 +23,7 @@ function create_csv() {
                 fi
         done
 
+        # shellcheck disable=2002
         cat "$@" | while read -r line; do
                 link=$(echo "${line}" | grep -Pio '(?<=HREF\=\")[^\"]+(?=\")')
                 desc=$(echo "${line}" | grep -Pio '(?<=\"\>)[^\"]+(?=\<\/A\>)')
@@ -44,6 +45,7 @@ function create_trac_links() {
                 fi
         done
 
+        # shellcheck disable=2002
         cat "$@" | while read -r line; do
                 link=$(echo "${line}" | grep -Pio '(?<=HREF\=\")[^\"]+(?=\")')
                 desc=$(echo "${line}" | grep -Pio '(?<=\"\>)[^\"]+(?=\<\/A\>)')
