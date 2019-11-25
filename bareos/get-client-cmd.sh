@@ -7,7 +7,6 @@
 
 DIR_NAME="bareos-dir"
 
-hash bconsole 2>/dev/null || { echo >&2 "You need to install bareos-bconsole. Aborting."; exit 1; }
 hash bareos-fd 2>/dev/null || { echo >&2 "You need to install bareos-filedaemon. Aborting."; exit 1; }
 
 if [[ $EUID -ne 0 ]] && [[ "$USER" != "bareos" ]]; then
