@@ -214,10 +214,10 @@ if [ -n "${DIFF}" ] || [ "${DECRYPT_FAILED}" == "true" ]; then
   if [ "${ETCKEEPER_AUTOCOMMIT}" == "true" ] && hash git 2>/dev/null; then
     if git -C "/etc" rev-parse > /dev/null 2>&1; then
       if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- "${FILE1}" | grep -E '^(M| M)')" != "" ]]; then
-        pushd /etc > /dev/null 2>&1
+        pushd /etc > /dev/null 2>&1 || { echo >&2 "ERROR: Could not CD into /etc"; exit 1; }
         git add "${FILE1}"
         git commit -m "bareos: auto-commit updated backup."
-        popd > /dev/null 2>&1
+        popd > /dev/null 2>&1 || { echo >&2 "ERROR: Error returning from /etc"; exit 1; }
         echo "Committed updated backup file to local /etc Git repository."
       fi
     fi
@@ -238,11 +238,11 @@ if [ "${MAIL_ENABLE}" == "true" ] && [ "${SHOULD_SEND_MAIL}" == "true" ]; then
   # Send the updated backup file via bsmtp
   sendFailed=0
   if [ -n "${MAIL_HEADER}" ]; then
-    if ! printf "%s\n\n%s\n\n%s\n" "${MAIL_HEADER}" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
+    if ! printf "%s\\n\\n%s\\n\\n%s\\n" "${MAIL_HEADER}" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
       sendFailed=1
     fi
   elif [ -n "${MAIL_FOOTER}" ]; then
-    if ! printf "%s\n\n" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
+    if ! printf "%s\\n\\n" "$(cat ${FILE1})" "${MAIL_FOOTER}" | bsmtp -h "${MAIL_HOST}" -f "${MAIL_FROM}" -s "${MAIL_SUBJECT}" "${MAIL_TO}"; then
       sendFailed=1
     fi
   else

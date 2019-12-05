@@ -33,14 +33,14 @@ sudo rm /var/lib/bareos/*
 sudo usermod -a -G bareos postgres
 
 # drop databases
-pushd /usr/lib/bareos/scripts
+pushd /usr/lib/bareos/scripts || exit 1
 sudo -u $SUDO_USER ./drop_bareos_database
 
 # (re-)create database
 sudo -u $SUDO_USER ./create_bareos_database
 sudo -u $SUDO_USER ./make_bareos_tables
 sudo -u $SUDO_USER ./grant_bareos_privileges
-popd
+popd || exit 1
 
 # remove postgres from the bareos group
 # should not be required after setup is complete

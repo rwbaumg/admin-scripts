@@ -38,7 +38,7 @@ if [ ! -e "${LOGWATCH_DIR}" ]; then
 fi
 
 # Manual installation
-pushd "${BAREOS_SRC}"
+pushd "${BAREOS_SRC}" || exit 1
 
 sudo cp -v -p logwatch/bareos ${LOGWATCH_DIR}/scripts/services/bareos
 sudo cp -v -p logwatch/applybareosdate ${LOGWATCH_DIR}/scripts/shared/applybareosdate
@@ -53,7 +53,7 @@ sudo chmod -v 644 ${LOGWATCH_DIR}/default.conf/services/bareos.conf
 sudo ln -s ${LOGWATCH_DIR}/default.conf/services/bareos.conf ${LOGWATCH_CFG}/conf/services/bareos.conf
 sudo ln -s ${LOGWATCH_DIR}/default.conf/logfiles/bareos.conf ${LOGWATCH_CFG}/conf/logfiles/bareos.conf
 
-popd
+popd || exit 1
 
 # Automatic installation
 #pushd ${BAREOS_SRC_LW}

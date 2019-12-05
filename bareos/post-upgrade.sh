@@ -87,10 +87,10 @@ fi
 if hash git 2>/dev/null; then
   if git -C "/etc" rev-parse > /dev/null 2>&1; then
     if [[ "$(git --git-dir=/etc/.git --work-tree=/etc status --porcelain -- /etc/bareos | grep -E '^(M| M|D| D)')" != "" ]]; then
-      pushd /etc/bareos > /dev/null 2>&1
+      pushd /etc/bareos > /dev/null 2>&1 || { echo >&2 "ERROR: Could not enter /etc/bareos"; exit 1; }
       git add --all
       git commit -m "bareos: auto-commit configuration reset."
-      popd > /dev/null 2>&1
+      popd > /dev/null 2>&1 || { echo >&2 "ERROR: Could not return from /etc/bareos"; exit 1; }
       echo "Committed Bareos configuration changes to to local /etc Git repository."
     fi
   fi

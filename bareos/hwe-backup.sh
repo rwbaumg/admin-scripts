@@ -34,7 +34,7 @@ fi
 
 # Determine the configured port for the Storage Daemon
 SD_PORT=9103
-CFG_PORT=$(grep -Po "[Ss][Dd](?:\s?)[Pp][Oo][Rr][Tt](?:\s?)=(?:\s?)\d+" "${CONFIG_PATH}" | awk -F= '{ print $2 }' | awk '{$1=$1};1')
+CFG_PORT=$(grep -Po "[Ss][Dd](?:\\s?)[Pp][Oo][Rr][Tt](?:\\s?)=(?:\\s?)\\d+" "${CONFIG_PATH}" | awk -F= '{ print $2 }' | awk '{$1=$1};1')
 if [ -n "${CFG_PORT}" ]; then
   SD_PORT=${CFG_PORT}
 fi

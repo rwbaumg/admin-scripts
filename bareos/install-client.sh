@@ -167,10 +167,10 @@ check_etckeeper()
           return
         fi
         echo "Auto-commit changes to /etc/apt (directory under version control) ..."
-        pushd /etc > /dev/null 2>&1
+        pushd /etc > /dev/null 2>&1 || return
         sudo git add --all /etc/apt
         sudo git commit -v -m "apt: add bareos package source"
-        popd > /dev/null 2>&1
+        popd > /dev/null 2>&1 || return
       fi
     fi
   fi
