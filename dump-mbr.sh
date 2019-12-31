@@ -24,7 +24,9 @@ fi
 
 # dump MBR from device
 echo "Dumping MBR from device ${DEVICE} ..."
-dd if="${DEVICE}" bs=512 count=1 2>/dev/null | xxd
-echo "[ EOF ]"
+if ! dd if="${DEVICE}" bs=512 count=1 2>/dev/null | xxd; then
+  echo >&2 "ERROR: Failed to dump first 512 blocks from device ${DEVICE}"
+  exit 1
+fi
 
 exit 0
