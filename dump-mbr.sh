@@ -24,7 +24,7 @@ fi
 
 # dump MBR from device
 echo "Dumping MBR from device ${DEVICE} ..."
-dd if=/dev/sda bs=512 count=1 | xxd
+dd if="${DEVICE}" bs=512 count=1 2>/dev/null | xxd
 echo "[ EOF ]"
 
 exit 0
