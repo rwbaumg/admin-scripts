@@ -76,9 +76,13 @@ usage()
 
         ./SCRIPT_NAME
 
-     - To list all logical volumes not currently active.
+     - To list all logical volumes not currently active:
 
         ./SCRIPT_NAME --device-closed
+
+     - To list all snapshot volumes:
+
+        ./SCRIPT_NAME --include-snapshots --volume-type s
 
 EOF
 
