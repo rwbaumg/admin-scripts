@@ -4,9 +4,9 @@
 
 # Note: All arguments are passed to apt-get
 
-hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
+hash apt 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
 
-BASE_COMMAND="sudo apt-get $*"
+BASE_COMMAND="sudo apt $*"
 
 if ! ${BASE_COMMAND} update; then
   echo >&2 "ERROR: System update failed."
