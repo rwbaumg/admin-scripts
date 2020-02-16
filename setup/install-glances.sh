@@ -6,6 +6,9 @@
 #    python 2.7,>=3.4
 #    psutil>=5.3.0 (better with latest version)
 #
+# NOTE: Also requires the following packages:
+#  python3-docker python3-influxdb python3-netifaces python3-pystache
+#
 # Optional dependencies:
 #
 #    bernhard (for the Riemann export module)

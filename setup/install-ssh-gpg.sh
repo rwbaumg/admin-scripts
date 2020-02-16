@@ -175,10 +175,15 @@ if [ ! -e "$HOME/.gnupg/gpg-agent.conf" ]; then
   cp -v "${BASE_PATH}/configs/gnupg/gpg-agent.conf.example" "$HOME/.gnupg/gpg-agent.conf"
 fi
 if [ ! -e "$HOME/.gnupg/dirmngr.conf" ]; then
-  cp -v "${BASE_URL}/configs/gnupg/dirmngr.conf.example" "$HOME/.gnupg/dirmngr.conf"
+  cp -v "${BASE_PATH}/configs/gnupg/dirmngr.conf.example" "$HOME/.gnupg/dirmngr.conf"
 fi
 if [ ! -e "$HOME/.gnupg/scdaemon.conf" ]; then
-  cp -v "${BASE_URL}/configs/gnupg/scdaemon.conf.example" "$HOME/.gnupg/scdaemon.conf"
+  cp -v "${BASE_PATH}/configs/gnupg/scdaemon.conf.example" "$HOME/.gnupg/scdaemon.conf"
+fi
+
+if [ ! -e "$HOME/.ssh" ]; then
+  mkdir -v "$HOME/.ssh"
+  chmod -v 700 "$HOME/.ssh"
 fi
 
 if [ ! -e "$HOME/.ssh/config" ]; then

@@ -148,8 +148,8 @@ function install_gpg_skel() {
 
   skel_path="$1"
   if [ -e "${skel_path}" ] && [ "${FORCE_INSTALL}" != "true" ]; then
-    echo >&2 "Skeleton path already exists: '${skel_path}'"
-    exit 1
+    echo >&2 "WARNING: Skeleton path already exists: '${skel_path}'"
+    return
   fi
 
   echo "Installing GnuPG skeleton to '${skel_path}' ..."
@@ -272,7 +272,10 @@ ${CP_CMD} "${CFG_REPO_PATH}/profile.skel" "${SYS_SKEL_PATH}/.profile"
 
 # Install system GnuPG skeleton
 if ! install_gpg_skel "${GPG_SKEL_PATH}"; then
-  echo >&2 "ERROR: Failed to install GnuPG skeleton."
+  echo >&2 "ERROR: Failed to install user GnuPG skeleton."
+fi
+if ! install_gpg_pkg_skel; then
+  echo >&2 "ERROR: Failed to install system GnuPG skeleton."
 fi
 
 # Ensure correct permissions
