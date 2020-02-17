@@ -41,16 +41,16 @@ function install_pkg() {
     return 0
   fi
 
-  if hash apt-get 2>/dev/null; then
+  if hash apt 2>/dev/null; then
     echo "Updating package cache..."
-    if ! sudo apt-get update; then
+    if ! sudo apt update; then
       echo >&2 "ERROR: Failed to update package cache."
       return 1
     fi
   fi
 
-  echo "Installing package '${pkg_name}' via apt-get ..."
-  if ! sudo apt-get install -V -y "${pkg_name}"; then
+  echo "Installing package '${pkg_name}' via apt ..."
+  if ! sudo apt install -V -y "${pkg_name}"; then
     echo >&2 "ERROR: Failed to install package '${pkg_name}'."
     return 1
   fi

@@ -12,7 +12,7 @@ hash awk 2>/dev/null || { echo >&2 "You need to install awk. Aborting."; exit 1;
 hash sudo 2>/dev/null || { echo >&2 "You need to install sudo. Aborting."; exit 1; }
 hash wget 2>/dev/null || { echo >&2 "You need to install wget. Aborting."; exit 1; }
 hash /usr/bin/gpg 2>/dev/null || { echo >&2 "You need to install gnupg. Aborting."; exit 1; }
-hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
+hash apt 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
 hash tee 2>/dev/null || { echo >&2 "You need to install tee. Aborting."; exit 1; }
 hash lsb_release 2>/dev/null || { echo >&2 "You need to install lsb-release. Aborting."; exit 1; }
 
@@ -35,7 +35,7 @@ SRC_URL="download.bareos.org/bareos/release/latest"
 APT_DIR="/etc/apt/sources.list.d"
 PKG_LST="${APT_DIR}/bareos.list"
 
-# Configure apt-get arguments
+# Configure apt arguments
 APT_ARG="--verbose-versions --yes"
 
 # Uncomment to enable /etc source control Git handling
@@ -139,7 +139,7 @@ check_protocol()
   fi
 
   if is_https "$proto_name"; then
-    if hash apt-get 2>/dev/null; then
+    if hash apt 2>/dev/null; then
       if ! check_installed "apt-transport-https"; then
         echo >&2 "ERROR: Must install apt-transport-https for HTTPS protocol support."
         exit 1
@@ -456,7 +456,7 @@ if [ -z "${CUR_CFG}" ]; then
 
   # update the package cache
   echo "Updating package list ..."
-  if ! sudo apt-get update > /dev/null 2>&1; then
+  if ! sudo apt update > /dev/null 2>&1; then
     exit 1
   fi
 fi
@@ -466,7 +466,7 @@ check_etckeeper
 
 # install the actual package
 echo "Installing package : ${PKGNAME} ..."
-install_cmd="sudo apt-get ${APT_ARG}"
+install_cmd="sudo apt ${APT_ARG}"
 if ! ${install_cmd} install ${PKGNAME}; then
   echo >&2 "ERROR: Failed to install Bareos client."
   exit 1

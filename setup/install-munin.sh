@@ -11,7 +11,7 @@
 # NOTE: This script currently supports only APT on Debian and Debian-based distributions (ie. Ubuntu).
 
 hash sudo 2>/dev/null || { echo >&2 "You need to install sudo. Aborting."; exit 1; }
-hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
+hash apt 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
 hash lsb_release 2>/dev/null || { echo >&2 "You need to install lsb-release. Aborting."; exit 1; }
 hash gpg 2>/dev/null || { echo >&2 "You need to install gnupg. Aborting."; exit 1; }
 #hash grep 2>/dev/null || { echo >&2 "You need to install grep. Aborting."; exit 1; }
@@ -45,7 +45,7 @@ KEYNAME="Release.key"
 #APT_DIR="/etc/apt/sources.list.d"
 #PKG_LST="${APT_DIR}/${PKG_NAME}.list"
 
-# Configure apt-get arguments
+# Configure apt arguments
 APT_ARG="--verbose-versions --yes"
 
 # Uncomment to enable /etc source control Git handling
@@ -149,7 +149,7 @@ check_protocol()
   fi
 
   if is_https "$proto_name"; then
-    if hash apt-get 2>/dev/null; then
+    if hash apt 2>/dev/null; then
       if ! check_installed "apt-transport-https"; then
         echo >&2 "ERROR: Must install apt-transport-https for HTTPS protocol support."
         exit 1
@@ -426,14 +426,14 @@ echo "Installing Munin node for Ubuntu ${UBUNTU_RELEASE} ..."
 #
 #  # update the package cache
 #  echo "Updating package list ..."
-#  if ! sudo apt-get update > /dev/null 2>&1; then
+#  if ! sudo apt update > /dev/null 2>&1; then
 #    exit 1
 #  fi
 #fi
 
 # update the package cache
 echo "Updating package list ..."
-if ! sudo apt-get update > /dev/null 2>&1; then
+if ! sudo apt update > /dev/null 2>&1; then
   exit 1
 fi
 
@@ -446,7 +446,7 @@ fi
 
 # install the actual package
 echo "Installing packages : ${APT_PKGS} ..."
-install_cmd="sudo apt-get ${APT_ARG} install ${APT_PKGS}"
+install_cmd="sudo apt ${APT_ARG} install ${APT_PKGS}"
 if ! ${install_cmd}; then
   echo >&2 "ERROR: Installation failed."
   exit 1

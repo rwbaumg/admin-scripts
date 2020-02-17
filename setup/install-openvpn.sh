@@ -90,22 +90,22 @@ function install_packages() {
     return 1
   fi
 
-  if hash apt-get 2>/dev/null; then
+  if hash apt 2>/dev/null; then
     echo "Updating APT cache..."
-    if ! do_with_root "apt-get update"; then
+    if ! do_with_root "apt update"; then
       echo >&2 "ERROR: Failed to update APT cache."
       return 1
     fi
   fi
 
-  echo "Installing missing packages via apt-get ..."
+  echo "Installing missing packages via apt ..."
   cmd_extra=""
   if [ "${DRY_RUN}" == "1" ]; then
     cmd_extra="--dry-run"
     echo >&2 "WARNING: DRY RUN"
   fi
-  apt_cmd="apt-get install ${cmd_extra} -V ${pkg_names}"
-  # apt_cmd="apt-get install ${cmd_extra} -V -y ${pkg_names}"
+  apt_cmd="apt install ${cmd_extra} -V ${pkg_names}"
+  # apt_cmd="apt install ${cmd_extra} -V -y ${pkg_names}"
   if ! do_with_root "${apt_cmd}"; then
     echo >&2 "ERROR: Failed to install '${pkg_names}'."
     return 1
