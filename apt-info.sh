@@ -3,9 +3,7 @@
 # For systems using APT and DPKG (ie. Debian/Ubuntu)
 
 PKG_NAME=""
-if [ -n "$1" ]; then
-  PKG_NAME="$1"
-fi
+VERBOSITY=0
 
 function get_installed_packages()
 {
@@ -109,6 +107,91 @@ function print_pkg_info()
   fi
   return 0
 }
+
+exit_script()
+{
+  # Default exit code is 1
+  local exit_code=1
+  local re
+
+  re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+  if echo "$1" | grep -qE "$re"; then
+    exit_code=$1
+    shift
+  fi
+
+  re='[[:alnum:]]'
+  if echo "$@" | grep -iqE "$re"; then
+    if [ "$exit_code" -eq 0 ]; then
+      echo "INFO: $*"
+    else
+      echo "ERROR: $*" 1>&2
+    fi
+  fi
+
+  # Print 'aborting' string if exit code is not 0
+  [ "$exit_code" -ne 0 ] && echo "Aborting script..."
+
+  exit "$exit_code"
+}
+
+usage()
+{
+    # Prints out usage and exit.
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
+    USAGE
+
+    Display details about installed Debian packages using 'apt'.
+
+    SYNTAX
+            SCRIPT_NAME [OPTIONS] [ARGUMENTS]
+
+    ARGUMENTS
+
+     package_name          (Optional) The name of the package to display.
+
+    OPTIONS
+
+     -v, --verbose         Make the script more verbose.
+     -h, --help            Prints this usage.
+
+EOF
+
+    exit_script "$@"
+}
+
+VERBOSE=""
+
+check_verbose()
+{
+  if [ $VERBOSITY -gt 1 ]; then
+    VERBOSE="-v"
+  fi
+}
+
+#[ $# -gt 0 ] || usage
+
+i=1
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -v|--verbose)
+      ((VERBOSITY++))
+      check_verbose
+      i=$((i+1))
+      shift
+    ;;
+    -h|--help)
+      usage
+    ;;
+    *)
+      if [ -n "${PKG_NAME}" ]; then
+        usage
+      fi
+      PKG_NAME="$1"
+      shift
+    ;;
+  esac
+done
 
 ### Print package information
 
