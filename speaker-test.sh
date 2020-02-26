@@ -11,10 +11,11 @@ set -euo pipefail
 pcmDevs="$(
   aplay --list-pcms |
     grep --invert-match --extended-regexp '^[[:space:]]' |
-    grep --invert-match --extended-regexp '^(default|null|pulse)' |
+    grep --invert-match --extended-regexp '^(default|null|pulse|usb)' |
     while IFS=, read -r record _; do echo "$record"; done |
     while IFS=: read -r label cardKeyValue; do
-      card="${cardKeyValue/CARD=/}"
+      card="${cardKeyValue}"
+      #card="${cardKeyValue/CARD=/}"
       if [ "$card" = Loopback ];then continue;fi
       printf -- '%s:%s\n' "$label" "$card"
     done |
@@ -29,11 +30,13 @@ reportInterruptedDevice() (
 )
 trap reportInterruptedDevice SIGINT
 
-for pcmDevice in "${pcmDevs[@]}";do
+# shellcheck disable=2068
+for pcmDevice in ${pcmDevs[@]};do
   currentlyTesting="$pcmDevice"
 
   printf 'TESTING device "%s"\n' "$pcmDevice"
-  if ! speaker-test --channels 2 --device "$pcmDevice" -t wav; then
+  echo speaker-test --nloops 1 --channels 2 --device "$pcmDevice" -t wav
+  if ! speaker-test --nloops 1 --channels 2 --device "$pcmDevice" -t wav; then
     printf '\nFAILED testing device "%s"\n\n' "$pcmDevice"
   else
     printf '\nFINSHED testing device "%s"\n\n' "$pcmDevice"
