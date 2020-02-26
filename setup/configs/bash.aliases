@@ -64,6 +64,21 @@ alias screensaver='for ((;;)); do echo -ne "\033[$((1+RANDOM%LINES));$((1+RANDOM
 ##
 ###############
 
+# view markdown using pandoc and lynx
+function view-md()
+{
+  hash pandoc 2>/dev/null || { echo >&2 "You need to install pandoc. Aborting."; return; }
+  hash lynx 2>/dev/null || { echo >&2 "You need to install lynx. Aborting."; return; }
+
+  local file;
+  if [ -z "$1" ]; then
+    echo >&2 "No file specified."
+    return
+  fi
+  file="$1"
+  pandoc "$file" | lynx -stdin
+}
+
 #
 # Csh compatability:
 #
