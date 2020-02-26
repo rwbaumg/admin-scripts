@@ -3,6 +3,8 @@
 tmp/
 
 *.out
+*.patch
+*.diff
 *.swp
 *.bak
 *.tmp
