@@ -1,5 +1,6 @@
 #!/bin/bash
 # Alternative script to handle adding PPA sources for APT
+# TODO: Backup apt/trusted.gpg and restore on rollback
 
 #UBUNTU_VERSION="focal"
 #UBUNTU_VERSION="devel"
@@ -53,7 +54,7 @@ if ! temp_file=$(mktemp -t "${NAME}_apt_add_key.XXXXXXXX.txt"); then
 	exit 1
 fi
 
-echo "Adding PPA package source: $ppa_name ..."
+echo "Adding PPA package source: ${ppa_name} ..."
 echo "deb ${PPA_BASE_URL}/${ppa_name}/ubuntu ${UBUNTU_VERSION} main" > "${ppa_output}"
 
 function rollback_changes()
@@ -66,12 +67,10 @@ function rollback_changes()
         fi
 }
 
-if ! apt update > /dev/null 2> "${temp_file}"; then
-	echo >&2 "ERROR: Failed to update package cache."
-        rollback_changes
-	exit 1
-fi
+# update package repositories and log errors to temp. file
+apt update > /dev/null 2> "${temp_file}"
 
+# check for and install missing keys for package signing
 key=$(grep "NO_PUBKEY" "${temp_file}" | cut -d":" -f6 | cut -d" " -f3)
 if [ -z "${key}" ]; then
 	echo >&2 "ERROR: Failed to find signing key for package source."
@@ -82,6 +81,13 @@ fi
 echo "Downloading PPA key (key id: $key) ..."
 if ! apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; then
 	echo >&2 "ERROR: Failed to retrieve PPA signing key."
+        rollback_changes
+	exit 1
+fi
+
+echo "Updating package cache ..."
+if ! apt update; then
+	echo >&2 "ERROR: Failed to install PPA: ${ppa_name}"
         rollback_changes
 	exit 1
 fi
