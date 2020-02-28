@@ -48,7 +48,7 @@
         lsb = "!git for-each-ref --sort='-authordate' --format='%(authordate)%09%(objectname:short)%09%(refname)' refs/heads | sed -e 's-refs/heads/--'"
         unstage = reset HEAD --
         last = log -1 HEAD
-        undo = reset --hard HEAD~1
+        undo = reset --soft HEAD~1
         contrib = shortlog -s -n
         archive = !"f() { top=$(rev-parse --show-toplevel); cd $top; tar cvf $top.tar $top ; }; f"
         churn = !git log --all --find-copies --find-renames --name-only --format='format:' "$@" | sort | grep -v '^$' | uniq -c | sort | awk 'BEGIN {print "count\tfile"} {print $1 "\t" $2}' | sort -g
