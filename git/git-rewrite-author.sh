@@ -76,6 +76,9 @@ usage()
      --new-name  <value>    The new/corrected name for the user.
      --new-email <value>    The new/corrected e-mail for the user.
 
+     --dry-run              Do not make any changes.
+
+     -f, --force            Force re-write.
      -v, --verbose          Make the script more verbose.
      -h, --help             Prints this usage.
 
@@ -152,6 +155,9 @@ test_email_arg()
   fi
 }
 
+FORCE=""
+DRY_RUN=0
+VERBOSITY=0
 #VERBOSE=""
 #check_verbose()
 #{
@@ -193,6 +199,15 @@ while [ $# -gt 0 ]; do
       export CORRECT_EMAIL="$1"
       shift
     ;;
+    --dry-run)
+      ((VERBOSITY++))
+      DRY_RUN=1
+      shift
+    ;;
+    -f|--force)
+      FORCE="-f"
+      shift
+    ;;
     -v|--verbose)
       ((VERBOSITY++))
       #check_verbose
@@ -216,56 +231,98 @@ done
 
 if ! git -C "$(dirname "$0")" rev-parse; then
   usage "Directory does not appear to be a valid Git repository: $DIR"
-  #echo >&2 "Directory does not appear to be a valid Git repository: $DIR"
-  #exit 1
 fi
 
 if [ ! -d ".git" ]; then
   usage "This script must be run from the top-level of the repository."
 fi
 
-if [ -z "$OLD_NAME" ]; then
+#if [ -z "$OLD_NAME" ]; then
+#  usage "Must specify previous name with --old-name."
+#else
+if [ -n "$OLD_NAME" ]; then
+  if [ -z "$CORRECT_NAME" ]; then
+    usage "Must specify new/corrected name with --new-name."
+  fi
+elif [ -n "$CORRECT_NAME" ]; then
   usage "Must specify previous name with --old-name."
 fi
-if [ -z "$CORRECT_NAME" ]; then
-  usage "Must specify new/corrected name with --new-name."
-fi
 #if [ -z "$OLD_EMAIL" ]; then
-#  usage "Must specify previou email with --old-email"
-#fi
-#if [ "$CORRECT_EMAIL" ]; then
-#  usage "Must specify new/corrected email with --new-email."
-#fi
+#  usage "Must specify previous email with --old-email"
+#else
+if [ -n "$OLD_EMAIL" ]; then
+  if [ -z "$CORRECT_EMAIL" ]; then
+    usage "Must specify new/corrected email with --new-email."
+  fi
+elif [ -n "$CORRECT_EMAIL"  ]; then
+  usage "Must specify previous email with --old-email"
+fi
 
-# rewrite author info
-git filter-branch --env-filter "
-	if [ -n $OLD_NAME ]; then
+if [ $VERBOSITY -gt 0 ]; then
+echo "Using command:"
+# shellcheck disable=2016
+echo git filter-branch $FORCE --env-filter '
+	if [ -n "'"$OLD_NAME"'" ] && [ -n "'"$CORRECT_NAME"'" ]; then
 		# correct committer name
-		if [ $GIT_COMMITTER_NAME == $OLD_NAME ]; then
-			export GIT_COMMITTER_NAME=$CORRECT_NAME
-			export GIT_COMMITTER_EMAIL=$CORRECT_EMAIL
+		if test "${GIT_COMMITTER_NAME}" = "'"${OLD_NAME}"'"; then
+			export GIT_COMMITTER_NAME="'"${CORRECT_NAME}"'"
 		fi
 
 		# correct author name
-		if [ $GIT_AUTHOR_NAME == $OLD_NAME ]; then
-			export GIT_AUTHOR_NAME=$CORRECT_NAME
-			export GIT_AUTHOR_EMAIL=$CORRECT_EMAIL
+		if test "${GIT_AUTHOR_NAME}" = "'"$OLD_NAME"'"; then
+			export GIT_AUTHOR_NAME="'"$CORRECT_NAME"'"
 		fi
 	fi
-
-	if [ -n $OLD_EMAIL ]; then
-		# correct committer e-mail
-		if [ $GIT_COMMITTER_EMAIL == $OLD_EMAIL ]; then
-			export GIT_COMMITTER_NAME=$CORRECT_NAME
-			export GIT_COMMITTER_EMAIL=$CORRECT_EMAIL
-		fi
+	if [ -n "'"$OLD_EMAIL"'" ] && [ -n "'"$CORRECT_EMAIL"'" ]; then
+                # correct committer e-mail
+                if test "$GIT_COMMITTER_EMAIL" = "'"$OLD_EMAIL"'"; then
+                        export GIT_COMMITTER_EMAIL="'"$CORRECT_EMAIL"'"
+                fi
 
 		# correct author e-mail
-		if [ $GIT_AUTHOR_EMAIL == $OLD_EMAIL ]; then
-			export GIT_AUTHOR_NAME=$CORRECT_NAME
-			export GIT_AUTHOR_EMAIL=$CORRECT_EMAIL
+		if test "$GIT_AUTHOR_EMAIL" = "'"$OLD_EMAIL"'"; then
+			export GIT_AUTHOR_EMAIL="'"$CORRECT_EMAIL"'"
 		fi
 	fi
-" --tag-name-filter cat -- --branches --tags
+' --tag-name-filter cat -- --branches --tags
+fi
+
+if [ "$DRY_RUN" == 1 ]; then
+  exit 0
+fi
+
+########################################
+
+echo "Running rewrite ..."
+
+# rewrite author info
+# shellcheck disable=2016
+if ! git filter-branch $FORCE --env-filter '
+	if [ -n "'"$OLD_NAME"'" ] && [ -n "'"$CORRECT_NAME"'" ]; then
+		# correct committer name
+		if test "${GIT_COMMITTER_NAME}" = "'"${OLD_NAME}"'"; then
+			export GIT_COMMITTER_NAME="'"${CORRECT_NAME}"'"
+		fi
+
+		# correct author name
+		if test "${GIT_AUTHOR_NAME}" = "'"$OLD_NAME"'"; then
+			export GIT_AUTHOR_NAME="'"$CORRECT_NAME"'"
+		fi
+	fi
+	if [ -n "'"$OLD_EMAIL"'" ] && [ -n "'"$CORRECT_EMAIL"'" ]; then
+                # correct committer e-mail
+                if test "$GIT_COMMITTER_EMAIL" = "'"$OLD_EMAIL"'"; then
+                        export GIT_COMMITTER_EMAIL="'"$CORRECT_EMAIL"'"
+                fi
+
+		# correct author e-mail
+		if test "$GIT_AUTHOR_EMAIL" = "'"$OLD_EMAIL"'"; then
+			export GIT_AUTHOR_EMAIL="'"$CORRECT_EMAIL"'"
+		fi
+	fi
+' --tag-name-filter cat -- --branches --tags; then
+        echo >&2 "ERROR: Rewrite failed."
+        exit 1
+fi
 
 exit 0
