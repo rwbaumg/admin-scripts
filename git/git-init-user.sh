@@ -37,20 +37,16 @@ usage()
     sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
     USAGE
 
-    Synchronize a local branch with a remote's, overwriting local changes.
-
-    This script allows pulling a forced commit.
+    Configures Git settings for the current user.
 
     SYNTAX
             SCRIPT_NAME [OPTIONS]
 
     OPTIONS
 
-     -r, --remote <value>   The name of the remote to pull from. (default: origin)
-     -b, --branch <value>   The name of the branch to synchronize. (default: master)
+     -n, --full-name <arg>  Specify the user's full name.
 
-     --dry-run              Do everything except actually send the updates.
-
+     -f, --force            Overwrite existing user configuration.
      -v, --verbose          Make the script more verbose.
      -h, --help             Prints this usage.
 
@@ -87,10 +83,17 @@ VERBOSITY=0
 #  fi
 #}
 
+
 # process arguments
-[ $# -gt 0 ] || usage
+#[ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
   case "$1" in
+    -n|--full-name)
+      test_arg "$1" "$2"
+      shift
+      USER_FULLNAME="$1"
+      shift
+    ;;
     -f|--force)
       FORCE="true"
       shift
@@ -140,7 +143,9 @@ else
   cp -v "${ROOT_DIR}/gitconfig.template" "${HOME}/.gitconfig"
 
   err=0
-  USER_FULLNAME=$(getent passwd "$USER" | cut -d ':' -f 5 | cut -d ',' -f 1)
+  if [ -z "${USER_FULLNAME}" ]; then
+    USER_FULLNAME=$(getent passwd "$USER" | cut -d ':' -f 5 | cut -d ',' -f 1)
+  fi
   if [ -z "${USER_FULLNAME}" ]; then
     USER_FULLNAME="${USER}"
   fi
