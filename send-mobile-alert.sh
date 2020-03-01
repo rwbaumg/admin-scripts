@@ -184,7 +184,7 @@ case "$1" in
           if [ $VERBOSITY -gt 0 ]; then
             echo >&2 "WARNING: Specified attachment is too large"
           fi
-          if [ "$ATTACHMENT_EXT" == ".avi" ]; then
+          if [ "$ATTACHMENT_EXT" == "avi" ]; then
             if [ ! -f "$FFMPEG_BIN" ]; then
               echo >&2 "FATAL: could not locate ffmpeg binary at '$FFMPEG_BIN'"
               exit 1
