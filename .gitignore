@@ -28,6 +28,7 @@ tmp/
 *.md5
 *.bin
 *.html
+*.list
 
 perf.data
 
