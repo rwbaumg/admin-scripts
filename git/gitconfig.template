@@ -39,6 +39,7 @@
         rm-add = add -u
         hard-reset = !git reset HEAD --hard && git clean -fd
         ls = log --oneline
+        ls-ignored = clean -ndX
         ca = commit --all
         push-om = push origin master
         pull-om = pull origin master
