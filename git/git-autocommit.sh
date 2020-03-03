@@ -46,8 +46,14 @@ if hash git 2>/dev/null; then
   if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
     if [[ "$(git status --porcelain -- "${FILE}" | grep -E '^(M| M)')" != "" ]]; then
       # commit pending changes
-      git add --all "${FILE}"
-      git commit -m "$MESSAGE"
+      if ! git add --all "${FILE}"; then
+        echo >&2 "ERROR: Failed to add file(s) using git-add."
+        exit 1
+      fi
+      if ! git commit -m "$MESSAGE"; then
+        echo >&2 "ERROR: Failed to commit file(s) to Git repository (${ROOT})."
+        exit 1
+      fi
       exit 0
     fi
   fi
