@@ -2,6 +2,7 @@
 
 tmp/
 
+*.rej
 *.out
 *.patch
 *.diff
