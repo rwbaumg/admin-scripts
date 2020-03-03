@@ -1,6 +1,7 @@
 # ignored files and folders
 
 tmp/
+.*
 
 *.rej
 *.out
