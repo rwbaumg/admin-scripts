@@ -13,6 +13,7 @@ export BIN_REGEX="(sbin|bin)\/"
 
 if [ -z "$1" ]; then
   echo >&2 "No package specified."
+  echo "Usage: $0 <package>"
   exit 1
 fi
 
