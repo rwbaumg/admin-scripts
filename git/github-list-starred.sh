@@ -14,17 +14,90 @@ API_KEY_FILENAME=".api-key"
 
 # Get desired GitHub username and store in GITHUB_USER
 GITHUB_USER=${1:-$DEFAULT_USER}
-if [ -z "${GITHUB_USER}" ]; then
-  echo "Usage: $0 <username>"
-  exit 1
-fi
+#if [ -z "${GITHUB_USER}" ]; then
+#  echo "Usage: $0 <username>"
+#  exit 1
+#fi
+
+exit_script()
+{
+  # Default exit code is 1
+  local exit_code=1
+  local re
+
+  re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+  if echo "$1" | grep -qE "$re"; then
+    exit_code=$1
+    shift
+  fi
+
+  re='[[:alnum:]]'
+  if echo "$*" | grep -iqE "$re"; then
+    if [ "$exit_code" -eq 0 ]; then
+      echo "INFO: $*"
+    else
+      echo "ERROR: $*" 1>&2
+    fi
+  fi
+
+  # Print 'aborting' string if exit code is not 0
+  [ "$exit_code" -ne 0 ] && echo "Aborting script..."
+
+  exit "$exit_code"
+}
+
+usage()
+{
+    # Prints out usage and exit.
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" << EOF
+    USAGE
+
+    Dumps a list of a GitHub user's starred repositories.
+
+    SYNTAX
+            SCRIPT_NAME [OPTIONS] [ARGUMENTS]
+
+    ARGUMENTS
+
+     username                The GitHub user to dump stars from.
+
+    OPTIONS
+
+     -k, --api-key <value>   Set the GitHub API key to use for authentication.
+     -o, --output <value>    Specify the path to save results to.
+
+     -p, --stdout            Print to <stdout> instead of saving to file.
+     -f, --force             Overwrite existing output file.
+     -v, --verbose           Make the script more verbose.
+     -h, --help              Prints this usage.
+
+EOF
+
+    exit_script "$@"
+}
+
+test_arg()
+{
+  # Used to validate user input
+  local arg="$1"
+  local argv="$2"
+
+  if [ -z "$argv" ]; then
+    if echo "$arg" | grep -qE '^-'; then
+      usage "Null argument supplied for option $arg"
+    fi
+  fi
+
+  if echo "$argv" | grep -qE '^-'; then
+    usage "Argument for option $arg cannot start with '-'"
+  fi
+}
 
 # shellcheck source=/dev/null
 function load_api_key() {
   api_key_file="$(dirname "$0")/${API_KEY_FILENAME}"
   if [ ! -e "${api_key_file}" ]; then
     echo >&2 "WARNING: Missing API keyfile: ${api_key_file}"
-    echo >&2 "WARNING: Results might be missing; you should put your API key in '${api_key_file}'"
     return 1
   elif ! source "${api_key_file}"; then
     echo >&2 "ERROR: Failed to load API key: ${api_key_file}"
@@ -34,15 +107,95 @@ function load_api_key() {
   return 0
 }
 
-if ! load_api_key; then
-  echo >&2 "WARNING: Making requests without an available API key!"
+USE_STDOUT="false"
+OUT_FILE=""
+FORCE="false"
+VERBOSITY=0
+USER_ARGC=0
+#VERBOSE=""
+#check_verbose()
+#{
+#  if [ $VERBOSITY -gt 1 ]; then
+#    VERBOSE="-v"
+#  fi
+#}
+
+# process arguments
+#[ $# -gt 0 ] || usage
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -k|--api-key)
+      test_arg "$1" "$2"
+      shift
+      API_TOKEN="$1"
+      shift
+    ;;
+    -o|--output)
+      test_arg "$1" "$2"
+      shift
+      OUT_FILE="$1"
+      shift
+    ;;
+    -p|--stdout)
+      USE_STDOUT="true"
+      shift
+    ;;
+    -f|--force)
+      FORCE="true"
+      shift
+    ;;
+    -v|--verbose)
+      ((VERBOSITY++))
+      #check_verbose
+      shift
+    ;;
+    -vv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      #check_verbose
+      shift
+    ;;
+    -h|--help)
+      usage
+    ;;
+    *)
+      if [ ${USER_ARGC} -ge 1 ]; then
+        usage "Cannot specify multiple usernames."
+      fi
+      test_arg "$1"
+      GITHUB_USER="$1"
+      ((USER_ARGC++))
+      shift
+    ;;
+  esac
+done
+
+if [ -z "${GITHUB_USER}" ]; then
+  usage "Must supply a GitHub username."
+fi
+
+if [ "${USE_STDOUT}" != "true" ]; then
+  if [ -z "${OUT_FILE}" ]; then
+    OUT_FILE="${GITHUB_USER}-starred-$(date '+%Y%m%d').list"
+  fi
+  if [ -e "${OUT_FILE}" ] && [ "${FORCE}" != "true" ]; then
+    usage "Output file '${OUT_FILE}' already exists; use -f/--force to overwrite."
+  fi
+fi
+
+if [ -z "${API_TOKEN}" ]; then
+  if ! load_api_key; then
+    echo >&2 "WARNING: Making requests without an available API key!"
+  fi
 fi
 
 auth_header=""
 if [ -n "${API_TOKEN}" ]; then
-  auth_header="-H "-H ""Authorization: token ${API_TOKEN}""""
+  auth_header="-H \"Authorization: token ${API_TOKEN}\""
+  echo >&2 "Using GitHub API token: ${API_TOKEN}"
+else
+  echo >&2 "WARNING: No GitHub API token was supplied; results may be incomplete."
 fi
-
 
 function get_starred() {
   if [ "${STARS}" -lt 1 ]; then
@@ -52,12 +205,17 @@ function get_starred() {
   PAGES=$((STARS/100+1))
   for PAGE in $(seq $PAGES); do
       echo >&2 "Getting page ...... (${PAGE}/${PAGES})"
-      if ! response=$(curl -sf ${auth_header} -H "Accept: application/vnd.github.v3.star+json" \
-            "https://api.github.com/users/${GITHUB_USER}/starred?per_page=100&page=${PAGE}"); then
+      curl_cmd="curl -sf ${auth_header} -H \"Accept: application/vnd.github.v3.star+json\" \"https://api.github.com/users/${GITHUB_USER}/starred?per_page=100&page=${PAGE}\""
+
+      if [ $VERBOSITY -gt 0 ]; then
+        echo >&2 "DEBUG: Running command: '${curl_cmd}'"
+      fi
+
+      if ! response=$(bash -c "${curl_cmd}"); then
         echo >&2 "ERROR: Failed to retrieve page ${PAGE}."
         return 1
       fi
-      if ! echo "${response}" | jq -r '.[]|[.repo.stargazers_count,.repo.pushed_at,.repo.clone_url,.repo.size]|@tsv'; then
+      if ! echo "${response}" | jq -r '.[]|[.repo.stargazers_count,.repo.pushed_at,.repo.size,.repo.clone_url]|@tsv'; then
         echo >&2 "ERROR: Failed to parse page ${PAGE}."
         return 1
       fi
@@ -66,12 +224,18 @@ function get_starred() {
   return 0
 }
 
-if ! stars_response=$(curl -fSsI ${auth_header} "https://api.github.com/users/${GITHUB_USER}/starred?per_page=1"); then
+curl_cmd="curl -fSsI ${auth_header} \"https://api.github.com/users/${GITHUB_USER}/starred?per_page=1\""
+if [ $VERBOSITY -gt 0 ]; then
+  echo >&2 "DEBUG: Running command: '${curl_cmd}'"
+fi
+if ! stars_response=$(bash -c "${curl_cmd}"); then
   response_code=$(echo "${stars_response}" | grep -Po "(?<=Status\:\s)[0-9]+")
-  if [ -z "${response_code}" ]; then
+  if [ -z "${response_code}" ] && [ -n "${stars_response}" ]; then
     echo >&2 "${stars_response}"
-  else
+  elif [ -n "${response_code}" ]; then
     echo >&2 "ERROR: Failed to determine starred repositories for user ${GITHUB_USER} (response: ${response_code})."
+  else
+    echo >&2 "ERROR: Failed to determine starred repositories for user ${GITHUB_USER}."
   fi
   exit 1
 fi
@@ -79,22 +243,23 @@ if ! STARS=$(echo "${stars_response}" | grep -E '^Link' | grep -Eo 'page=[0-9]+'
   echo >&2 "ERROR: Failed to determine number of starred repositories for user ${GITHUB_USER}."
   exit 1
 fi
-echo >&2 "Found ${STARS} starred repositories for user ${GITHUB_USER}."
+echo >&2 "Found ${STARS} starred repositories for user '${GITHUB_USER}'"
 
 if ! starred_list=$(get_starred); then
   echo >&2 "WARNING: An error was encountered while downloading list; results may be incomplete."
 fi
 
-output_filename="${GITHUB_USER}-starred-$(date '+%Y%m%d').list"
-if [ -e "${output_filename}" ]; then
-  echo >&2 "WARNING: Output file '${output_filename}' already exists; dumping to stdout instead..."
+column_hdr="Stars\tLast Pushed At\t\tSize\tClone URL\n"
 
+if [ "${USE_STDOUT}" == "true" ]; then
   # dump the entire list to stdout
   echo >&2 "Printing list..."
+  printf "${column_hdr}"
   echo "${starred_list}"
 else
-  echo >&2 "Dumping list to ${output_filename} ..."
-  echo "${starred_list}" > "${output_filename}"
+  echo >&2 "Dumping list to ${OUT_FILE} ..."
+  printf "${column_hdr}" > "${OUT_FILE}"
+  echo "${starred_list}" >> "${OUT_FILE}"
 fi
 
 echo >&2 "Finished dumping ${STARS} starred repositories for user ${GITHUB_USER}."
