@@ -66,7 +66,11 @@ usage()
      -k, --api-key <value>   Set the GitHub API key to use for authentication.
      -o, --output <value>    Specify the path to save results to.
 
+     -c, --csv               Use CSV formatting for output. Also adds repo.description field.
      -p, --stdout            Print to <stdout> instead of saving to file.
+
+     --no-header             Do not include a column header.
+
      -f, --force             Overwrite existing output file.
      -v, --verbose           Make the script more verbose.
      -h, --help              Prints this usage.
@@ -107,6 +111,8 @@ function load_api_key() {
   return 0
 }
 
+NO_HEADER="false"
+CSV_MODE="false"
 USE_STDOUT="false"
 OUT_FILE=""
 FORCE="false"
@@ -144,6 +150,14 @@ while [ $# -gt 0 ]; do
       FORCE="true"
       shift
     ;;
+    -c|--csv)
+      CSV_MODE="true"
+      shift
+    ;;
+    --no-header)
+      NO_HEADER="true"
+      shift
+    ;;
     -v|--verbose)
       ((VERBOSITY++))
       #check_verbose
@@ -170,13 +184,24 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+FORMAT_ID="tsv"
+FIELDS_LIST=".repo.stargazers_count,.repo.pushed_at,.repo.size,.repo.clone_url"
+if [ "${CSV_MODE}" == "true" ]; then
+  FORMAT_ID="csv"
+  FIELDS_LIST="${FIELDS_LIST},.repo.description"
+fi
+
 if [ -z "${GITHUB_USER}" ]; then
   usage "Must supply a GitHub username."
 fi
 
 if [ "${USE_STDOUT}" != "true" ]; then
   if [ -z "${OUT_FILE}" ]; then
-    OUT_FILE="${GITHUB_USER}-starred-$(date '+%Y%m%d').list"
+    if [ "${CSV_MODE}" == "true" ]; then
+      OUT_FILE="${GITHUB_USER}-starred-$(date '+%Y%m%d').csv"
+    else
+      OUT_FILE="${GITHUB_USER}-starred-$(date '+%Y%m%d').list"
+    fi
   fi
   if [ -e "${OUT_FILE}" ] && [ "${FORCE}" != "true" ]; then
     usage "Output file '${OUT_FILE}' already exists; use -f/--force to overwrite."
@@ -215,7 +240,7 @@ function get_starred() {
         echo >&2 "ERROR: Failed to retrieve page ${PAGE}."
         return 1
       fi
-      if ! echo "${response}" | jq -r '.[]|[.repo.stargazers_count,.repo.pushed_at,.repo.size,.repo.clone_url]|@tsv'; then
+      if ! echo "${response}" | jq -r ".[]|[${FIELDS_LIST}]|@${FORMAT_ID}"; then
         echo >&2 "ERROR: Failed to parse page ${PAGE}."
         return 1
       fi
@@ -249,16 +274,24 @@ if ! starred_list=$(get_starred); then
   echo >&2 "WARNING: An error was encountered while downloading list; results may be incomplete."
 fi
 
-column_hdr="Stars\tLast Pushed At\t\tSize\tClone URL\n"
+if [ "${CSV_MODE}" == "true" ]; then
+  column_hdr='"Stargazers","Last Pushed At","Repository Size (KB)","Clone URL","Description"\n'
+else
+  column_hdr="Stars\tLast Pushed At\t\tSize\tClone URL\n"
+fi
 
 if [ "${USE_STDOUT}" == "true" ]; then
   # dump the entire list to stdout
   echo >&2 "Printing list..."
-  printf "${column_hdr}"
+  if [ "${NO_HEADER}" != "true" ]; then
+    printf "${column_hdr}"
+  fi
   echo "${starred_list}"
 else
   echo >&2 "Dumping list to ${OUT_FILE} ..."
-  printf "${column_hdr}" > "${OUT_FILE}"
+  if [ "${NO_HEADER}" != "true" ]; then
+    printf "${column_hdr}" > "${OUT_FILE}"
+  fi
   echo "${starred_list}" >> "${OUT_FILE}"
 fi
 
