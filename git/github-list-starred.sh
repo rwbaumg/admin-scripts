@@ -284,13 +284,13 @@ if [ "${USE_STDOUT}" == "true" ]; then
   # dump the entire list to stdout
   echo >&2 "Printing list..."
   if [ "${NO_HEADER}" != "true" ]; then
-    printf "${column_hdr}"
+    echo -ne "${column_hdr}"
   fi
   echo "${starred_list}"
 else
   echo >&2 "Dumping list to ${OUT_FILE} ..."
   if [ "${NO_HEADER}" != "true" ]; then
-    printf "${column_hdr}" > "${OUT_FILE}"
+    echo -ne "${column_hdr}" > "${OUT_FILE}"
   fi
   echo "${starred_list}" >> "${OUT_FILE}"
 fi

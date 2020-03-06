@@ -160,15 +160,6 @@ EOF
     exit_script "$@"
 }
 
-VERBOSE=""
-
-check_verbose()
-{
-  if [ $VERBOSITY -gt 1 ]; then
-    VERBOSE="-v"
-  fi
-}
-
 #[ $# -gt 0 ] || usage
 
 i=1
@@ -176,7 +167,6 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -v|--verbose)
       ((VERBOSITY++))
-      check_verbose
       i=$((i+1))
       shift
     ;;
@@ -185,7 +175,7 @@ while [ $# -gt 0 ]; do
     ;;
     *)
       if [ -n "${PKG_NAME}" ]; then
-        usage
+        usage "Package name can only be specified once."
       fi
       PKG_NAME="$1"
       shift
