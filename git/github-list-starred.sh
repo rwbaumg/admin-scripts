@@ -188,7 +188,7 @@ FORMAT_ID="tsv"
 FIELDS_LIST=".repo.stargazers_count,.repo.pushed_at,.repo.size,.repo.clone_url"
 if [ "${CSV_MODE}" == "true" ]; then
   FORMAT_ID="csv"
-  FIELDS_LIST="${FIELDS_LIST},.repo.description"
+  FIELDS_LIST=".starred_at,${FIELDS_LIST},.repo.description"
 fi
 
 if [ -z "${GITHUB_USER}" ]; then
@@ -275,7 +275,7 @@ if ! starred_list=$(get_starred); then
 fi
 
 if [ "${CSV_MODE}" == "true" ]; then
-  column_hdr='"Stargazers","Last Pushed At","Repository Size (KB)","Clone URL","Description"\n'
+  column_hdr='"Starred At","Stargazers","Last Pushed At","Repository Size","Clone URL","Description"\n'
 else
   column_hdr="Stars\tLast Pushed At\t\tSize\tClone URL\n"
 fi
