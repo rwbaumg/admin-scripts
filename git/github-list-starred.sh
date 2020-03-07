@@ -66,7 +66,7 @@ usage()
      -k, --api-key <value>   Set the GitHub API key to use for authentication.
      -o, --output <value>    Specify the path to save results to.
 
-     -c, --csv               Use CSV formatting for output. Also adds repo.description field.
+     -c, --csv               Use CSV formatting for output.
      -p, --stdout            Print to <stdout> instead of saving to file.
 
      --no-header             Do not include a column header.
