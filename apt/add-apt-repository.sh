@@ -6,51 +6,146 @@
 UBUNTU_VERSION="bionic"
 
 PPA_BASE_URL="http://ppa.launchpad.net"
+GPG_KEYSERVER="keyserver.ubuntu.com"
 
-if [ $# -ne 1 ]; then
-	echo "Utility to add PPA repositories to your Debian-based system."
-	echo "Usage: $0 ppa:user/ppa-name"
+exit_script()
+{
+  # Default exit code is 1
+  local exit_code=1
+  local re
+
+  re='^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$'
+  if echo "$1" | grep -qE "$re"; then
+    exit_code=$1
+    shift
+  fi
+
+  re='[[:alnum:]]'
+  if echo "$@" | grep -iqE "$re"; then
+    if [ "$exit_code" -eq 0 ]; then
+      echo >&2 "INFO: $*"
+    else
+      echo "ERROR: $*" 1>&2
+    fi
+  fi
+
+  # Print 'aborting' string if exit code is not 0
+  [ "$exit_code" -ne 0 ] && echo >&2 "Aborting script..."
+
+  exit "$exit_code"
+}
+
+usage()
+{
+    # Prints out usage and exit.
+    sed -e "s/^    //" -e "s|SCRIPT_NAME|$(basename "$0")|" -e "s|DEFAULT_DIST|${UBUNTU_VERSION}|" << EOF
+    USAGE
+
+    Utility to add PPA repositories to your Debian-based system.
+
+    SYNTAX
+            SCRIPT_NAME [OPTIONS] ppa:user/ppa-name
+
+    OPTIONS
+
+     -d, --dist <name>     The distribution name to use.
+                           Default: 'DEFAULT_DIST'
+
+     -v, --verbose         Make the script more verbose.
+     -h, --help            Prints this usage.
+
+EOF
+
+    exit_script "$@"
+}
+
+test_arg()
+{
+  # Used to validate user input
+  local arg="$1"
+  local argv="$2"
+
+  if [ -z "$argv" ]; then
+    if echo "$arg" | grep -qE '^-'; then
+      usage "Null argument supplied for option $arg"
+    fi
+  fi
+
+  if echo "$argv" | grep -qE '^-'; then
+    usage "Argument for option $arg cannot start with '-'"
+  fi
+}
+
+PPA_ARG=""
+VERBOSITY=0
+
+# process arguments
+[ $# -gt 0 ] || usage
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -d|--dist)
+      test_arg "$1" "$2"
+      shift
+      UBUNTU_VERSION="$1"
+      shift
+    ;;
+    -v|--verbose)
+      ((VERBOSITY++))
+      shift
+    ;;
+    -h|--help)
+      usage
+    ;;
+    *)
+      if [ -n "${PPA_ARG}" ]; then
+        usage
+      fi
+      test_arg "$1"
+      PPA_ARG="$1"
+      shift
+    ;;
+  esac
+done
+
+if [ -z "${PPA_ARG}" ]; then
+    usage "Must supply a PPA to add."
+fi
+if [ -z "${UBUNTU_VERSION}" ]; then
+    usage "No distribution name specified."
+fi
+if [ -z "${GPG_KEYSERVER}" ]; then
+    usage "No GnuPG keyserver specified."
 fi
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
-   echo >&2 "This script must be run as root."
-   exit 1
+    usage "This script must be run as root."
 fi
 
-if ! NAME=$( (uname -a && date) | md5sum | cut -f1 -d" "); then
-	echo >&2 "ERROR: Failed to calculate package identifier."
-	exit 1
+if ! NAME=$( (uname -a && date) | md5sum | cut -f1 -d" " ); then
+	usage "Failed to calculate package identifier."
 fi
 
-if ! echo "$1" | grep -E '^ppa\:'; then
-        echo >&2 "ERROR: Invalid PPA identifier: '$1'."
-        exit 1
+if ! echo "${PPA_ARG}" | grep -E '^ppa\:'; then
+        usage "Invalid PPA identifier: '${PPA_ARG}'."
 fi
 
-ppa_name=$(echo "$1" | cut -d":" -f2 -s)
+ppa_name=$(echo "${PPA_ARG}" | cut -d":" -f2 -s)
 if [ -z "$ppa_name" ]; then
-	echo >&2 "ERROR: PPA name not found."
-
-	echo "Utility to add PPA repositories in your debian machine"
-	echo "Usage: $0 ppa:user/ppa-name"
-        exit 1
+	usage "PPA name not found."
 fi
 
 if [ ! -d "/etc/apt/sources.list.d" ]; then
-        echo >&2 "ERROR: Package source directory is missing: /etc/apt/sources.list.d"
-        exit 1
+        usage "Package source directory is missing: /etc/apt/sources.list.d"
 fi
 
 ppa_filename=$(echo "${ppa_name}" | sed -e 's/\//_/g')
 ppa_output="/etc/apt/sources.list.d/${ppa_filename}.list"
 if [ -e "${ppa_output}" ]; then
-        echo >&2 "ERROR: Package source '${ppa_output}' already exists."
-        exit 1
+        usage "Package source '${ppa_output}' already exists."
 fi
 if ! temp_file=$(mktemp -t "${NAME}_apt_add_key.XXXXXXXX.txt"); then
-	echo >&2 "ERROR: Failed to create temporary file."
-	exit 1
+	exit_script 1 "Failed to create temporary file."
 fi
 
 echo "Adding PPA package source: ${ppa_name} ..."
@@ -88,42 +183,42 @@ apt update > /dev/null 2> "${temp_file}"
 # check for and install missing keys for package signing
 key=$(grep "NO_PUBKEY" "${temp_file}" | cut -d":" -f6 | cut -d" " -f3)
 if grep "NO_PUBKEY" "${temp_file}" && [ -z "${key}" ]; then
-	echo >&2 "ERROR: Failed to find signing key for package source."
         rollback_changes
-	exit 1
+	exit_script 1 "Failed to find signing key for package source."
 fi
 
 echo "Creating backup of /etc/apt/trusted.gpg ..."
 if ! apt_trusted_backup=$(mktemp -t "apt_trusted.XXXXXXXX.bak"); then
-	echo >&2 "ERROR: Failed to create temporary file."
 	apt_trusted_backup=""
         rollback_changes
-	exit 1
+	exit_script 1 "Failed to create temporary file."
 fi
 if ! cp -v "/etc/apt/trusted.gpg" "${apt_trusted_backup}"; then
-	echo >&2 "ERROR: Failed to create backup of /etc/apt/trusted.gpg."
 	apt_trusted_backup=""
         rollback_changes
-	exit 1
+	exit_script 1 "Failed to create backup of /etc/apt/trusted.gpg."
 fi
 
-echo "Downloading PPA key (key id: $key) ..."
-if ! apt-key adv --keyserver keyserver.ubuntu.com --recv-keys "$key"; then
-	echo >&2 "ERROR: Failed to retrieve PPA signing key."
+echo "Downloading PPA key from ${GPG_KEYSERVER} (key id: $key) ..."
+if ! apt-key adv --keyserver "${GPG_KEYSERVER}" --recv-keys "$key"; then
         rollback_changes
-	exit 1
+	exit_script 1 "Failed to retrieve PPA signing key."
 fi
 
 echo "Updating package cache ..."
 if ! apt update; then
-	echo >&2 "ERROR: Failed to install PPA: ${ppa_name}"
         rollback_changes
-	exit 1
+	exit_script 1 "Failed to install PPA: ${ppa_name}"
 fi
 
-echo "Removing temporary files..."
-rm -rfv "${temp_file}"
-rm -rfv "${apt_trusted_backup}"
+if [ -e "${temp_file}" ]; then
+    echo >&2 "Removing temporary file ..."
+    rm -rv "${temp_file}"
+fi
+if [ -e "${ppa_output}" ]; then
+    echo >&2 "Removing backup file ..."
+    rm -rv "${apt_trusted_backup}"
+fi
 
 echo "Finished."
 exit 0
