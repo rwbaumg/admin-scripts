@@ -6,6 +6,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-find / -xdev \( -perm -4000 \) -type f -print0 2>&- | xargs -0 ls -l
+find / \( -perm -4000 -o -perm -2000 \) -type f -exec ls -la {} \;
 
 exit 0

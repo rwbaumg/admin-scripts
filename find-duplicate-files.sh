@@ -112,13 +112,17 @@ if [ $VERBOSITY -gt 0 ]; then
   echo >&2 "Scanning for duplicate files in $SEARCH_DIR ..."
 fi
 
-find "$SEARCH_DIR" -not -empty -type f -printf "%s\n" \
-| sort -rn \
-| uniq -d \
-| xargs -I{} -n1 find -type f -size {}c -print0 \
-| xargs -0 md5sum \
-| sort \
-| uniq -w32 --all-repeated=separate
+find "$SEARCH_DIR" -type f -exec md5sum '{}' ';' \
+  | sort \
+  | uniq --all-repeated=separate -w 33
+
+#find "$SEARCH_DIR" -not -empty -type f -printf "%s\n" \
+#  | sort -rn \
+#  | uniq -d \
+#  | xargs -I{} -n1 find -type f -size {}c -print0 \
+#  | xargs -0 md5sum \
+#  | sort \
+#  | uniq -w32 --all-repeated=separate
 
 if [ $VERBOSITY -gt 0 ]; then
   echo >&2 "Finished."

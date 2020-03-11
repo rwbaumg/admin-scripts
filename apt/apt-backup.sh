@@ -1,5 +1,7 @@
 #!/bin/bash
 # backup apt packages
+# To restore:
+#  - 'dpkg --set-selections < selections.txt && apt-get dselect-upgrade'
 
 hash dpkg 2>/dev/null || { echo >&2 "You need to install dpkg. Aborting."; exit 1; }
 hash apt-key 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
