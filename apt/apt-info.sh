@@ -185,12 +185,21 @@ done
 
 ### Print package information
 
+ret_code=0
 if [ -n "${PKG_NAME}" ]; then
-  print_pkg_info "$PKG_NAME"
+  if ! print_pkg_info "$PKG_NAME"; then
+    echo >&2 "ERROR: Failed to print info for package '${PKG_NAME}'."
+    ret_code=1
+  fi
 else
   for pkg in $(get_installed_packages); do
-    print_pkg_info "${pkg}"; echo
+    if ! print_pkg_info "${pkg}"; then
+      echo >&2 "ERROR: Failed to print info for package '${pkg}'."
+      ret_code=1
+    fi
+    # print newline
+    echo
   done
 fi
 
-exit 0
+exit ${ret_code}
