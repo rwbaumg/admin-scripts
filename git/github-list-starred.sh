@@ -184,6 +184,9 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+# check for required commands
+hash jq 2>/dev/null || { usage "You need to install 'jq'."; }
+
 FORMAT_ID="tsv"
 FIELDS_LIST=".repo.stargazers_count,.repo.pushed_at,.repo.size,.repo.clone_url"
 if [ "${CSV_MODE}" == "true" ]; then
@@ -197,10 +200,12 @@ fi
 
 if [ "${USE_STDOUT}" != "true" ]; then
   if [ -z "${OUT_FILE}" ]; then
+    # set default filename and extension
+    BASE_NAME="${GITHUB_USER}-starred-$(date '+%Y%m%d')"
     if [ "${CSV_MODE}" == "true" ]; then
-      OUT_FILE="${GITHUB_USER}-starred-$(date '+%Y%m%d').csv"
+      OUT_FILE="${BASE_NAME}.csv"
     else
-      OUT_FILE="${GITHUB_USER}-starred-$(date '+%Y%m%d').list"
+      OUT_FILE="${BASE_NAME}.list"
     fi
   fi
   if [ -e "${OUT_FILE}" ] && [ "${FORCE}" != "true" ]; then
