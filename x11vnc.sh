@@ -58,6 +58,9 @@ LOG_FILE="/tmp/x11vnc-$CURRENT_USER.log"
 logger -p syslog.info "Starting x11vnc for user $CURRENT_USER (uid $CURRENT_UID) ..."
 logger -p syslog.info "Logging to $LOG_FILE"
 
+echo "INFO: Starting x11vnc for user $CURRENT_USER (uid $CURRENT_UID) ..."
+echo "INFO: Logging to $LOG_FILE"
+
 # check if x11vnc is already running
 VNC_PID=$(pgrep -f "^[x]11vnc" --euid "$CURRENT_UID")
 if [[ -n "$VNC_PID" ]]; then
@@ -109,9 +112,9 @@ fi
 # get the port number
 PORT=""
 if [ "${HAS_NETCAT}" == "true" ]; then
-  PORT=$(netstat -4 -an --tcp --program 2> /dev/null | grep "$VNC_PID" | awk '{print $4}' | awk -F":" '{print $2}')
+  PORT=$(netstat -4 -an --tcp --program 2> /dev/null | grep "$VNC_PID" | awk '{print $4}' | awk -F":" '{print $2}' | head -n1)
 else
-  PORT=$(lsof -nPi | grep "IPv4" | grep "$VNC_PID" | awk '{print $9}' | awk -F":" '{print $2}')
+  PORT=$(lsof -nPi | grep "IPv4" | grep "$VNC_PID" | awk '{print $9}' | awk -F":" '{print $2}' | head -n1)
 fi
 
 # DEBUG: log all ports visible at this point in the script
@@ -135,6 +138,8 @@ if ! [[ $PORT =~ $re ]] ; then
   fi
 fi
 
+echo "INFO: Found open x11vnc socket on port ${PORT}/tcp"
+
 display_string="display ${DISPLAY}"
 if [ -z "${DISPLAY}" ]; then
   echo >&2 "WARNING: Unable to determine display."
@@ -142,6 +147,6 @@ if [ -z "${DISPLAY}" ]; then
 fi
 
 logger -p syslog.info "x11vnc started on display $DISPLAY; listening on 127.0.0.1:$PORT"
-echo "x11vnc started on $display_string; listening on 127.0.0.1:$PORT"
+echo "INFO: x11vnc started on $display_string; listening on 127.0.0.1:$PORT"
 
 exit 0
