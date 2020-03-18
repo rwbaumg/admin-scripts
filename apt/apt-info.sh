@@ -177,6 +177,7 @@ while [ $# -gt 0 ]; do
       if [ -n "${PKG_NAME}" ]; then
         usage "Package name can only be specified once."
       fi
+      test_arg "$1"
       PKG_NAME="$1"
       shift
     ;;
