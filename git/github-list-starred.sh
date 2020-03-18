@@ -97,6 +97,21 @@ test_arg()
   fi
 }
 
+function is_number() {
+  local argv="$1"
+
+  if [ -z "$argv" ]; then
+    return 1
+  fi
+
+  re='^[0-9]+$'
+  if [[ $argv =~ $re ]] ; then
+    return 0
+  fi
+
+  return 1
+}
+
 # shellcheck source=/dev/null
 function load_api_key() {
   api_key_file="$(dirname "$0")/${API_KEY_FILENAME}"
@@ -229,7 +244,7 @@ fi
 
 function get_starred() {
   if [ "${STARS}" -lt 1 ]; then
-    echo >&2 "ERROR: Star count for ser ${GITHUB_USER} is zero."
+    echo >&2 "ERROR: Star count for user '${GITHUB_USER}' is zero."
     return 1
   fi
   PAGES=$((STARS/100+1))
@@ -261,18 +276,20 @@ fi
 if ! stars_response=$(bash -c "${curl_cmd}"); then
   response_code=$(echo "${stars_response}" | grep -Po "(?<=Status\:\s)[0-9]+")
   if [ -z "${response_code}" ] && [ -n "${stars_response}" ]; then
-    echo >&2 "${stars_response}"
+    exit_script 1 "${stars_response}"
   elif [ -n "${response_code}" ]; then
-    echo >&2 "ERROR: Failed to determine starred repositories for user ${GITHUB_USER} (response: ${response_code})."
+    exit_script 1 "Failed to determine starred repositories for user '${GITHUB_USER}' (response: ${response_code})."
   else
-    echo >&2 "ERROR: Failed to determine starred repositories for user ${GITHUB_USER}."
+    exit_script 1 "Failed to determine starred repositories for user '${GITHUB_USER}'."
   fi
-  exit 1
+  exit_script 0
 fi
-if ! STARS=$(echo "${stars_response}" | grep -E '^Link' | grep -Eo 'page=[0-9]+' | tail -1 | cut -c6-); then
-  echo >&2 "ERROR: Failed to determine number of starred repositories for user ${GITHUB_USER}."
-  exit 1
+
+STARS=$(echo "${stars_response}" | grep -E '^Link' | grep -Eo 'page=[0-9]+' | tail -1 | cut -c6-)
+if ! is_number "${STARS}"; then
+  exit_script 1 "Failed to determine number of starred repositories for user '${GITHUB_USER}'."
 fi
+
 echo >&2 "Found ${STARS} starred repositories for user '${GITHUB_USER}'"
 
 if ! starred_list=$(get_starred); then
@@ -300,5 +317,5 @@ else
   echo "${starred_list}" >> "${OUT_FILE}"
 fi
 
-echo >&2 "Finished dumping ${STARS} starred repositories for user ${GITHUB_USER}."
-exit 0
+echo >&2 "Finished dumping ${STARS} starred repositories for user '${GITHUB_USER}'."
+exit_script 0
