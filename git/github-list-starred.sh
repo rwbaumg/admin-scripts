@@ -12,12 +12,20 @@ API_TOKEN=""
 # The name of the file containing the GitHub API key to use.
 API_KEY_FILENAME=".api-key"
 
+# Specify the default file to write output to.
+OUT_FILE=""
+
+# Whether or not existing file should be overwritten by default.
+FORCE="false"
+
+# Whether or not CSV formatting should be used when printing results.
+CSV_MODE="false"
+
+# Whether or not column headers should be included in output.
+NO_HEADER="false"
+
 # Get desired GitHub username and store in GITHUB_USER
 GITHUB_USER=${1:-$DEFAULT_USER}
-#if [ -z "${GITHUB_USER}" ]; then
-#  echo "Usage: $0 <username>"
-#  exit 1
-#fi
 
 exit_script()
 {
@@ -126,12 +134,8 @@ function load_api_key() {
   return 0
 }
 
-NO_HEADER="false"
-CSV_MODE="false"
-USE_STDOUT="false"
-OUT_FILE=""
-FORCE="false"
 VERBOSITY=0
+USE_STDOUT="false"
 USER_ARGC=0
 #VERBOSE=""
 #check_verbose()
@@ -152,12 +156,18 @@ while [ $# -gt 0 ]; do
       shift
     ;;
     -o|--output)
+      if [ "${USE_STDOUT}" == "true" ]; then
+        usage "Conflict; --stdout/--output cannot be used together."
+      fi
       test_arg "$1" "$2"
       shift
       OUT_FILE="$1"
       shift
     ;;
     -p|--stdout)
+      if [ -n "${OUT_FILE}" ]; then
+        usage "Conflict; --stdout/--output cannot be used together."
+      fi
       USE_STDOUT="true"
       shift
     ;;
