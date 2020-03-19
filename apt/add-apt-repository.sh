@@ -76,8 +76,16 @@ test_arg()
   fi
 }
 
-PPA_ARG=""
 VERBOSITY=0
+VERBOSE=""
+check_verbose()
+{
+  if [ $VERBOSITY -gt 0 ]; then
+    VERBOSE="-v"
+  fi
+}
+
+PPA_ARG=""
 
 # process arguments
 [ $# -gt 0 ] || usage
@@ -91,6 +99,7 @@ while [ $# -gt 0 ]; do
     ;;
     -v|--verbose)
       ((VERBOSITY++))
+      check_verbosity
       shift
     ;;
     -h|--help)
@@ -156,11 +165,11 @@ function rollback_changes()
 	if [ ! -z "${apt_trusted_backup}" ]; then
 		if [ -e "${apt_trusted_backup}" ]; then
 			echo >&2 "Restoring /etc/apt/trusted.gpg from backup ..."
-			if ! cp -v "${apt_trusted_backup}" "/etc/apt/trusted.gpg"; then
+			if ! cp ${VERBOSE} "${apt_trusted_backup}" "/etc/apt/trusted.gpg"; then
 				echo >&2 "WARNING: Failed to restore /etc/apt/trusted.gpg"
 			fi
 			echo >&2 "Removing backup file ..."
-			if ! rm -v "${apt_trusted_backup}"; then
+			if ! rm ${VERBOSE} "${apt_trusted_backup}"; then
 				echo >&2 "WARNING: Failed to delete backup file '${apt_trusted_backup}'."
 			fi
 		else
@@ -169,10 +178,10 @@ function rollback_changes()
 	fi
         if [ -e "${temp_file}" ]; then
 		echo >&2 "Removing temporary file ..."
-                rm -rv "${temp_file}"
+                rm -r ${VERBOSE} "${temp_file}"
         fi
         if [ -e "${ppa_output}" ]; then
-                rm -rv "${ppa_output}"
+                rm -r ${VERBOSE} "${ppa_output}"
         fi
 }
 
@@ -182,10 +191,17 @@ apt update > /dev/null 2> "${temp_file}"
 
 # check for and install missing keys for package signing
 key=$(grep "NO_PUBKEY" "${temp_file}" | cut -d":" -f6 | cut -d" " -f3)
-if grep "NO_PUBKEY" "${temp_file}" && [ -z "${key}" ]; then
+if [ -z "${key}" ]; then
+	# Failed to find signing key for package source.
+	echo >&2 "WARNING: No signing key for package source."
+
+	if [ -s "${temp_file}" ]; then
+	echo >&2 "Error output from cache update:"
+	cat >&2 "${temp_file}"
         rollback_changes
-	exit_script 1 "Failed to find signing key for package source."
-fi
+	exit_script 1 "Failed to update cache using package source."
+	fi
+else
 
 echo "Creating backup of /etc/apt/trusted.gpg ..."
 if ! apt_trusted_backup=$(mktemp -t "apt_trusted.XXXXXXXX.bak"); then
@@ -193,7 +209,7 @@ if ! apt_trusted_backup=$(mktemp -t "apt_trusted.XXXXXXXX.bak"); then
         rollback_changes
 	exit_script 1 "Failed to create temporary file."
 fi
-if ! cp -v "/etc/apt/trusted.gpg" "${apt_trusted_backup}"; then
+if ! cp ${VERBOSE} "/etc/apt/trusted.gpg" "${apt_trusted_backup}"; then
 	apt_trusted_backup=""
         rollback_changes
 	exit_script 1 "Failed to create backup of /etc/apt/trusted.gpg."
@@ -211,13 +227,15 @@ if ! apt update; then
 	exit_script 1 "Failed to install PPA: ${ppa_name}"
 fi
 
+fi
+
 if [ -e "${temp_file}" ]; then
     echo >&2 "Removing temporary file ..."
-    rm -rv "${temp_file}"
+    rm -r ${VERBOSE} "${temp_file}"
 fi
 if [ -e "${ppa_output}" ]; then
     echo >&2 "Removing backup file ..."
-    rm -rv "${apt_trusted_backup}"
+    rm -r ${VERBOSE} "${apt_trusted_backup}"
 fi
 
 echo "Finished."
