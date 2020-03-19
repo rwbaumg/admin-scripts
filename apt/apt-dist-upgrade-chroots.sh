@@ -2,7 +2,7 @@
 # upgrades chroot environments
 
 hash sudo 2>/dev/null || { echo >&2 "You need to install sudo. Aborting."; exit 1; }
-hash apt 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
+hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
 hash schroot 2>/dev/null || { echo >&2 "You need to install schroot. Aborting."; exit 1; }
 
 APT_CMD="apt-get"

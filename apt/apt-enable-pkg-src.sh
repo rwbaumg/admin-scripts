@@ -2,7 +2,7 @@
 # Create a new source list of pkg-src entries derived from primary sources.
 # Reads /etc/apt/sources.list and creates /etc/apt/sources.list.d/deb-src.list
 
-hash apt 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
+hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
 
 # Ensure sudo privileges for the current user if not running as root.
 if [[ $EUID -ne 0 ]]; then
@@ -25,7 +25,7 @@ if ! grep '^deb ' /etc/apt/sources.list | \
   exit 1
 fi
 
-if ! sudo apt update -y; then
+if ! sudo apt-get update -y; then
   echo >&2 "ERROR: Failed to update package cache; rolling back changes ..."
   sudo rm -vi "/etc/apt/sources.list.d/deb-src.list"
   exit 1

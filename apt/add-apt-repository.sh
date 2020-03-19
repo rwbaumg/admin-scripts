@@ -187,7 +187,7 @@ function rollback_changes()
 
 # update package repositories and log errors to temp. file
 echo "Performing online check for missing package key (this might take a minute) ..."
-apt update > /dev/null 2> "${temp_file}"
+apt-get update > /dev/null 2> "${temp_file}"
 
 # check for and install missing keys for package signing
 key=$(grep "NO_PUBKEY" "${temp_file}" | cut -d":" -f6 | cut -d" " -f3)
@@ -222,7 +222,7 @@ if ! apt-key adv --keyserver "${GPG_KEYSERVER}" --recv-keys "$key"; then
 fi
 
 echo "Updating package cache ..."
-if ! apt update; then
+if ! apt-get update; then
         rollback_changes
 	exit_script 1 "Failed to install PPA: ${ppa_name}"
 fi
