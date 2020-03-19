@@ -193,7 +193,7 @@ apt-get update > /dev/null 2> "${temp_file}"
 key=$(grep "NO_PUBKEY" "${temp_file}" | cut -d":" -f6 | cut -d" " -f3)
 if [ -z "${key}" ]; then
 	# Failed to find signing key for package source.
-	echo >&2 "WARNING: No signing key for package source."
+	echo >&2 "No signing key errors for package source (already installed?)."
 
 	if [ -s "${temp_file}" ]; then
 	echo >&2 "Error output from cache update:"
@@ -227,15 +227,16 @@ if ! apt-get update; then
 	exit_script 1 "Failed to install PPA: ${ppa_name}"
 fi
 
+if [ -e "${ppa_output}" ]; then
+    echo >&2 "Removing backup file ..."
+    rm -r ${VERBOSE} "${apt_trusted_backup}"
+fi
+
 fi
 
 if [ -e "${temp_file}" ]; then
     echo >&2 "Removing temporary file ..."
     rm -r ${VERBOSE} "${temp_file}"
-fi
-if [ -e "${ppa_output}" ]; then
-    echo >&2 "Removing backup file ..."
-    rm -r ${VERBOSE} "${apt_trusted_backup}"
 fi
 
 echo "Finished."
