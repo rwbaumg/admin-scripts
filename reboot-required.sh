@@ -1,8 +1,8 @@
 #!/bin/bash
 # checks if the system is pending a reboot
 
-if [ ! -e /etc/cron.daily/update-notifier-common ]; then
-  echo >&2 "This script depends on update-notifier-common."
+if [ ! -e /etc/apt/apt.conf.d/50unattended-upgrades ]; then
+  echo >&2 "This script depends on the 'unattended-upgrades' package."
   exit 1
 fi
 
