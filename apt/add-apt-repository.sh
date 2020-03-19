@@ -1,9 +1,9 @@
 #!/bin/bash
 # Alternative script to handle adding PPA sources for APT
 
-#UBUNTU_VERSION="focal"
+UBUNTU_VERSION="focal"
 #UBUNTU_VERSION="devel"
-UBUNTU_VERSION="bionic"
+#UBUNTU_VERSION="bionic"
 
 PPA_BASE_URL="http://ppa.launchpad.net"
 GPG_KEYSERVER="keyserver.ubuntu.com"
