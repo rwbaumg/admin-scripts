@@ -233,6 +233,7 @@ if [ "${USE_STDOUT}" != "true" ]; then
       OUT_FILE="${BASE_NAME}.list"
     fi
   fi
+  OUT_FILE="$(readlink -m "${OUT_FILE}")"
   if [ -e "${OUT_FILE}" ] && [ "${FORCE}" != "true" ]; then
     usage "Output file '${OUT_FILE}' already exists; use -f/--force to overwrite."
   fi
