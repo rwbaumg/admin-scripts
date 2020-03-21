@@ -174,8 +174,8 @@ if [ -e "${CONFIG}" ]; then
   # Source configuration file
   # shellcheck source=/dev/null
   source "${CONFIG}"
-else
-  print_yellow >&2 "WARNING: Configuration file not found: ${CONFIG}"
+#else
+#  print_yellow >&2 "WARNING: Configuration file not found: ${CONFIG}"
 fi
 
 # process arguments
