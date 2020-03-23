@@ -11,7 +11,7 @@
 
 # Default settings
 TRADE_SCREENING_API_KEY=""
-TRADE_SCREENING_API_URL="https://api.trade.gov/consolidated_screening_list/search"
+TRADE_SCREENING_API_URL="https://api.trade.gov/gateway/v1/consolidated_screening_list"
 
 # Name of file containing custom options
 CONFIG_NAME="config.sh"
@@ -307,10 +307,10 @@ fi
 
 # Get response
 if ! RESPONSE=$(curl -s -G \
-       --data-urlencode "api_key=${TRADE_SCREENING_API_KEY}" \
+       -H "Authorization: Bearer ${TRADE_SCREENING_API_KEY}" \
        --data-urlencode "${SEARCH_MODE}=${SEARCH_TXT}" \
        "${COUNTRY_FILTER}" \
-       "${TRADE_SCREENING_API_URL}"); then
+       "${TRADE_SCREENING_API_URL}/search"); then
   print_red "ERROR: Failed to perform search."
   exit 1
 fi
@@ -321,9 +321,9 @@ if [ ! -z "${ERRORS}" ] && [ ! "${ERRORS}" == "null" ]; then
   if [ "${SILENT}" != "true" ]; then
   if [ ${VERBOSITY} -gt 1 ]; then
   if [ "${NO_COLOR}" == "false" ]; then
-  echo "${RESPONSE}" | jq -rC
+  echo "${RESPONSE}" | jq -r -C
   else
-  echo "${RESPONSE}" | jq -rM
+  echo "${RESPONSE}" | jq -r -M
   fi
   fi
   print_red "ERROR: ${ERRORS}"
@@ -331,16 +331,25 @@ if [ ! -z "${ERRORS}" ] && [ ! "${ERRORS}" == "null" ]; then
   exit 1
 fi
 
+# Report on data sources
+if [ ${VERBOSITY} -gt 1 ] && [ "${SILENT}" != "true" ]; then
+  SOURCE_LIST=$(echo "${RESPONSE}" | jq -r ".sources_used[].source")
+  SOURCE_COUNT=$(echo "${SOURCE_LIST}" | wc -l)
+
+  print_cyan "Query checked ${SOURCE_COUNT} source(s):"
+  echo "${SOURCE_LIST}" | while read -r source; do
+    print_magenta "-  ${source}"
+  done
+fi
+
 # Parse response
 RESULTS=$(echo "${RESPONSE}" | jq -r ".results")
 TOTAL=$(echo "${RESPONSE}" | jq -r ".total")
-# SOURCE_LIST=$(echo "${RESPONSE}" | jq -r ".sources_used")
-
 if [ -z "${TOTAL}" ] | [ "${TOTAL}" == "null" ]; then
   print_yellow "Service returned null."
   exit 0
 elif [ "${TOTAL}" == "0" ]; then
-  # print_green "No results returned."
+  print_green "No results returned."
   exit 0
 fi
 
