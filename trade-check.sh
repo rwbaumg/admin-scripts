@@ -268,8 +268,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-hash curl 2>/dev/null || { exit_script 1 "You need to install curl."; }
-hash jq 2>/dev/null || { exit_script 1 "You need to install jq."; }
+hash curl 2>/dev/null || { usage "You need to install curl."; }
+hash jq 2>/dev/null || { usage "You need to install jq."; }
 
 # Check if an API key is available.
 if [ -z "${TRADE_SCREENING_API_KEY}" ]; then
