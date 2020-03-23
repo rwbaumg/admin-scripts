@@ -13,6 +13,9 @@
 TRADE_SCREENING_API_KEY=""
 TRADE_SCREENING_API_URL="https://api.trade.gov/gateway/v1/consolidated_screening_list"
 
+# Location of the API to use
+API_CALL="/search"
+
 # Name of file containing custom options
 CONFIG_NAME="config.sh"
 
@@ -153,6 +156,38 @@ test_arg()
   fi
 }
 
+check_response() {
+  if [ -z "$1" ]; then
+    print_yellow "WARNING: Response is null."
+    return 0
+  fi
+
+  # Check for <ams:fault ... /> response
+  if echo "$1" | grep -Poq '^\<ams\:fault'; then
+    # Error detected; parse and print
+    ERROR_CODE=$(echo "${RESPONSE}" | grep -Po '(?<=\<ams\:code\>)[^\<]+(?=\<\/ams\:code\>)')
+    ERROR_MESG=$(echo "${RESPONSE}" | grep -Po '(?<=\<ams\:message\>)[^\<]+(?=\<\/ams\:message\>)')
+    ERROR_DESC=$(echo "${RESPONSE}" | grep -Po '(?<=\<ams\:description\>)[^\<]+(?=\<\/ams\:description\>)')
+
+    if [ "${SILENT}" != "true" ]; then
+      if [ ! -z "${ERROR_CODE}" ]; then
+        print_red "Error code        : ${ERROR_CODE}"
+      fi
+      if [ ! -z "${ERROR_CODE}" ]; then
+        print_red "Error message     : ${ERROR_MESG}"
+      fi
+      if [ ! -z "${ERROR_CODE}" ]; then
+        print_red "Error description : ${ERROR_CODE}"
+      fi
+    fi
+
+    print_red "ERROR: Service returned AMS fault."
+    exit 1
+  fi
+
+  return 0
+}
+
 SEARCH_TXT=""
 SEARCH_MODE=""
 VERBOSITY=0
@@ -203,7 +238,7 @@ while [ $# -gt 0 ]; do
       test_arg "$1" "$2"
       shift
       COUNTRY_CODE="${1}"
-      COUNTRY_FILTER="--data-urlencode countries=${1}"
+      COUNTRY_FILTER="--data-urlencode 'countries=${1}'"
       shift
     ;;
     -n|--name)
@@ -305,13 +340,58 @@ else
   print_yellow "Checking U.S. Consolidated Screening List for ${SEARCH_MODE} '${SEARCH_TXT}'..."
 fi
 
+# Configure authorization header
+AUTH_HDR=""
+if [ ! -z "${TRADE_SCREENING_API_KEY}" ]; then
+  AUTH_HDR="-H 'Authorization: Bearer ${TRADE_SCREENING_API_KEY}'"
+fi
+
+# Configure curl command line for requested search parameters
+SEARCH_ARG=""
+if [ ! -z "${SEARCH_MODE}" ] && [ ! -z "${SEARCH_TXT}" ]; then
+  SEARCH_ARG="--data-urlencode '${SEARCH_MODE}=${SEARCH_TXT}'"
+fi
+SEARCH_ARGS="${SEARCH_ARG}"
+
+CURL_CMD="curl -s -G ${AUTH_HDR} ${SEARCH_ARGS} ${COUNTRY_FILTER}"
+CURL_CMD="${CURL_CMD} '${TRADE_SCREENING_API_URL}${API_CALL}'"
+
+if [ ${VERBOSITY} -gt 2 ]; then
+  echo >&2 "Raw command:"
+  echo >&2 "---"
+  echo >&2 "${CURL_CMD}"
+  echo >&2 "---"
+fi
+
 # Get response
-if ! RESPONSE=$(curl -s -G \
-       -H "Authorization: Bearer ${TRADE_SCREENING_API_KEY}" \
-       --data-urlencode "${SEARCH_MODE}=${SEARCH_TXT}" \
-       "${COUNTRY_FILTER}" \
-       "${TRADE_SCREENING_API_URL}/search"); then
+if ! RESPONSE="$(${CURL_CMD})"; then
+  if [ ${VERBOSITY} -gt 2 ]; then
+    echo >&2 "Raw response:"
+    echo >&2 "---"
+    if [ ! -z "${RESPONSE}" ]; then
+    echo >&2 "${RESPONSE}"
+    fi
+    echo >&2 "---"
+  fi
+
+  # TODO: Fix empty RESPONSE when code<>200 (eg. fault response)
+  check_response "${RESPONSE}"
+
   print_red "ERROR: Failed to perform search."
+  exit 1
+fi
+
+if [ ${VERBOSITY} -gt 2 ]; then
+  echo >&2 "Raw response:"
+  echo >&2 "---"
+  if [ ! -z "${RESPONSE}" ]; then
+  echo >&2 "${RESPONSE}"
+  fi
+  echo >&2 "---"
+fi
+
+if [ -z "${RESPONSE}" ]; then
+  print_red "ERROR: The server returned an empty response."
   exit 1
 fi
 
