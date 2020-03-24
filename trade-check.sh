@@ -197,13 +197,13 @@ VERBOSITY=0
 VERBOSE=""
 check_verbose()
 {
-  if [ $VERBOSITY -gt 1 ]; then
+  if [ $VERBOSITY -gt 2 ]; then
     VERBOSE="-v"
   fi
-  if [ $VERBOSITY -gt 2 ]; then
+  if [ $VERBOSITY -gt 3 ]; then
     VERBOSE="-vv"
   fi
-  if [ $VERBOSITY -gt 3 ]; then
+  if [ $VERBOSITY -gt 4 ]; then
     VERBOSE="-vvv"
   fi
 }
