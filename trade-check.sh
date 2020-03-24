@@ -173,11 +173,11 @@ check_response() {
       if [ ! -z "${ERROR_CODE}" ]; then
         print_red "Error code        : ${ERROR_CODE}"
       fi
-      if [ ! -z "${ERROR_CODE}" ]; then
+      if [ ! -z "${ERROR_MESG}" ]; then
         print_red "Error message     : ${ERROR_MESG}"
       fi
-      if [ ! -z "${ERROR_CODE}" ]; then
-        print_red "Error description : ${ERROR_CODE}"
+      if [ ! -z "${ERROR_DESC}" ]; then
+        print_red "Error description : ${ERROR_DESC}"
       fi
     fi
 
