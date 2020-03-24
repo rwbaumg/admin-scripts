@@ -191,8 +191,22 @@ check_response() {
 SEARCH_TXT=""
 SEARCH_MODE=""
 VERBOSITY=0
-COUNTRY_FILTER=""
 COUNTRY_CODE=""
+
+VERBOSITY=0
+VERBOSE=""
+check_verbose()
+{
+  if [ $VERBOSITY -gt 1 ]; then
+    VERBOSE="-v"
+  fi
+  if [ $VERBOSITY -gt 2 ]; then
+    VERBOSE="-vv"
+  fi
+  if [ $VERBOSITY -gt 3 ]; then
+    VERBOSE="-vvv"
+  fi
+}
 
 test_mode()
 {
@@ -238,7 +252,6 @@ while [ $# -gt 0 ]; do
       test_arg "$1" "$2"
       shift
       COUNTRY_CODE="${1}"
-      COUNTRY_FILTER="--data-urlencode 'countries=${1}'"
       shift
     ;;
     -n|--name)
@@ -278,17 +291,20 @@ while [ $# -gt 0 ]; do
     ;;
     -v|--verbose)
       ((VERBOSITY++))
+      check_verbose
       shift
     ;;
     -vv)
       ((VERBOSITY++))
       ((VERBOSITY++))
+      check_verbose
       shift
     ;;
     -vvv)
       ((VERBOSITY++))
       ((VERBOSITY++))
       ((VERBOSITY++))
+      check_verbose
       shift
     ;;
     *)
@@ -316,7 +332,7 @@ elif [ ${VERBOSITY} -gt 0 ]; then
   print_cyan "Using API Key : ${TRADE_SCREENING_API_KEY}"
 fi
 
-if [ -z "${COUNTRY_FILTER}" ]; then
+if [ -z "${COUNTRY_CODE}" ]; then
   if [ -z "${SEARCH_MODE}" ] ; then
     usage "Search mode not defined."
   fi
@@ -334,37 +350,94 @@ fi
 
 if [ "${SEARCH_MODE}" == "q" ]; then
   print_yellow "Checking U.S. Consolidated Screening List for '${SEARCH_TXT}'..."
-elif [ ! -z "${COUNTRY_FILTER}" ]; then
+elif [ ! -z "${COUNTRY_CODE}" ]; then
   print_yellow "Checking U.S. Consolidated Screening List for countries '${COUNTRY_CODE}'..."
 else
   print_yellow "Checking U.S. Consolidated Screening List for ${SEARCH_MODE} '${SEARCH_TXT}'..."
 fi
 
+# Check for missing diff support
+declare -a curl_params=();
+function add_parameters() {
+  if [ -z "$*" ]; then
+    echo >&2 "ERROR: Package name cannot be null."
+    exit 1
+  fi
+  #if echo "${curl_params[@]}" | grep -q -w "$*"; then
+  #  echo >&2 "ERROR: Parameter configured multiple times: '$*'"
+  #  return 1
+  #fi
+
+  curl_params=("${curl_params[@]}" "$@")
+  return 0
+}
+
+function get_parameters() {
+  if [[ ${#curl_params[@]} -lt 1 ]]; then
+    echo >&2 "ERROR: No parameters configured."
+    return 1
+  fi
+
+  echo "${curl_params[@]}"
+}
+
+function add_header() {
+  if [ -z "$1" ]; then
+    echo >&2 "ERROR: No value supplied for header."
+    return 1
+  fi
+
+  if ! add_parameters "--header" "$1"; then
+    return 1
+  fi
+
+  return 0
+}
+
+function add_param() {
+  if [ -z "$1" ]; then
+    echo >&2 "ERROR: No value supplied for parameter key."
+    return 1
+  fi
+  if [ -z "$2" ]; then
+    echo >&2 "ERROR: No value supplied for parameter value."
+    return 1
+  fi
+
+  if ! add_parameters "--data-urlencode" "${1}=${2}"; then
+    return 1
+  fi
+
+  return 0
+}
+
 # Configure authorization header
-AUTH_HDR=""
 if [ ! -z "${TRADE_SCREENING_API_KEY}" ]; then
-  AUTH_HDR="-H 'Authorization: Bearer ${TRADE_SCREENING_API_KEY}'"
+  add_header "Authorization: Bearer ${TRADE_SCREENING_API_KEY}"
+fi
+
+# Configure country filter
+if [ ! -z "${COUNTRY_CODE}" ]; then
+  add_param "countries" "${COUNTRY_CODE}"
 fi
 
 # Configure curl command line for requested search parameters
-SEARCH_ARG=""
 if [ ! -z "${SEARCH_MODE}" ] && [ ! -z "${SEARCH_TXT}" ]; then
-  SEARCH_ARG="--data-urlencode '${SEARCH_MODE}=${SEARCH_TXT}'"
+  add_param "${SEARCH_MODE}" "${SEARCH_TXT}"
 fi
-SEARCH_ARGS="${SEARCH_ARG}"
 
-CURL_CMD="curl -s -G ${AUTH_HDR} ${SEARCH_ARGS} ${COUNTRY_FILTER}"
-CURL_CMD="${CURL_CMD} '${TRADE_SCREENING_API_URL}${API_CALL}'"
+# Combine curl arguments
+CURL_ARGS=("-s" "-G" "${curl_params[@]}")
 
 if [ ${VERBOSITY} -gt 2 ]; then
   echo >&2 "Raw command:"
   echo >&2 "---"
-  echo >&2 "${CURL_CMD}"
+  echo >&2 "curl ${VERBOSE} ${CURL_ARGS[*]} ${TRADE_SCREENING_API_URL}${API_CALL}"
   echo >&2 "---"
 fi
 
 # Get response
-if ! RESPONSE="$(${CURL_CMD})"; then
+if ! RESPONSE=$(curl ${VERBOSE} "${CURL_ARGS[@]}" "${TRADE_SCREENING_API_URL}${API_CALL}"); then
   if [ ${VERBOSITY} -gt 2 ]; then
     echo >&2 "Raw response:"
     echo >&2 "---"
