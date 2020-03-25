@@ -476,32 +476,22 @@ if [ ${VERBOSITY} -gt 2 ]; then
   print_cyan >&2 "---"
 fi
 
-if ! STATUSCODE=$(curl --silent "${CURL_ARGS[@]}" --output /dev/null --write-out "%{http_code}" "${TRADE_SCREENING_API_URL}${API_CALL}"); then
-  exit_script 1 "Failed to retrieve status code from webserver."
-fi
-
-# Get response
-if ! RESPONSE=$(curl ${VERBOSE} "${CURL_ARGS[@]}" "${TRADE_SCREENING_API_URL}${API_CALL}") || [ "${STATUSCODE}" != "200" ]; then
-  if [ ${VERBOSITY} -gt 2 ]; then
-    print_cyan >&2 "Raw response :"
-    print_cyan >&2 "---"
-    if [ ! -z "${RESPONSE}" ]; then
-    print_blue >&2 "${RESPONSE}"
-    fi
-    print_cyan >&2 "---"
-  fi
-
-  # Validate response
-  if ! check_response "${RESPONSE}"; then
-    exit 1
-  fi
-
-  print_red >&2 "ERROR: Failed to perform search."
+if ! RAW_RESPONSE=$(curl ${VERBOSE} "${CURL_ARGS[@]}" --write-out "\n%{http_code}" "${TRADE_SCREENING_API_URL}${API_CALL}"); then
+  print_red >&2 "ERROR: Failed to get response from server."
   exit 1
+fi
+if [ -z "${RAW_RESPONSE}" ]; then
+  exit_script 1 "Null response from server."
+fi
+if ! RESPONSE=$(echo "${RAW_RESPONSE}" | sed -e '$ d'); then
+  exit_script 1 "Failed to parse response."
+fi
+if ! STATUSCODE=$(echo "${RAW_RESPONSE}" | tail -n1); then
+  exit_script 1 "Failed to parse status code from response."
 fi
 
 if [ ${VERBOSITY} -gt 2 ]; then
-  print_cyan >&2 "Raw response:"
+  print_cyan >&2 "Raw response :"
   print_cyan >&2 "---"
   if [ ! -z "${RESPONSE}" ]; then
   print_blue >&2 "${RESPONSE}"
@@ -509,9 +499,12 @@ if [ ${VERBOSITY} -gt 2 ]; then
   print_cyan >&2 "---"
 fi
 
+# Get response
+if [ "${STATUSCODE}" != "200" ]; then
+  exit_script 1 "Failed to perform search; server returned code ${STATUSCODE}."
+fi
 if [ -z "${RESPONSE}" ]; then
-  print_red >&2 "ERROR: The server returned an empty response."
-  exit 1
+  exit_script 1 "The server returned an empty response."
 fi
 
 # Validate response
