@@ -105,7 +105,7 @@ exit_script()
     if [ "$exit_code" -eq 0 ]; then
       echo >&2 "INFO: $*"
     else
-      echo "ERROR: $*" 1>&2
+      print_red "ERROR: $*" 1>&2
     fi
   fi
 
@@ -500,9 +500,6 @@ if [ ${VERBOSITY} -gt 2 ]; then
 fi
 
 # Get response
-if [ "${STATUSCODE}" != "200" ]; then
-  exit_script 1 "Failed to perform search; server returned code ${STATUSCODE}."
-fi
 if [ -z "${RESPONSE}" ]; then
   exit_script 1 "The server returned an empty response."
 fi
@@ -510,6 +507,9 @@ fi
 # Validate response
 if ! check_response "${RESPONSE}"; then
   exit 1
+fi
+if [ "${STATUSCODE}" != "200" ]; then
+  exit_script 1 "ERROR: Failed to perform search; server returned code ${STATUSCODE}."
 fi
 
 # Check for errors in response
