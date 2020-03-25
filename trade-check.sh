@@ -17,7 +17,7 @@ TRADE_SCREENING_API_URL="https://api.trade.gov/gateway/v1/consolidated_screening
 API_CALL="/search"
 
 # Name of file containing custom options
-CONFIG_NAME="config.sh"
+CONFIG_NAME="trade-check.cfg"
 
 SILENT="false"
 NO_COLOR="false"
@@ -71,6 +71,17 @@ print_cyan()
   if [ "${SILENT}" != "true" ]; then
   if [ "${NO_COLOR}" == "false" ]; then
   echo -e "\x1b[39;49;00m\x1b[36;01m${1}\x1b[39;49;00m" #> $(tty) 2>&1 < $(tty)
+  else
+  echo "${1}" #> $(tty) 2>&1 < $(tty)
+  fi
+  fi
+}
+
+print_blue()
+{
+  if [ "${SILENT}" != "true" ]; then
+  if [ "${NO_COLOR}" == "false" ]; then
+  echo -e "\x1b[39;49;00m\x1b[34;01m${1}\x1b[39;49;00m" #> $(tty) 2>&1 < $(tty)
   else
   echo "${1}" #> $(tty) 2>&1 < $(tty)
   fi
@@ -158,8 +169,34 @@ test_arg()
 
 check_response() {
   if [ -z "$1" ]; then
-    print_yellow "WARNING: Response is null."
+    print_yellow >&2 "WARNING: Response is null."
     return 0
+  fi
+
+  # Check for <am:fault ... /> response
+  if echo "$1" | grep -Poq '^\<am\:fault'; then
+    # Error detected; parse and print
+    ERROR_CODE=$(echo "${RESPONSE}" | grep -Po '(?<=\<am\:code\>)[^\<]+(?=\<\/am\:code\>)')
+    ERROR_MESG=$(echo "${RESPONSE}" | grep -Po '(?<=\<am\:message\>)[^\<]+(?=\<\/am\:message\>)')
+    ERROR_DESC=$(echo "${RESPONSE}" | grep -Po '(?<=\<am\:description\>)[^\<]+(?=\<\/am\:description\>)')
+
+    if [ "${SILENT}" != "true" ]; then
+      msg=0
+      if [ ! -z "${ERROR_CODE}" ]; then
+        print_red >&2 "Error code        : ${ERROR_CODE}"; msg=1
+      fi
+      if [ ! -z "${ERROR_MESG}" ]; then
+        print_red >&2 "Error message     : ${ERROR_MESG}"; msg=1
+      fi
+      if [ ! -z "${ERROR_DESC}" ]; then
+        print_red >&2 "Error description : ${ERROR_DESC}"; msg=1
+      fi
+      if [ "${msg}" -lt "1" ]; then
+        print_red >&2 "ERROR: Service returned AM fault."
+      fi
+    fi
+
+    exit 1
   fi
 
   # Check for <ams:fault ... /> response
@@ -170,18 +207,21 @@ check_response() {
     ERROR_DESC=$(echo "${RESPONSE}" | grep -Po '(?<=\<ams\:description\>)[^\<]+(?=\<\/ams\:description\>)')
 
     if [ "${SILENT}" != "true" ]; then
+      msg=0
       if [ ! -z "${ERROR_CODE}" ]; then
-        print_red "Error code        : ${ERROR_CODE}"
+        print_red >&2 "Error code        : ${ERROR_CODE}"; msg=1
       fi
       if [ ! -z "${ERROR_MESG}" ]; then
-        print_red "Error message     : ${ERROR_MESG}"
+        print_red >&2 "Error message     : ${ERROR_MESG}"; msg=1
       fi
       if [ ! -z "${ERROR_DESC}" ]; then
-        print_red "Error description : ${ERROR_DESC}"
+        print_red >&2 "Error description : ${ERROR_DESC}"; msg=1
+      fi
+      if [ ${msg} -lt 1 ]; then
+        print_red >&2 "ERROR: Service returned AMS fault."
       fi
     fi
 
-    print_red "ERROR: Service returned AMS fault."
     exit 1
   fi
 
@@ -197,13 +237,13 @@ VERBOSITY=0
 VERBOSE=""
 check_verbose()
 {
-  if [ $VERBOSITY -gt 2 ]; then
+  if [ $VERBOSITY -gt 3 ]; then
     VERBOSE="-v"
   fi
-  if [ $VERBOSITY -gt 3 ]; then
+  if [ $VERBOSITY -gt 4 ]; then
     VERBOSE="-vv"
   fi
-  if [ $VERBOSITY -gt 4 ]; then
+  if [ $VERBOSITY -gt 5 ]; then
     VERBOSE="-vvv"
   fi
 }
@@ -218,7 +258,7 @@ test_mode()
 # Load configuration
 CONFIG="$(readlink -m "$(dirname "$0")/${CONFIG_NAME}")"
 if [ -e "${CONFIG}" ]; then
-  print_yellow "Loading configuration file '${CONFIG}' ..."
+  print_yellow >&2 "Loading configuration file '${CONFIG}' ..."
 
   # Source configuration file
   # shellcheck source=/dev/null
@@ -327,9 +367,9 @@ if [ -z "${TRADE_SCREENING_API_KEY}" ]; then
   usage "No API key supplied; unable to perform check."
 elif [ ${VERBOSITY} -gt 0 ]; then
   if [ ${VERBOSITY} -gt 1 ]; then
-  print_cyan "Using API URL : ${TRADE_SCREENING_API_URL}"
+  print_cyan >&2 "Using API URL : ${TRADE_SCREENING_API_URL}"
   fi
-  print_cyan "Using API Key : ${TRADE_SCREENING_API_KEY}"
+  print_cyan >&2 "Using API Key : ${TRADE_SCREENING_API_KEY}"
 fi
 
 if [ -z "${COUNTRY_CODE}" ]; then
@@ -342,18 +382,18 @@ if [ -z "${COUNTRY_CODE}" ]; then
 
   if [ "${SILENT}" != "true" ]; then
     if [ ${VERBOSITY} -gt 0 ]; then
-      print_cyan "Search mode   : $SEARCH_MODE" #> $(tty) 2>&1 < $(tty)
-      print_cyan "Search text   : $SEARCH_TXT" #> $(tty) 2>&1 < $(tty)
+      print_cyan >&2 "Search mode   : $SEARCH_MODE" #> $(tty) 2>&1 < $(tty)
+      print_cyan >&2 "Search text   : $SEARCH_TXT" #> $(tty) 2>&1 < $(tty)
     fi
   fi
 fi
 
 if [ "${SEARCH_MODE}" == "q" ]; then
-  print_yellow "Checking U.S. Consolidated Screening List for '${SEARCH_TXT}'..."
+  print_yellow >&2 "Checking U.S. Consolidated Screening List for '${SEARCH_TXT}'..."
 elif [ ! -z "${COUNTRY_CODE}" ]; then
-  print_yellow "Checking U.S. Consolidated Screening List for countries '${COUNTRY_CODE}'..."
+  print_yellow >&2 "Checking U.S. Consolidated Screening List for countries '${COUNTRY_CODE}'..."
 else
-  print_yellow "Checking U.S. Consolidated Screening List for ${SEARCH_MODE} '${SEARCH_TXT}'..."
+  print_yellow >&2 "Checking U.S. Consolidated Screening List for ${SEARCH_MODE} '${SEARCH_TXT}'..."
 fi
 
 # Check for missing diff support
@@ -427,44 +467,55 @@ if [ ! -z "${SEARCH_MODE}" ] && [ ! -z "${SEARCH_TXT}" ]; then
 fi
 
 # Combine curl arguments
-CURL_ARGS=("-s" "-G" "${curl_params[@]}")
+CURL_ARGS=("-s" "-S" "-G" "${curl_params[@]}")
 
 if [ ${VERBOSITY} -gt 2 ]; then
-  echo >&2 "Raw command:"
-  echo >&2 "---"
-  echo >&2 "curl ${VERBOSE} ${CURL_ARGS[*]} ${TRADE_SCREENING_API_URL}${API_CALL}"
-  echo >&2 "---"
+  print_cyan >&2 "Raw command:"
+  print_cyan >&2 "---"
+  print_blue >&2 "curl ${VERBOSE} ${CURL_ARGS[*]} ${TRADE_SCREENING_API_URL}${API_CALL}"
+  print_cyan >&2 "---"
+fi
+
+if ! STATUSCODE=$(curl --silent "${CURL_ARGS[@]}" --output /dev/null --write-out "%{http_code}" "${TRADE_SCREENING_API_URL}${API_CALL}"); then
+  exit_script 1 "Failed to retrieve status code from webserver."
 fi
 
 # Get response
-if ! RESPONSE=$(curl ${VERBOSE} "${CURL_ARGS[@]}" "${TRADE_SCREENING_API_URL}${API_CALL}"); then
+if ! RESPONSE=$(curl ${VERBOSE} "${CURL_ARGS[@]}" "${TRADE_SCREENING_API_URL}${API_CALL}") || [ "${STATUSCODE}" != "200" ]; then
   if [ ${VERBOSITY} -gt 2 ]; then
-    echo >&2 "Raw response:"
-    echo >&2 "---"
+    print_cyan >&2 "Raw response :"
+    print_cyan >&2 "---"
     if [ ! -z "${RESPONSE}" ]; then
-    echo >&2 "${RESPONSE}"
+    print_blue >&2 "${RESPONSE}"
     fi
-    echo >&2 "---"
+    print_cyan >&2 "---"
   fi
 
-  # TODO: Fix empty RESPONSE when code<>200 (eg. fault response)
-  check_response "${RESPONSE}"
+  # Validate response
+  if ! check_response "${RESPONSE}"; then
+    exit 1
+  fi
 
-  print_red "ERROR: Failed to perform search."
+  print_red >&2 "ERROR: Failed to perform search."
   exit 1
 fi
 
 if [ ${VERBOSITY} -gt 2 ]; then
-  echo >&2 "Raw response:"
-  echo >&2 "---"
+  print_cyan >&2 "Raw response:"
+  print_cyan >&2 "---"
   if [ ! -z "${RESPONSE}" ]; then
-  echo >&2 "${RESPONSE}"
+  print_blue >&2 "${RESPONSE}"
   fi
-  echo >&2 "---"
+  print_cyan >&2 "---"
 fi
 
 if [ -z "${RESPONSE}" ]; then
-  print_red "ERROR: The server returned an empty response."
+  print_red >&2 "ERROR: The server returned an empty response."
+  exit 1
+fi
+
+# Validate response
+if ! check_response "${RESPONSE}"; then
   exit 1
 fi
 
@@ -479,7 +530,7 @@ if [ ! -z "${ERRORS}" ] && [ ! "${ERRORS}" == "null" ]; then
   echo "${RESPONSE}" | jq -r -M
   fi
   fi
-  print_red "ERROR: ${ERRORS}"
+  print_red >&2 "ERROR: ${ERRORS}"
   fi
   exit 1
 fi
@@ -489,9 +540,9 @@ if [ ${VERBOSITY} -gt 1 ] && [ "${SILENT}" != "true" ]; then
   SOURCE_LIST=$(echo "${RESPONSE}" | jq -r ".sources_used[].source")
   SOURCE_COUNT=$(echo "${SOURCE_LIST}" | wc -l)
 
-  print_cyan "Query checked ${SOURCE_COUNT} source(s):"
+  print_cyan >&2 "Query checked ${SOURCE_COUNT} source(s):"
   echo "${SOURCE_LIST}" | while read -r source; do
-    print_magenta "-  ${source}"
+    print_magenta >&2 "-  ${source}"
   done
 fi
 
@@ -499,14 +550,14 @@ fi
 RESULTS=$(echo "${RESPONSE}" | jq -r ".results")
 TOTAL=$(echo "${RESPONSE}" | jq -r ".total")
 if [ -z "${TOTAL}" ] | [ "${TOTAL}" == "null" ]; then
-  print_yellow "Service returned null."
+  print_yellow >&2 "Service returned null."
   exit 0
 elif [ "${TOTAL}" == "0" ]; then
   print_green "No results returned."
   exit 0
 fi
 
-print_red "WARNING: Found ${TOTAL} result(s):"
+print_red >&2 "WARNING: Found ${TOTAL} result(s):"
 
 # Print results
 if [ "${SILENT}" != "true" ]; then
