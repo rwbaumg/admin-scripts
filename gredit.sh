@@ -9,6 +9,8 @@
 # defining how many lines surrounding each match to include when the next search is performed.
 # The final search simply greps for a given target string, which must be an exact match.
 # Every match is then processed to construct edit commands.
+#
+# TODO: Allow searching single files.
 
 EDIT_COMMAND="editor"
 DEFAULT_CTX_LINES=20
