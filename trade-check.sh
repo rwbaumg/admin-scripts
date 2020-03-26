@@ -342,7 +342,6 @@ while [ $# -gt 0 ]; do
       if [ ${set_addr} -ne 0 ]; then
         usage "Cannot specify '$1' multiple times."
       fi
-      test_mode
       test_arg "$1" "$2"
       shift
       add_param "address" "$1"
@@ -368,7 +367,6 @@ while [ $# -gt 0 ]; do
       if [ ${set_name} -ne 0 ]; then
         usage "Cannot specify '$1' multiple times."
       fi
-      test_mode
       test_arg "$1" "$2"
       shift
       add_param "name" "$1"
@@ -380,7 +378,6 @@ while [ $# -gt 0 ]; do
       if [ ${set_query} -ne 0 ]; then
         usage "Cannot specify '$1' multiple times."
       fi
-      test_mode
       test_arg "$1" "$2"
       shift
       add_param "q" "$1"
@@ -422,7 +419,9 @@ while [ $# -gt 0 ]; do
       if [ ${set_query} -ne 0 ]; then
         usage "Cannot specify multiple search terms."
       fi
-      test_arg "$1"
+      if echo "$1" | grep -Eq '^-'; then
+        usage "Query cannot start with '-'."
+      fi
       add_param "q" "$1"
       set_query=1
       value_query="$1"
