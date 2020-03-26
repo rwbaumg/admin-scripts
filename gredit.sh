@@ -13,7 +13,7 @@
 # TODO: Allow searching single files.
 
 EDIT_COMMAND="editor"
-DEFAULT_CTX_LINES=20
+DEFAULT_CTX_LINES=3
 
 GREP_LOCATION="*"
 CONTEXT_REGEX=""
@@ -72,6 +72,7 @@ usage()
      -c, --context <regex>  A RegEx to locate lines close to the desired target.
      -t, --target <expr>    An expression identifying the target lines to process.
      -s, --search <lines>   The number of lines around context matches to search within.
+     -r, --recursive        Recurse sub-directories (if target is a folder).
 
      --dry-run              Do not invoke editor; print out commands instead.
      --vim                  Use Vim instead of the default editor.
@@ -119,7 +120,7 @@ test_path_arg()
   fi
 
   if [ ! -e "$argv" ]; then
-    usage "Specified directory does not exist: $argv"
+    usage "Specified path does not exist: $argv"
   fi
 }
 
@@ -153,8 +154,7 @@ VERBOSITY=0
 [ $# -gt 0 ] || usage
 
 i=1
-TARGET=""
-TARGET_DIR=""
+TARGET_PATH=""
 GREP_RECURSIVE="false"
 DRY_RUN="false"
 USE_VIM="false"
@@ -186,6 +186,21 @@ while [ $# -gt 0 ]; do
       i=$((i+1))
       shift
     ;;
+    -vv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      #check_verbose
+      i=$((i+2))
+      shift
+    ;;
+    -vvv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      #check_verbose
+      i=$((i+3))
+      shift
+    ;;
     --dry-run)
       DRY_RUN="true"
       shift
@@ -202,15 +217,11 @@ while [ $# -gt 0 ]; do
       usage
     ;;
     *)
-      if [ -n "${TARGET_DIR}" ]; then
+      if [ -n "${TARGET_PATH}" ]; then
         usage "Cannot specify multiple search locations."
       fi
       test_path_arg "$1"
-      if [ ! -d "${1}" ]; then
-        TARGET_DIR="$(dirname "$1")"
-      else
-        TARGET_DIR="${1}"
-      fi
+      TARGET_PATH="$(readlink -m "${1}")"
       shift
     ;;
   esac
@@ -240,31 +251,52 @@ if [ -z "${CONTEXT_REGEX}" ]; then
   CONTEXT_REGEX="${TARGET_STRING}"
 fi
 
-if [ -z "${TARGET_DIR}" ]; then
-  TARGET_DIR="$(realpath .)"
+if [ -z "${TARGET_PATH}" ]; then
+  TARGET_PATH="$(realpath .)"
 fi
 
-pushd "${TARGET_DIR}" > /dev/null 2>&1
+if [ -d "${TARGET_PATH}" ]; then
+pushd "${TARGET_PATH}" > /dev/null 2>&1
+else
+GREP_LOCATION="${TARGET_PATH}"
+fi
 
 GREP_COMMAND="grep -P ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} '${CONTEXT_REGEX}' ${GREP_LOCATION} -A${CONTEXT_LINES}"
-GREP_RESULTS=$(bash -c "${GREP_COMMAND}")
-if [ -n "${TARGET}" ] && [ ! -d "${TARGET}" ]; then
-  GREP_COMMAND="${GREP_COMMAND} | grep '${TARGET}'"
-  GREP_RESULTS=$(echo "${GREP_RESULTS}" | grep "${TARGET}")
+if [ -n "${TARGET_STRING}" ] && [ ! -d "${TARGET_STRING}" ]; then
+  GREP_COMMAND="${GREP_COMMAND} | grep '${TARGET_STRING}'"
 fi
 
 if [ $VERBOSITY -gt 0 ]; then
   echo "Target string : ${TARGET_STRING}"
-  echo "Target path   : ${TARGET_DIR}"
+  echo "Target path   : ${TARGET_PATH}"
   echo "Grep location : ${GREP_LOCATION}"
   echo "Grep command  : ${GREP_COMMAND}"
 fi
 
-IFS=$'\n'; for l in $(echo "${GREP_RESULTS}" | grep -P "${TARGET_STRING}" \
-  | grep -v -P "(\-|\:)[0-9]+(\-|\:)([\s]+)?\#" \
-  | sed -r "s/\-([0-9]+)\-${TARGET_STRING}/\:\1\:${TARGET_STRING}/" \
-  | awk -F: '{ printf "+%s %s\n", $2, $1 }'); do ${PRE_CMD} bash -c "${EDIT_COMMAND} ${l}"; done
+GREP_RESULTS=$(bash -c "${GREP_COMMAND}")
+if [ -n "${TARGET_STRING}" ] && [ ! -d "${TARGET_STRING}" ]; then
+  GREP_RESULTS=$(echo "${GREP_RESULTS}" | grep "${TARGET}")
+fi
 
+if ! TMP_RESULTS=$(echo "${GREP_RESULTS}" | grep -P "${TARGET_STRING}" | grep -v -P "(\-|\:)[0-9]+(\-|\:)([\s]+)?\#" | sed -r "s/\-([0-9]+)\-/\:\1\:/"); then
+  echo >&2 "ERROR: Failed to perform search."
+  exit 1
+fi
+if [ -z "${TMP_RESULTS}" ]; then
+  echo >&2 "No result(s) found."
+  exit 1
+fi
+
+if [ ! -d "${TARGET_PATH}" ]; then
+  AWK_CMD="{ printf \"+%s %s\n\", \$1, \"${TARGET_PATH}\" }"
+else
+  AWK_CMD="{ printf \"+%s %s\n\", \$2, \$1 }"
+fi
+
+IFS=$'\n'; for l in $(echo "${TMP_RESULTS}" | awk -F: "${AWK_CMD}"); do ${PRE_CMD} bash -c "${EDIT_COMMAND} ${l}"; done
+
+if [ -d "${TARGET_PATH}" ]; then
 popd > /dev/null 2>&1
+fi
 
 exit $?
