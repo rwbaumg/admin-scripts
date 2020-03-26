@@ -105,7 +105,7 @@ exit_script()
     if [ "$exit_code" -eq 0 ]; then
       echo >&2 "INFO: $*"
     else
-      print_red "ERROR: $*" 1>&2
+      echo "ERROR: $*" 1>&2
     fi
   fi
 
@@ -481,13 +481,16 @@ if ! RAW_RESPONSE=$(curl ${VERBOSE} "${CURL_ARGS[@]}" --write-out "\n%{http_code
   exit 1
 fi
 if [ -z "${RAW_RESPONSE}" ]; then
-  exit_script 1 "Null response from server."
+  print_red >&2 "ERROR: Null response from server."
+  exit 1
 fi
 if ! RESPONSE=$(echo "${RAW_RESPONSE}" | sed -e '$ d'); then
-  exit_script 1 "Failed to parse response."
+  print_red >&2 "ERROR: Failed to parse response."
+  exit 1
 fi
 if ! STATUSCODE=$(echo "${RAW_RESPONSE}" | tail -n1); then
-  exit_script 1 "Failed to parse status code from response."
+  print_red >&2 "ERROR: Failed to parse status code from response."
+  exit 1
 fi
 
 if [ ${VERBOSITY} -gt 2 ]; then
@@ -501,7 +504,8 @@ fi
 
 # Get response
 if [ -z "${RESPONSE}" ]; then
-  exit_script 1 "The server returned an empty response."
+  print_red >&2 "ERROR: The server returned an empty response."
+  exit 1
 fi
 
 # Validate response
@@ -509,7 +513,8 @@ if ! check_response "${RESPONSE}"; then
   exit 1
 fi
 if [ "${STATUSCODE}" != "200" ]; then
-  exit_script 1 "ERROR: Failed to perform search; server returned code ${STATUSCODE}."
+  print_red >&2 "ERROR: Failed to perform search; server returned code ${STATUSCODE}."
+  exit 1
 fi
 
 # Check for errors in response
