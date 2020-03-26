@@ -228,10 +228,57 @@ check_response() {
   return 0
 }
 
-SEARCH_TXT=""
-SEARCH_MODE=""
-VERBOSITY=0
-COUNTRY_CODE=""
+declare -a curl_params=();
+function add_parameters() {
+  if [ -z "$*" ]; then
+    echo >&2 "ERROR: Package name cannot be null."
+    exit 1
+  fi
+
+  # add parameter(s) to array
+  curl_params=("${curl_params[@]}" "$@")
+  return 0
+}
+
+function get_parameters() {
+  if [[ ${#curl_params[@]} -lt 1 ]]; then
+    echo >&2 "ERROR: No parameters configured."
+    return 1
+  fi
+
+  # print current parameter(s) array to stdout
+  echo "${curl_params[@]}"
+}
+
+function add_header() {
+  if [ -z "$1" ]; then
+    echo >&2 "ERROR: No value supplied for header."
+    return 1
+  fi
+
+  if ! add_parameters "--header" "$1"; then
+    return 1
+  fi
+
+  return 0
+}
+
+function add_param() {
+  if [ -z "$1" ]; then
+    echo >&2 "ERROR: Search mode cannot be null."
+    return 1
+  fi
+  if [ -z "$2" ]; then
+    echo >&2 "ERROR: Search text cannot be null."
+    return 1
+  fi
+
+  if ! add_parameters "--data-urlencode" "${1}=${2}"; then
+    return 1
+  fi
+
+  return 0
+}
 
 VERBOSITY=0
 VERBOSE=""
@@ -262,63 +309,102 @@ if [ -e "${CONFIG}" ]; then
 
   # Source configuration file
   # shellcheck source=/dev/null
-  source "${CONFIG}"
-#else
-#  print_yellow >&2 "WARNING: Configuration file not found: ${CONFIG}"
+  if ! source "${CONFIG}"; then
+  print_yellow >&2 "WARNING: Failed to load configuration file: ${CONFIG}"
+  fi
 fi
+
+set_query=0
+set_name=0
+set_title=0
+set_addr=0
+set_key=0
+set_country=0
+
+value_name=""
+value_country=""
+value_title=""
+value_addr=""
+value_query=""
 
 # process arguments
 [ $# -gt 0 ] || usage
 while [ $# -gt 0 ]; do
   case "$1" in
     -k|--api-key)
-      test_arg "$1" "$2"
-      shift
-      TRADE_SCREENING_API_KEY="$1"
-      shift
-    ;;
-    -a|--address)
-      test_mode
-      test_arg "$1" "$2"
-      shift
-      SEARCH_MODE="address"
-      SEARCH_TXT="$1"
-      shift
-    ;;
-    -c|--country)
-      if [ ! -z "${COUNTRY_FILTER}" ]; then
-        usage "Cannot specify multiple country filters."
+      if [ ${set_key} -ne 0 ]; then
+        usage "Cannot specify '$1' multiple times."
       fi
       test_arg "$1" "$2"
       shift
-      COUNTRY_CODE="${1}"
+      TRADE_SCREENING_API_KEY="$1"
+      set_key=1
+      shift
+    ;;
+    -a|--address)
+      if [ ${set_addr} -ne 0 ]; then
+        usage "Cannot specify '$1' multiple times."
+      fi
+      test_mode
+      test_arg "$1" "$2"
+      shift
+      add_param "address" "$1"
+      set_addr=1
+      value_addr="$1"
+      shift
+    ;;
+    -c|--country)
+      if [ ${set_country} -ne 0 ]; then
+        usage "Cannot specify '$1' multiple times."
+      fi
+      if [ ! -z "${COUNTRY_FILTER}" ]; then
+        usage "Cannot specify '$1' multiple times."
+      fi
+      test_arg "$1" "$2"
+      shift
+      add_param "countries" "$1"
+      set_country=1
+      value_country="$1"
       shift
     ;;
     -n|--name)
+      if [ ${set_name} -ne 0 ]; then
+        usage "Cannot specify '$1' multiple times."
+      fi
       test_mode
       test_arg "$1" "$2"
       shift
-      SEARCH_MODE="name"
-      SEARCH_TXT="$1"
+      add_param "name" "$1"
+      set_name=1
+      value_name="$1"
       shift
     ;;
     -t|--title)
+      if [ ${set_title} -ne 0 ]; then
+        usage "Cannot specify '$1' multiple times."
+      fi
       test_mode
       test_arg "$1" "$2"
       shift
-      SEARCH_MODE="title"
-      SEARCH_TXT="$1"
+      add_param "title" "$1"
+      set_title=1
+      value_title="$1"
       shift
     ;;
     -q|--query)
+      if [ ${set_query} -ne 0 ]; then
+        usage "Cannot specify '$1' multiple times."
+      fi
       test_mode
       test_arg "$1" "$2"
       shift
-      SEARCH_MODE="q"
-      SEARCH_TXT="$1"
+      add_param "q" "$1"
+      set_query=1
+      value_query="$1"
       shift
     ;;
     -m|--no-color)
+
       NO_COLOR="true"
       shift
     ;;
@@ -348,12 +434,13 @@ while [ $# -gt 0 ]; do
       shift
     ;;
     *)
-      if [ ! -z "${SEARCH_TXT}" ]; then
+      if [ ${set_query} -ne 0 ]; then
         usage "Cannot specify multiple search terms."
       fi
       test_arg "$1"
-      SEARCH_MODE="q"
-      SEARCH_TXT="$1"
+      add_param "q" "$1"
+      set_query=1
+      value_query="$1"
       shift
     ;;
   esac
@@ -372,98 +459,57 @@ elif [ ${VERBOSITY} -gt 0 ]; then
   print_cyan >&2 "Using API Key : ${TRADE_SCREENING_API_KEY}"
 fi
 
-if [ -z "${COUNTRY_CODE}" ]; then
-  if [ -z "${SEARCH_MODE}" ] ; then
-    usage "Search mode not defined."
-  fi
-  if [ -z "${SEARCH_TXT}" ]; then
-    usage "Search text cannot be null."
-  fi
+if [ ! "${#curl_params[@]}" -gt 0 ]; then
+  usage "No search parameters defined."
+fi
 
-  if [ "${SILENT}" != "true" ]; then
-    if [ ${VERBOSITY} -gt 0 ]; then
-      print_cyan >&2 "Search mode   : $SEARCH_MODE" #> $(tty) 2>&1 < $(tty)
-      print_cyan >&2 "Search text   : $SEARCH_TXT" #> $(tty) 2>&1 < $(tty)
+if [ "${SILENT}" != "true" ]; then
+  if [ ${VERBOSITY} -gt 0 ]; then
+    if [ ! -z "${value_query}" ]; then
+    print_cyan >&2 "Query text    : ${value_query}" #> $(tty) 2>&1 < $(tty)
+    fi
+    if [ ! -z "${value_title}" ]; then
+    print_cyan >&2 "Title filter  : ${value_title}" #> $(tty) 2>&1 < $(tty)
+    fi
+    if [ ! -z "${value_name}" ]; then
+    print_cyan >&2 "Name filter   : ${value_name}" #> $(tty) 2>&1 < $(tty)
+    fi
+    if [ ! -z "${value_addr}" ]; then
+    print_cyan >&2 "Address       : ${value_address}" #> $(tty) 2>&1 < $(tty)
+    fi
+    if [ ! -z "${value_country}" ]; then
+    print_cyan >&2 "Countries     : ${value_country}" #> $(tty) 2>&1 < $(tty)
+    fi
+
+    if [ ${VERBOSITY} -gt 1 ]; then
+    print_cyan >&2 "Raw cURL args : ${curl_params[*]}" #> $(tty) 2>&1 < $(tty)
     fi
   fi
 fi
 
-if [ "${SEARCH_MODE}" == "q" ]; then
-  print_yellow >&2 "Checking U.S. Consolidated Screening List for '${SEARCH_TXT}'..."
-elif [ ! -z "${COUNTRY_CODE}" ]; then
-  print_yellow >&2 "Checking U.S. Consolidated Screening List for countries '${COUNTRY_CODE}'..."
+if [ ! -z "${value_query}" ]; then
+  if [ ! -z "${value_country}" ]; then
+  print_yellow >&2 "Checking U.S. Consolidated Screening List for '${value_query}' in countries '${value_country}'..."
+  else
+  print_yellow >&2 "Checking U.S. Consolidated Screening List for '${value_query}'..."
+  fi
+elif [ ! -z "${value_name}" ]; then
+  if [ ! -z "${value_title}" ]; then
+  print_yellow >&2 "Checking U.S. Consolidated Screening List for name '${value_title} ${value_name}'..."
+  else
+  print_yellow >&2 "Checking U.S. Consolidated Screening List for name '${value_name}'..."
+  fi
+elif [ ! -z "${value_addr}" ]; then
+  print_yellow >&2 "Checking U.S. Consolidated Screening List for address '${value_addr}'..."
+elif [ ! -z "${value_country}" ]; then
+  print_yellow >&2 "Checking U.S. Consolidated Screening List for countries '${value_country}'..."
 else
-  print_yellow >&2 "Checking U.S. Consolidated Screening List for ${SEARCH_MODE} '${SEARCH_TXT}'..."
+  print_yellow >&2 "Checking U.S. Consolidated Screening List ..."
 fi
-
-# Check for missing diff support
-declare -a curl_params=();
-function add_parameters() {
-  if [ -z "$*" ]; then
-    echo >&2 "ERROR: Package name cannot be null."
-    exit 1
-  fi
-  #if echo "${curl_params[@]}" | grep -q -w "$*"; then
-  #  echo >&2 "ERROR: Parameter configured multiple times: '$*'"
-  #  return 1
-  #fi
-
-  curl_params=("${curl_params[@]}" "$@")
-  return 0
-}
-
-function get_parameters() {
-  if [[ ${#curl_params[@]} -lt 1 ]]; then
-    echo >&2 "ERROR: No parameters configured."
-    return 1
-  fi
-
-  echo "${curl_params[@]}"
-}
-
-function add_header() {
-  if [ -z "$1" ]; then
-    echo >&2 "ERROR: No value supplied for header."
-    return 1
-  fi
-
-  if ! add_parameters "--header" "$1"; then
-    return 1
-  fi
-
-  return 0
-}
-
-function add_param() {
-  if [ -z "$1" ]; then
-    echo >&2 "ERROR: No value supplied for parameter key."
-    return 1
-  fi
-  if [ -z "$2" ]; then
-    echo >&2 "ERROR: No value supplied for parameter value."
-    return 1
-  fi
-
-  if ! add_parameters "--data-urlencode" "${1}=${2}"; then
-    return 1
-  fi
-
-  return 0
-}
 
 # Configure authorization header
 if [ ! -z "${TRADE_SCREENING_API_KEY}" ]; then
   add_header "Authorization: Bearer ${TRADE_SCREENING_API_KEY}"
-fi
-
-# Configure country filter
-if [ ! -z "${COUNTRY_CODE}" ]; then
-  add_param "countries" "${COUNTRY_CODE}"
-fi
-
-# Configure curl command line for requested search parameters
-if [ ! -z "${SEARCH_MODE}" ] && [ ! -z "${SEARCH_TXT}" ]; then
-  add_param "${SEARCH_MODE}" "${SEARCH_TXT}"
 fi
 
 # Combine curl arguments
