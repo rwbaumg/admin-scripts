@@ -136,7 +136,6 @@ usage()
 
      -q, --query <value>     (Default) Query all name fields.
      -n, --name <value>      Search the name field.
-     -t, --title <value>     Search the title field.
      -a, --address <value>   Search the address field.
      -c, --country <value>   Filter results based on the country field.
 
@@ -316,14 +315,12 @@ fi
 
 set_query=0
 set_name=0
-set_title=0
 set_addr=0
 set_key=0
 set_country=0
 
 value_name=""
 value_country=""
-value_title=""
 value_addr=""
 value_query=""
 
@@ -377,18 +374,6 @@ while [ $# -gt 0 ]; do
       add_param "name" "$1"
       set_name=1
       value_name="$1"
-      shift
-    ;;
-    -t|--title)
-      if [ ${set_title} -ne 0 ]; then
-        usage "Cannot specify '$1' multiple times."
-      fi
-      test_mode
-      test_arg "$1" "$2"
-      shift
-      add_param "title" "$1"
-      set_title=1
-      value_title="$1"
       shift
     ;;
     -q|--query)
@@ -468,9 +453,6 @@ if [ "${SILENT}" != "true" ]; then
     if [ ! -z "${value_query}" ]; then
     print_cyan >&2 "Query text    : ${value_query}" #> $(tty) 2>&1 < $(tty)
     fi
-    if [ ! -z "${value_title}" ]; then
-    print_cyan >&2 "Title filter  : ${value_title}" #> $(tty) 2>&1 < $(tty)
-    fi
     if [ ! -z "${value_name}" ]; then
     print_cyan >&2 "Name filter   : ${value_name}" #> $(tty) 2>&1 < $(tty)
     fi
@@ -494,11 +476,7 @@ if [ ! -z "${value_query}" ]; then
   print_yellow >&2 "Checking U.S. Consolidated Screening List for '${value_query}'..."
   fi
 elif [ ! -z "${value_name}" ]; then
-  if [ ! -z "${value_title}" ]; then
-  print_yellow >&2 "Checking U.S. Consolidated Screening List for name '${value_title} ${value_name}'..."
-  else
   print_yellow >&2 "Checking U.S. Consolidated Screening List for name '${value_name}'..."
-  fi
 elif [ ! -z "${value_addr}" ]; then
   print_yellow >&2 "Checking U.S. Consolidated Screening List for address '${value_addr}'..."
 elif [ ! -z "${value_country}" ]; then
