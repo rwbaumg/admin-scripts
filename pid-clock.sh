@@ -25,7 +25,6 @@ if ! ps -p "$PID" > /dev/null; then
   exit 1
 fi
 
-i=1;
 SP='\|/-';
 while ps -p "$PID" > /dev/null; do
 	PROC_TIME=$(ps -p "$PID" -o etime= | awk '{ print $1 }');

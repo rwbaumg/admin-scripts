@@ -36,7 +36,9 @@ fi
 
 # perform the actual diff
 function perform_diff() {
-  if ! diff ${DIFFCMD_ARGS} <(hexdump ${HEXDUMP_ARGS} "${FILE1}") <(hexdump ${HEXDUMP_ARGS} "${FILE2}"); then
+  diff_cmd="diff ${DIFFCMD_ARGS}"
+  hexdump_cmd="hexdump ${HEXDUMP_ARGS}"
+  if ! ${diff_cmd} <(${hexdump_cmd} "${FILE1}") <(${hexdump_cmd} "${FILE2}"); then
     return 1
   fi
   return 0
