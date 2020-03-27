@@ -73,6 +73,7 @@ usage()
      -t, --target <expr>    An expression identifying the target lines to process.
      -s, --search <lines>   The number of lines around context matches to search within.
      -r, --recursive        Recurse sub-directories (if target is a folder).
+     -l, --list             List matching files but do not edit.
 
      --dry-run              Do not invoke editor; print out commands instead.
      --vim                  Use Vim instead of the default editor.
@@ -156,6 +157,7 @@ VERBOSITY=0
 i=1
 TARGET_PATH=""
 GREP_RECURSIVE="false"
+LIST_MODE="false"
 DRY_RUN="false"
 USE_VIM="false"
 
@@ -209,6 +211,10 @@ while [ $# -gt 0 ]; do
       USE_VIM="true"
       shift
     ;;
+    -l|--list)
+      LIST_MODE="true"
+      shift
+    ;;
     -r|--recursive)
       GREP_RECURSIVE="true"
       shift
@@ -252,13 +258,19 @@ if [ -z "${CONTEXT_REGEX}" ]; then
 fi
 
 if [ -z "${TARGET_PATH}" ]; then
-  TARGET_PATH="$(realpath .)"
+  TARGET_PATH="$(readlink -m .)"
 fi
 
-if [ -d "${TARGET_PATH}" ]; then
-pushd "${TARGET_PATH}" > /dev/null 2>&1
-else
+#if [ -d "${TARGET_PATH}" ]; then
+#pushd "${TARGET_PATH}" > /dev/null 2>&1
+#else
+#GREP_LOCATION="${TARGET_PATH}"
+#fi
+
+if [ ! -d "${TARGET_PATH}" ]; then
 GREP_LOCATION="${TARGET_PATH}"
+else
+GREP_LOCATION="${TARGET_PATH}/${GREP_LOCATION}"
 fi
 
 GREP_COMMAND="grep -P ${GREP_EXT_OPTS} -n ${GREP_CTX_OPTS} '${CONTEXT_REGEX}' ${GREP_LOCATION} -A${CONTEXT_LINES}"
@@ -273,7 +285,7 @@ if [ $VERBOSITY -gt 0 ]; then
   echo "Grep command  : ${GREP_COMMAND}"
 fi
 
-GREP_RESULTS=$(bash -c "${GREP_COMMAND}")
+GREP_RESULTS=$(bash -c "${GREP_COMMAND} | grep -vP '^Binary\sfile'")
 if [ -n "${TARGET_STRING}" ] && [ ! -d "${TARGET_STRING}" ]; then
   GREP_RESULTS=$(echo "${GREP_RESULTS}" | grep "${TARGET}")
 fi
@@ -287,6 +299,23 @@ if [ -z "${TMP_RESULTS}" ]; then
   exit 1
 fi
 
+if [ "${LIST_MODE}" == "true" ]; then
+  if [ -d "${TARGET_PATH}" ]; then
+    MATCHES=$(echo "${TMP_RESULTS}" | awk -F: '{ print $1 }' | uniq -c | sed -e 's/^[ \t]*//')
+    echo "${MATCHES}" | while read -r line; do
+      if [ ! -z "${line}" ]; then
+      echo "${line}" | awk -F' ' "{ printf \"Found %d match(es): %s\n\", \$1, \$2 }";
+      fi
+    done
+    # echo "${TMP_RESULTS}" | awk -F: '{ printf "Found match(es): %s\n", $1 }'
+    popd > /dev/null 2>&1
+  else
+    echo "Found match(es): ${TARGET_PATH}"
+  fi
+
+  exit 0
+fi
+
 if [ ! -d "${TARGET_PATH}" ]; then
   AWK_CMD="{ printf \"+%s %s\n\", \$1, \"${TARGET_PATH}\" }"
 else
@@ -295,8 +324,8 @@ fi
 
 IFS=$'\n'; for l in $(echo "${TMP_RESULTS}" | awk -F: "${AWK_CMD}"); do ${PRE_CMD} bash -c "${EDIT_COMMAND} ${l}"; done
 
-if [ -d "${TARGET_PATH}" ]; then
-popd > /dev/null 2>&1
-fi
+#if [ -d "${TARGET_PATH}" ]; then
+#popd > /dev/null 2>&1
+#fi
 
-exit $?
+exit 0
