@@ -456,7 +456,7 @@ if [ "${SILENT}" != "true" ]; then
     print_cyan >&2 "Name filter   : ${value_name}" #> $(tty) 2>&1 < $(tty)
     fi
     if [ ! -z "${value_addr}" ]; then
-    print_cyan >&2 "Address       : ${value_address}" #> $(tty) 2>&1 < $(tty)
+    print_cyan >&2 "Address       : ${value_addr}" #> $(tty) 2>&1 < $(tty)
     fi
     if [ ! -z "${value_country}" ]; then
     print_cyan >&2 "Countries     : ${value_country}" #> $(tty) 2>&1 < $(tty)
