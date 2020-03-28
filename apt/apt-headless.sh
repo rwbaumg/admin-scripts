@@ -8,7 +8,7 @@ CONFIG_PREF="new"
 #CONFIG_PREF="old"
 
 # Set Bash environment
-BASH_ENV="DEBIAN_FRONTEND=noninteractive APT_LISTCHANGES_FRONTENT=none"
+BASH_ENV="DEBIAN_FRONTEND=noninteractive APT_LISTCHANGES_FRONTEND=none"
 
 # Configure base APT command
 APT_CMD="dist-upgrade"
