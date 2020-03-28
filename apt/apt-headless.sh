@@ -20,7 +20,7 @@ APT_ARGS="--yes"
 DPKG_OPTS=("--force-confdef" "--force-conf${CONFIG_PREF}")
 
 # Configure command prefix
-PRE_CMD="sudo"
+PRE_CMD=""
 
 ## Validate
 if [ ! -z "$1" ]; then
@@ -33,6 +33,16 @@ fi
 if ! echo "${CONFIG_PREF}" | grep -Pq '^(new|old)$'; then
   echo >&2 "ERROR: Config. preference must be either 'new' or 'old'."
   exit 1
+fi
+
+# Ensure sudo privileges for the current user if not running as root.
+if [[ $EUID -ne 0 ]]; then
+  echo "NOTICE: Running as user $USER; sudo privileges required."
+  if ! sudo echo "" > /dev/null 2>&1; then
+    echo >&2 "ERROR: Must run with sudo privileges."
+    exit 1
+  fi
+  PRE_CMD="sudo ${PRE_CMD}"
 fi
 
 if [[ ${#DPKG_OPTS[@]} -ge 1 ]]; then
