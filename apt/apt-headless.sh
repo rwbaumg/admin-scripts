@@ -35,6 +35,8 @@ if ! echo "${CONFIG_PREF}" | grep -Pq '^(new|old)$'; then
   exit 1
 fi
 
+hash apt-get 2>/dev/null || { echo >&2 "You need to install apt. Aborting."; exit 1; }
+
 # Ensure sudo privileges for the current user if not running as root.
 if [[ $EUID -ne 0 ]]; then
   echo "NOTICE: Running as user $USER; sudo privileges required."
@@ -43,6 +45,14 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
   fi
   PRE_CMD="sudo ${PRE_CMD}"
+fi
+
+if [ "${UPDATE}" == "1" ] || [ "${UPDATE}" == "true" ]; then
+  UPDATE_CMD="${PRE_CMD} apt-get update"
+  if ! ${UPDATE_CMD}; then
+    echo >&2 "ERROR: Failed to update package cache."
+    exit 1
+  fi
 fi
 
 if [[ ${#DPKG_OPTS[@]} -ge 1 ]]; then
