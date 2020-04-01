@@ -25,7 +25,7 @@ CSV_MODE="false"
 NO_HEADER="false"
 
 # Get desired GitHub username and store in GITHUB_USER
-GITHUB_USER=${1:-$DEFAULT_USER}
+GITHUB_USER="${DEFAULT_USER}"
 
 exit_script()
 {
@@ -285,7 +285,7 @@ if [ $VERBOSITY -gt 0 ]; then
   echo >&2 "DEBUG: Running command: '${curl_cmd}'"
 fi
 if ! stars_response=$(bash -c "${curl_cmd}"); then
-  response_code=$(echo "${stars_response}" | grep -Po "(?<=Status\:\s)[0-9]+")
+  response_code=$(echo "${stars_response}" | grep -Pio "(?<=Status\:\s)[0-9]+")
   if [ -z "${response_code}" ] && [ -n "${stars_response}" ]; then
     exit_script 1 "${stars_response}"
   elif [ -n "${response_code}" ]; then
@@ -296,7 +296,7 @@ if ! stars_response=$(bash -c "${curl_cmd}"); then
   exit_script 0
 fi
 
-STARS=$(echo "${stars_response}" | grep -E '^Link' | grep -Eo 'page=[0-9]+' | tail -1 | cut -c6-)
+STARS=$(echo "${stars_response}" | grep -iE '^Link' | grep -Eio 'page=[0-9]+' | tail -1 | cut -c6-)
 if ! is_number "${STARS}"; then
   exit_script 1 "Failed to determine number of starred repositories for user '${GITHUB_USER}'."
 fi
