@@ -12,7 +12,9 @@
 
 TEST_FILE="random2500x2500.jpg" # 12M
 #TEST_FILE="random4000x4000.jpg" # 30M
-DOWNLOAD_URL="http://chicago02.speedtest.windstream.net:8080/speedtest"
+#DOWNLOAD_URL="http://chicago02.speedtest.windstream.net:8080/speedtest"
+#DOWNLOAD_URL="http://st-mke.5nines.com:8080/speedtest"
+DOWNLOAD_URL="http://speedtest-milw.ethoplex.com:8080/speedtest"
 UPLOAD_URL="${DOWNLOAD_URL}/upload.php"
 
 hash bc 2>/dev/null || { echo >&2 "You need to install bc. Aborting."; exit 1; }
