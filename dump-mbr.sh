@@ -5,8 +5,8 @@ hash dd 2>/dev/null || { echo >&2 "You need to install dd. Aborting."; exit 1; }
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
-   echo >&2 "This script must be run as root."
-   exit 1
+  echo >&2 "This script must be run as root."
+  exit 1
 fi
 
 if [ ! -z "$1" ]; then

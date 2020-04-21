@@ -77,7 +77,7 @@ EOF
 rootcheck()
 {
 	if [[ $EUID -ne 0 ]]; then
-   		echo "This script must be run as root"
+		echo "This script must be run as root."
 		echo "Ex. "sudo ./linux-bench.sh""
 		exit 1
 	fi
