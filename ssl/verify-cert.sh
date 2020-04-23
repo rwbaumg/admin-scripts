@@ -128,12 +128,14 @@ function make_pem() {
   return 0
 }
 
-ISSUER_CN=$(openssl x509 -in "${cert_temp}" -noout -issuer | grep -Po '(?<=CN\=)[^\/$]+')
 OCSP_URI=$(openssl x509 -in "${cert_temp}" -noout -ocsp_uri)
 CRL_URI=$(openssl asn1parse -in "${cert_temp}" | grep -A 1 'X509v3 CRL Distribution Points' | tail -1 | cut -d: -f 4 | cut -b21- | perl -ne 's/(..)/print chr(hex($1))/ge; END {print "\n"}')
 ISSUER_URI=$(openssl x509 -in "${cert_temp}" -noout -text | grep "CA Issuers - URI:" | head -n1 | grep -Po '(?<=URI\:)[^$]+$')
 
-IS_VALID="true"
+ISSUER_CN=$(openssl x509 -in "${cert_temp}" -noout -issuer | grep -Po '(?<=CN\=)[^\/$]+')
+if [ -z "${ISSUER_CN}" ]; then
+ISSUER_CN=$(openssl x509 -in "${cert_temp}" -noout -issuer | grep -Po '(?<=CN\s\=\s)[^\/,$]+')
+fi
 
 if [ -z "${ISSUER_CN}" ]; then
   echo >&2 "ERROR: Could not determine issuer CN for certificate: ${CERT}"
@@ -179,6 +181,9 @@ if ! make_pem "${issuer_temp}"; then
   exit 1
 fi
 
+# Set the initial result
+IS_VALID="true"
+
 OCSP_RESPONSE=""
 if [ ! -z "${OCSP_URI}" ]; then
   echo -n "Checking OCSP status... "
@@ -208,7 +213,7 @@ if [ ! -z "${CRL_URI}" ]; then
                                    -crl_check_all \
                                    -CAfile "${issuer_temp}" \
                                    -CRLfile "${crl_temp}" \
-                                   "${cert_temp}"); then
+                                   "${cert_temp}" 2>&1); then
     IS_VALID="false"
     echo >&2 "Certificate and/or CRL verification failed!"
     VERIFY_ERRORS=$(echo "${VERIFY_OUT}" | grep -i error | grep -Po '(?<=depth lookup\:)[^$]+')
