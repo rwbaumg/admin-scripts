@@ -10,8 +10,8 @@
 #DOWNLOAD_URL="http://speedtest.tele2.net"
 #UPLOAD_URL="http://speedtest.tele2.net/upload.php"
 
-TEST_FILE="random2500x2500.jpg" # 12M
-#TEST_FILE="random4000x4000.jpg" # 30M
+#TEST_FILE="random2500x2500.jpg" # 12M
+TEST_FILE="random4000x4000.jpg"  # 30M
 #DOWNLOAD_URL="http://chicago02.speedtest.windstream.net:8080/speedtest"
 #DOWNLOAD_URL="http://st-mke.5nines.com:8080/speedtest"
 DOWNLOAD_URL="http://speedtest-milw.ethoplex.com:8080/speedtest"
