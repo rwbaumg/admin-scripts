@@ -30,9 +30,9 @@ ping_test()
 
 ping_test "$SERVER"
 
-if ! SSL_RESULT=$(echo QUIT | openssl s_client -connect "$SERVER:$SSL_PORT" \
-                                          -servername "$SERVER" \
-                                          -status > /dev/null 2>&1); then
+if SSL_RESULT=$(echo QUIT | openssl s_client -connect "$SERVER:$SSL_PORT" \
+                                             -servername "$SERVER" \
+                                             -status > /dev/null 2>&1); then
     echo "Got response from $SERVER:$SSL_PORT (server name $SERVER)"
 else
     echo >&2 "Failed to get response from server $SERVER:$SSL_PORT"
