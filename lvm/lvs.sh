@@ -66,6 +66,7 @@ usage()
      --minor-enabled              Only list volumes using fixed minor.
      --minor-disabled             Only list volumes WITHOUT fixed minor.
      --include-snapshots          Include snapshot volumes in list.
+     --check-origin               Apply filters to snapshot origin volumes.
 
      -v, --verbose                Make the script more verbose.
      -h, --help                   Prints this usage.
@@ -157,31 +158,28 @@ function checkInclude() {
   local filter="$1"
   local value="$2"
   local desc="$3"
+  local result=0
 
   if [ -n "${filter}" ]; then
     if [ ${#filter} -eq 1 ]; then
       if [ "$value" != "${filter}" ]; then
-        if [ $VERBOSITY -gt 1 ]; then
-          echo >&2 "Value '${value}' filtered by '${filter}'."
-        fi
-        echo "false"
-      else
-        echo "true"
+        result=1
       fi
     elif [ "${ALLOW_FUZZFILT}" == "true" ]; then
       match=$(echo "${desc}" | grep -i "${filter}")
       if [ -z "${match}" ]; then
-        if [ $VERBOSITY -gt 1 ]; then
-          echo >&2 "Value '${value}' filtered by '${filter}'."
-        fi
-        echo "false"
-      else
-        echo "true"
+        result=1
       fi
     fi
-  else
-    echo "true"
   fi
+
+  if [ ${result} -eq 0 ]; then
+    echo "true"
+  else
+    echo "false"
+  fi
+
+  return ${result}
 }
 
 PERM_FILTER=""
@@ -194,6 +192,7 @@ DEVICE_OPEN=""
 ZERO_ENABLED=""
 MINOR_ENABLED=""
 IGNORE_SNAPSHOTS=""
+CHECK_ORIGIN=""
 
 # process arguments
 #[ $# -gt 0 ] || usage
@@ -278,6 +277,13 @@ while [ $# -gt 0 ]; do
       IGNORE_SNAPSHOTS="false"
       shift
     ;;
+    --check-origin)
+      if [ -n "${CHECK_ORIGIN}" ]; then
+        usage "Conflicting or duplicate option(s) specified."
+      fi
+      CHECK_ORIGIN="true"
+      shift
+    ;;
     -v|--verbose)
       ((VERBOSITY++))
       #check_verbose
@@ -297,6 +303,15 @@ while [ $# -gt 0 ]; do
       shift
     ;;
     -vvvv)
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      ((VERBOSITY++))
+      #check_verbose
+      shift
+    ;;
+    -vvvvv)
+      ((VERBOSITY++))
       ((VERBOSITY++))
       ((VERBOSITY++))
       ((VERBOSITY++))
@@ -325,10 +340,12 @@ fi
 
 # Enumerate logical volumes
 i=1
-IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
+IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr,vg_name,origin | tail -n+2); do
   name=$(echo "$lv" | awk '{ print $1 }')
   path=$(echo "$lv" | awk '{ print $2 }')
   attr=$(echo "$lv" | awk '{ print $3 }')
+  group=$(echo "$lv" | awk '{ print $4 }')
+  origin=$(echo "$lv" | awk '{ print $5 }')
   blkdev=$(readlink -f "${path}")
   type=$(file -s "${blkdev}")
 
@@ -346,6 +363,7 @@ IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
   #skip=${attr:9:1}
 
   include="true"
+  is_snapshot="false"
 
   # Volume type
   type_desc=""
@@ -381,6 +399,7 @@ IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
     s)
     # Snapshot
     type_desc="Snapshot"
+    is_snapshot="true"
     if [ "$SKIP_SNAPSHOTS" != "false" ]; then
       include="false"
     fi
@@ -391,6 +410,7 @@ IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
     S)
     # Merging snapshot
     type_desc="Merging snapshot"
+    #is_snapshot="true"
     #if [ "$IGNORE_SNAPSHOTS" != "false" ]; then
     #  include="false"
     #fi
@@ -444,7 +464,11 @@ IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
   esac
   # Check filter
   if [ "${include}" == "true" ]; then
-    include=$(checkInclude "${VOLTYPE_FILTER}" "${voltype}" "${type_desc}")
+    if ! include=$(checkInclude "${VOLTYPE_FILTER}" "${voltype}" "${type_desc}"); then
+      if [ $VERBOSITY -gt 4 ]; then
+        echo >&2 "DEBUG: Filtered volume '${name}' (type flag '${voltype}' != '${VOLTYPE_FILTER}')."
+      fi
+    fi
   fi
 
   # Permissions
@@ -695,15 +719,72 @@ IFS=$'\n'; for lv in $(lvs -o lv_name,lv_path,lv_attr | tail -n+2); do
   #  ;;
   #esac
 
+  if [ "${is_snapshot}" == "true" ]; then
+    # get details about origin volume
+    origin_path="${group}/${origin}"
+    if ! origin_lv=$(lvs -o lv_name,lv_path,lv_attr,vg_name "${origin_path}" | tail -n+2); then
+      echo >&2 "ERROR: Failed to get volume information for snapshot origin '${origin_lv}'."
+      exit_script 1
+    fi
+
+    #origin_name=$(echo "$origin_lv" | awk '{ print $1 }')
+    #origin_path=$(echo "$origin_lv" | awk '{ print $2 }')
+    origin_attr=$(echo "$origin_lv" | awk '{ print $3 }')
+    #origin_group=$(echo "$origin_lv" | awk '{ print $4 }')
+    #origin_blkdev=$(readlink -f "${origin_path}")
+    #origin_type=$(file -s "${origin_blkdev}")
+
+
+    if [ "${CHECK_ORIGIN}" == "true" ]; then
+      #origin_voltype=${origin_attr:0:1}
+      #origin_perm=${origin_attr:1:1}
+      #origin_alloc=${origin_attr:2:1}
+      #origin_minor=${origin_attr:3:1}
+      #origin_state=${origin_attr:4:1}
+      origin_device=${origin_attr:5:1}
+      #origin_tgttype=${origin_attr:6:1}
+      #origin_zero=${origin_attr:7:1}
+
+      # Device
+      case "$origin_device" in
+        o)
+        # Open
+        if [ "${SKIP_OPEN_DEVS}" == "true" ]; then
+          include="false"
+        fi
+        if [ "${DEVICE_OPEN}" == "false" ]; then
+          include="false"
+        fi
+        ;;
+        X)
+        # Unknown
+        if [ "${DEVICE_OPEN}" == "true" ]; then
+          include="false"
+        fi
+        ;;
+        -)
+        if [ "${DEVICE_OPEN}" == "true" ]; then
+          include="false"
+        fi
+        ;;
+      esac
+    fi
+
+  fi
+
   if [ "$include" == "true" ]; then
 
   if [ $VERBOSITY -gt 0 ]; then
   echo "Entry $i"
   echo "------------------------------"
-  echo "Name: $name"
-  echo "Path: $path"
-  echo "Link: $blkdev"
-  echo "Attr: $attr"
+  echo "Name   : $name"
+  echo "Path   : $path"
+  echo "Link   : $blkdev"
+  echo "Attr.  : $attr"
+  echo "Group  : $group"
+  if [ ! -z "${origin}" ]; then
+  echo "Origin : $origin"
+  fi
   echo
   if [ $VERBOSITY -gt 2 ]; then
   echo "  Volume Type: $voltype"
