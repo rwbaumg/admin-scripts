@@ -8,14 +8,18 @@
 # Author: Robert W. Baumgartner <rwb@0x19e.net>
 #
 MOUNTPOINT="/media/lvm"
+MOUNT_OPTS="rw"
 
 VOLUME="$1"
 if [ -z "$1" ]; then
-   echo >&2 "Usage: $0 <lv-path> [mountpoint]"
+   echo >&2 "Usage: $0 <lv-path> [mountpoint] [mount-opts]"
    exit 1
 fi
 if [ -n "$2" ]; then
   MOUNTPOINT="$2"
+fi
+if [ -n "$3" ]; then
+  MOUNT_OPTS="$3"
 fi
 
 hash lvs 2>/dev/null || { echo >&2 "You need to install lvm2. Aborting."; exit 1; }
@@ -25,8 +29,14 @@ hash awk 2>/dev/null || { echo >&2 "You need to install awk. Aborting."; exit 1;
 
 # check if superuser
 if [[ $EUID -ne 0 ]]; then
-   echo >&2 "This script must be run as root."
-   exit 1
+  echo >&2 "ERROR: This script must be run as root."
+  exit 1
+fi
+
+# Verify mount options have been set
+if [ -z "${MOUNT_OPTS}" ]; then
+  echo >&2 "ERROR: No options specified for 'mount' command."
+  exit 1
 fi
 
 # Validate mountpoint and LV path
@@ -98,7 +108,7 @@ fi
 mkdir "${MOUNTPOINT}"
 
 # Print a header with some basic information
-echo "Mounting ${VOLUME_TYPE} device ${VOLUME} -> ${MOUNTPOINT} ..."
+echo "Mounting ${VOLUME_TYPE} device ${VOLUME} -> ${MOUNTPOINT} (options: '${MOUNT_OPTS}') ..."
 echo "${BLKID_DESCR}"
 
 # Backup the partition table
@@ -142,6 +152,13 @@ fi
 TOTAL_SIZE=0
 TOTAL_MOUNTED=0
 
+# Configure mount command line
+MOUNT_EXTRA=""
+if [ -n "${MOUNT_OPTS}" ]; then
+  MOUNT_EXTRA="-o ${MOUNT_OPTS}"
+fi
+MOUNT_CMD="mount ${MOUNT_EXTRA}"
+
 # Print out mappings
 declare -a mounted=();
 for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
@@ -151,6 +168,7 @@ for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
   if [ ! -b "$dev" ]; then
     echo >&2 "WARNING: '${map}' does not point to a valid block device."
   fi
+  # TODO: Add check for snapshots to make sure origin is not mounted
   if mount | grep -q "${mnt}"; then
     echo >&2 "ERROR: '${map}' is already mounted; aborting..."
     exit 1
@@ -166,8 +184,8 @@ for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
     echo >&2 "WARNING: The path '${MNT_PATH}' already exists; skipping..."
   else
     mkdir "${MNT_PATH}"
-    if ! mount "${dev}" "${MNT_PATH}" > /dev/null 2>&1; then
-      echo >&2 "ERROR: Failed to mount ${map}."
+    if ! MOUNT_OUTPUT=$(${MOUNT_CMD} "${dev}" "${MNT_PATH}" 2>&1); then
+      echo >&2 "ERROR: Failed to mount ${map}: ${MOUNT_OUTPUT}"
       rm -rf "${MNT_PATH}"
     else
       ((TOTAL_MOUNTED++))
