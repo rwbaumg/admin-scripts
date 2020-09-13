@@ -15,7 +15,6 @@ zone_name=""
 config_file=$(dirname "$0")/cf.cfg
 
 if [ -e "$config_file" ]; then
-  # shellcheck source=/dev/null
   source "$config_file"
 fi
 
@@ -249,7 +248,6 @@ done
 
 if [ "$USER_CONFIG" == "true" ]; then
   if [ -e "$config_file" ]; then
-    # shellcheck source=/dev/null
     source "$config_file"
   else
     exit_script 1 "Config file not found: $config_file"

@@ -160,7 +160,7 @@ test_prefix "$PREFIX"
 
 if [ "$RNDSEED" = "true" ]; then
   # SEED=$(uuidgen)
-  SEED=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 32 | head -n 1)
+  SEED=$(head -n16 /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w32 | head -n1)
 elif [ -z "$SEED" ]; then
   usage "Seed is null and random not specified."
 fi
