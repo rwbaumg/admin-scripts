@@ -290,7 +290,10 @@ if [ -n "${TARGET_STRING}" ] && [ ! -d "${TARGET_STRING}" ]; then
   GREP_RESULTS=$(echo "${GREP_RESULTS}" | grep "${TARGET}")
 fi
 
-if ! TMP_RESULTS=$(echo "${GREP_RESULTS}" | grep -P "${TARGET_STRING}" | grep -v -P "(\-|\:)[0-9]+(\-|\:)([\s]+)?\#" | sed -r "s/\-([0-9]+)\-/\:\1\:/"); then
+# To ignore comments use 'grep -v -P "(\-|\:)[0-9]+(\-|\:)([\s]+)?\#"', for example:
+#   if ! TMP_RESULTS=$(echo "${GREP_RESULTS}" | grep -P "${TARGET_STRING}" | grep -v -P "(\-|\:)[0-9]+(\-|\:)([\s]+)?\#" | sed -r "s/\-([0-9]+)\-/\:\1\:/"); then
+
+if ! TMP_RESULTS=$(echo "${GREP_RESULTS}" | grep -P "${TARGET_STRING}" | sed -r "s/\-([0-9]+)\-/\:\1\:/"); then
   echo >&2 "ERROR: Failed to perform search."
   exit 1
 fi
