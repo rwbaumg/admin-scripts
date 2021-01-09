@@ -55,6 +55,7 @@
         churn = !git log --all --find-copies --find-renames --name-only --format='format:' "$@" | sort | grep -v '^$' | uniq -c | sort | awk 'BEGIN {print "count\tfile"} {print $1 "\t" $2}' | sort -g
         get-patch = format-patch --stdout -1
         lgb = !git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'
+        set-fdate = !"f() { IFS=$'\n'; for FILE in $(git ls-files); do TIME=$(git log --pretty=format:%cd -n 1 --date=iso -- "$FILE"); TIME=$(date -d "$TIME" +%Y%m%d%H%M.%S); touch -m -t "$TIME" "$FILE"; done; }; f"
 [diff "zip"]
         textconv = unzip -p
         binary = true
