@@ -18,16 +18,6 @@ if [ $# -gt 0 ]; then
   fi
 fi
 
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a syml$
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  # if $SOURCE was a relative symlink, we need to resolve it relative to the pa$
-  # the symlink file was located
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-done
-DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-
 # TODO: Support input Git dir argument
 # GIT_DIR=""
 
@@ -39,7 +29,7 @@ if [ "$(dirname "$0")" = "$GIT_DIR" ]; then
 fi
 
 if ! git -C "$GIT_DIR" rev-parse; then
-  echo >&2 "Directory does not appear to be a valid Git repository: $DIR"
+  echo >&2 "Directory does not appear to be a valid Git repository: $GIT_DIR"
   exit 1
 fi
 
