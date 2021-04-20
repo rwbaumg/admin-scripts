@@ -13,6 +13,15 @@
 DIR_CONFIG_NAME="bareos-dir"
 DIR_CONFIG_PATH="/etc/bareos/bareos-sd.d/director"
 
+# Configure database columns to include in direct PSQL dumps.
+# Available columns: mediaid, volumename, slot, poolid, mediatype, mediatypeid, labeltype, firstwritten, lastwritten,
+#                    labeldate, voljobs, volfiles, volblocks, volmounts, volbytes, volerrors, volwrites, volcapacitybytes,
+#                    volstatus, enabled, recycle, actiononpurge, volretention, voluseduration, maxvoljobs, maxvolfiles,
+#                    maxvolbytes, inchanger, storageid, deviceid, mediaaddressing, volreadtime, volwritetime, endfile,
+#                    endblock, locationid, recyclecount, minblocksize, maxblocksize, initialwrite, scratchpoolid,
+#                    recyclepoolid, encryptionkey, comment
+PSQL_SELECT_COLUMNS="volumename,volstatus,firstwritten,lastwritten,encryptionkey"
+
 # Generate a timestamp to include in output
 TIMESTAMP=$(date '+%Y-%m-%d %r')
 
@@ -40,10 +49,10 @@ if [ -n "${CFG_PORT}" ]; then
   SD_PORT=${CFG_PORT}
 fi
 
-# if [[ "$USER" == "bareos" ]]; then
-if [[ "$USER" == "bareos" ]] || [[ $EUID -eq 0 ]]; then
+if [[ "$USER" == "bareos" ]]; then
+# if [[ "$USER" == "bareos" ]] || [[ $EUID -eq 0 ]]; then
   # Dump directly from the database
-  if ! CRYPTOC_DUMP=$(echo "select volumename,mediatype,volstatus,lastwritten,encryptionkey from media where encryptionkey is not null AND encryptionkey != '' ORDER BY lastwritten DESC;" | sudo -u bareos psql | grep -v "rows)"); then
+  if ! CRYPTOC_DUMP=$(echo "select ${PSQL_SELECT_COLUMNS} from media where encryptionkey is not null AND encryptionkey != '' ORDER BY lastwritten DESC;" | psql -d bareos | grep -v "rows)"); then
     echo >&2 "WARNING: Failed to dump keys from database."
     CRYPTOC_DUMP=""
   fi
