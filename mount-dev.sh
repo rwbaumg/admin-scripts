@@ -7,10 +7,9 @@
 #
 # Author: Robert W. Baumgartner <rwb@0x19e.net>
 #
-DEFAULT_MOUNTPOINT="/media/lvm"
+DEFAULT_MOUNTPOINT="/media/dev"
 DEFAULT_MOUNT_OPTS="rw"
 
-hash lvs 2>/dev/null || { echo >&2 "You need to install lvm2. Aborting."; exit 1; }
 hash kpartx 2>/dev/null || { echo >&2 "You need to install kpartx. Aborting."; exit 1; }
 hash blkid 2>/dev/null || { echo >&2 "You need to install util-linux. Aborting."; exit 1; }
 hash awk 2>/dev/null || { echo >&2 "You need to install awk. Aborting."; exit 1; }
@@ -176,8 +175,7 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-# Validate mountpoint and LV path
-# TODO: More complete checking to ensure a valid LV path.
+# Validate device and mountpoint paths
 if [ ! -e "${VOLUME}" ]; then
   echo >&2 "ERROR: Volume '${VOLUME}' does not exist."
   exit 1
