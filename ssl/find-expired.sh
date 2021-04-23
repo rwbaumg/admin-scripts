@@ -120,7 +120,7 @@ if [ $VERBOSITY -gt 0 ]; then
 fi
 
 found=0
-for cert in find "$SEARCH_DIR" -not -empty -type f -name "*.crt" -o -name "*.pem"; do
+for cert in $(find "$SEARCH_DIR" -not -empty -type f -name "*.crt" -o -name "*.pem"); do
   if [ $VERBOSITY -gt 0 ]; then
     echo >&2 "Checking certificate: $cert"
   fi
@@ -128,13 +128,13 @@ for cert in find "$SEARCH_DIR" -not -empty -type f -name "*.crt" -o -name "*.pem
   then
     (( found ++ ))
     CERT_SERIAL=$(openssl x509 -in "$cert" -noout -serial)
-    echo "$cert ($CERT_SERIAL)"
+    CERT_EXPDAY=$(openssl x509 -in "$cert" -noout -enddate)
+    echo "FOUND: $cert $CERT_EXPDAY ($CERT_SERIAL)"
   fi
 done
 
-# TODO: Count not working
-#if [ $VERBOSITY -gt 0 ]; then
-#  echo >&2 "Found $found expired certificate(s)."
-#fi
+if [ $VERBOSITY -gt 0 ]; then
+  echo >&2 "Found $found expired certificate(s)."
+fi
 
 exit_script 0
