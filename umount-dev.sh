@@ -196,7 +196,7 @@ for ((idx=0;idx<=$((${#mappings[@]}-1));idx++)); do
       if [ ! -e "${MNT_PATH}" ]; then
         echo >&2 "WARNING: The path '${MNT_PATH}' does not exist."
       fi
-      rm -rf "${MNT_PATH}"
+      rm -rf ${VERBOSE} "${MNT_PATH}"
       unmounted=("${unmounted[@]}" "${map}")
     fi
   fi
@@ -211,16 +211,17 @@ for ((idx=0;idx<=$((${#unmounted[@]}-1));idx++)); do
 done
 
 # Delete mappings
-echo "Removing ${#mappings[@]} device mapping(s) for '${VOLUME}' ..."
-if ! kpartx -ds "${VOLUME}"; then
+if ! kpartx ${VERBOSE} -ds "${VOLUME}"; then
   echo >&2 "ERROR: Failed to delete mappings for ${VOLUME}."
   exit 1
+else
+  echo "Removed ${#mappings[@]} device mapping(s) for '${VOLUME}' ..."
 fi
 
 # Remove top-level mountpoint
 if [ -e "${MOUNTPOINT}" ]; then
   echo "Removing top-level mountpoint '${MOUNTPOINT}' ..."
-  rm -rvf "${MOUNTPOINT}"
+  rm ${VERBOSE} -rf "${MOUNTPOINT}"
 fi
 
 echo "Unmounted volume '${VOLUME}'."
