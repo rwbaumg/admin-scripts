@@ -97,6 +97,17 @@ function add-alias()
   alias $name
 }
 
+# list package contents without installing or downloading
+# only works for debian/ubuntu packages
+function deb_list () {
+    curl -s $(lsb_release -si \
+                | sed -e 's Ubuntu https://packages.ubuntu.com ' \
+                      -e 's Debian https://packages.debian.org '
+              )/$(lsb_release -sc)/all/$1/filelist \
+      | sed -n -e '/<pre>/,/<\/pre>/p' \
+      | sed -e 's/<[^>]\+>//g' -e '/^$/d';
+}
+
 # create a tgz of the current directory, excluding VCS folders
 function tarcwd()
 {
