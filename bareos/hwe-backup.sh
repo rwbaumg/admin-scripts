@@ -29,6 +29,7 @@ TIMESTAMP=$(date '+%Y-%m-%d %r')
 hash bareos-sd 2>/dev/null || { echo >&2 "You need to install bareos-storage. Aborting."; exit 1; }
 hash bscrypto 2>/dev/null || { echo >&2 "You need to install bareos-storage-tape. Aborting."; exit 1; }
 hash psql 2>/dev/null || { echo >&2 "You need to install postgresql-client-common. Aborting."; exit 1; }
+hash sudo 2>/dev/null || { echo >&2 "You need to install sudo. Aborting."; exit 1; }
 
 # Enable overriding director name
 if [ -n "$1" ]; then
@@ -49,10 +50,14 @@ if [ -n "${CFG_PORT}" ]; then
   SD_PORT=${CFG_PORT}
 fi
 
-if [[ "$USER" == "bareos" ]]; then
-# if [[ "$USER" == "bareos" ]] || [[ $EUID -eq 0 ]]; then
+if [[ "$USER" == "bareos" ]] || [[ $EUID -eq 0 ]]; then
+  PSQL_CMD="psql -d bareos -w"
+  if [[ $EUID -eq 0 ]]; then
+    PSQL_CMD="sudo -u bareos ${PSQL_CMD}"
+  fi
   # Dump directly from the database
-  if ! CRYPTOC_DUMP=$(echo "select ${PSQL_SELECT_COLUMNS} from media where encryptionkey is not null AND encryptionkey != '' ORDER BY lastwritten DESC;" | psql -d bareos | grep -v "rows)"); then
+  PSQL_QUERY="SELECT ${PSQL_SELECT_COLUMNS} FROM media WHERE encryptionkey IS NOT NULL AND encryptionkey != '' ORDER BY lastwritten DESC;"
+  if ! CRYPTOC_DUMP=$(echo "${PSQL_QUERY}" | ${PSQL_CMD} | grep -v "rows)"); then
     echo >&2 "WARNING: Failed to dump keys from database."
     CRYPTOC_DUMP=""
   fi
